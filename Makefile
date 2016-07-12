@@ -20,7 +20,7 @@ LAPACK_LIBS = -L/usr/lib64 -llapacke -llapack -lblas
 MPICHLIB = -L/usr/local/share/mpich2/lib -lmpich
 MPIINCL  = -I/usr/local/share/mpich2/include
 
-OPTIMIZE    = -O2 -Wall
+OPTIMIZE    = 
 endif
 
 ifeq ($(SYSTEM), "Darwin")
@@ -34,7 +34,7 @@ LAPACK_LIBS = -framework vecLib -L /usr/local/share/lapack/lib -llapacke -llapac
 #-lcblas 
 CBLAS_INCL  =
 CBLAS_LIBS  =     
-OPTIMIZE    = -O2 -Wall
+OPTIMIZE    = 
 endif
 
 ifeq ($(SYSTEM), "Cluster")
@@ -56,11 +56,12 @@ EXEC     = dnest
 SRC      = ./
 INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/dnestproto.h $(SRC)/userdef.h 
  
-OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/userdef.o
+OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/dnestpostprocess.o $(SRC)/userdef.o
 
 $(EXEC): $(OBJS)
 	cd $(SRC)
 	$(CC) $(OPTIMIZE) $(OBJS) $(LIBS) -o $@
+	$(CC) $(OPTIMIZE) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c $(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c
 	ar rcs libdnest.a dnest.o dnestvars.o
 
 $(OBJS): $(INCL)

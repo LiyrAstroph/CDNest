@@ -55,6 +55,7 @@ typedef struct
   char sample_file[STR_MAX_LENGTH];
   char sample_info_file[STR_MAX_LENGTH];
   char levels_file[STR_MAX_LENGTH];
+  char sampler_state_file[STR_MAX_LENGTH];
 }Options;
 
 extern Options options;

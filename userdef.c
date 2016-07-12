@@ -17,12 +17,14 @@
 
 int main(int argc, char **argv)
 {
+  
   data_load();
   dnest(argc, argv);
+  return 1;
 }
 
-/*===========================================*/
-// users responsible for following struct definitions
+/*====================================================*/
+/* users responsible for following struct definitions */
 
 void from_prior(ModelType *model)
 {

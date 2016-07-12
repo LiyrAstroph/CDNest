@@ -35,6 +35,8 @@ double dnest_randh();
 double dnest_rand();
 double dnest_randn();
 int dnest_rand_int(int size);
+void postprocess();
+void initialize_output_file();
 /*=====================================================*/
 // users responsible for following functions
 void data_load();

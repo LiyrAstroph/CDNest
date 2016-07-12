@@ -21,8 +21,11 @@
 int dnest(int argc, char** argv)
 {
   setup(argc, argv);
-  run();
-  finalise();
+  //initialize_output_file();
+  //run();
+  //finalise();
+  postprocess();
+  
   return 0;
 }
 
@@ -33,7 +36,7 @@ void run()
     mcmc_run();
     if(options.max_num_saves !=0 &&
         count_saves != 0 && (count_saves%options.max_num_saves == 0))
-      return;
+      break;
       
     count_mcmc_steps += options.thread_steps;
 
@@ -41,8 +44,8 @@ void run()
   }
 
   FILE *fp;
-  fp = fopen("sampler_state.txt", "r");
-  fprintf(fp, "%d %f\n", save_to_disk, compression);
+  fp = fopen(options.sampler_state_file, "w");
+  fprintf(fp, "%d %d\n", size_levels, count_saves);
   fclose(fp);
 }
 
@@ -375,21 +378,8 @@ bool enough_levels()
   return (size_levels >= options.max_num_levels);
 }
 
-void setup(int argc, char** argv)
+void initialize_output_file()
 {
-  int i;
-
-  dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
-  dnest_gsl_r = gsl_rng_alloc (dnest_gsl_T);
-  gsl_rng_set(dnest_gsl_r, time(NULL));
-
-  options_load();
-  
-  num_threads = 1;
-  compression = exp(1.0);
-  regularisation = options.new_level_interval;
-  save_to_disk = true;
-
   fsample = fopen(options.sample_file, "w");
   if(fsample==NULL)
   {
@@ -404,6 +394,22 @@ void setup(int argc, char** argv)
     exit(0);
   }
   fprintf(fsample_info, "# level assignment, log likelihood, tiebreaker, ID.\n");
+}
+
+void setup(int argc, char** argv)
+{
+  int i;
+
+  dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
+  dnest_gsl_r = gsl_rng_alloc (dnest_gsl_T);
+  gsl_rng_set(dnest_gsl_r, time(NULL));
+
+  options_load();
+  
+  num_threads = 1;
+  compression = exp(1.0);
+  regularisation = options.new_level_interval;
+  save_to_disk = true;
 
 // initialise sampler
   all_above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
@@ -498,6 +504,7 @@ void options_load()
   strcpy(options.sample_file, "sample.txt");
   strcpy(options.sample_info_file, "sample_info.txt");
   strcpy(options.levels_file, "levels.txt");
+  strcpy(options.sampler_state_file, "sampler_state.txt");
 }
 
 
