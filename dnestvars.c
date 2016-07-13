@@ -19,14 +19,11 @@
 FILE *fsample, *fsample_info;
 
 /* random number generator */
-gsl_rng_type * dnest_gsl_T;
-const gsl_rng * dnest_gsl_r;
+const gsl_rng_type * dnest_gsl_T;
+gsl_rng * dnest_gsl_r;
 
 Options options;
-
-/* data */
-DataType *data;
-int num_data_points;
+char options_file[STR_MAX_LENGTH];
 
 // sampler
 bool save_to_disk;
@@ -34,7 +31,10 @@ unsigned int num_threads;
 double compression;
 unsigned int regularisation;
 
-ModelType *particles;
+void *particles;
+int size_of_modeltype;
+int particle_offset_size;
+
 LikelihoodType *log_likelihoods;
 unsigned int *level_assignments;
 

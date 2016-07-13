@@ -11,29 +11,30 @@
 #include <stdbool.h>
 #include <gsl/gsl_rng.h>
 
-/* random number generator */
-extern const gsl_rng * gsl_r;
-
-/*===========================================*/
+/*===================================================*/
 // users responsible for following struct definitions
-// data 
+
+/*  data type */
 typedef struct 
 {
   double x;
   double y;
 }DataType;
 
-// model
+/* model type */
 #define num_params (20)
 typedef struct
 {
   double params[num_params];
 }ModelType;
+/*===================================================*/
 
-/*==========================================*/
+/* szie of modeltype, which is used for dnest */
+extern int size_of_modeltype;
 
-/* data */
-extern DataType *data;
+/* data storage */
 extern int num_data_points;
+extern DataType *data;
+
 
 #endif

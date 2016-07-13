@@ -16,16 +16,15 @@
 #include <gsl/gsl_randist.h>
 
 #include "dnestvars.h"
-#include "dnestproto.h"
 
 int dnest(int argc, char** argv)
 {
   setup(argc, argv);
-  //initialize_output_file();
-  //run();
-  //finalise();
+  initialize_output_file();
+  run();
+  close_output_file();
   postprocess();
-  
+  finalise();
   return 0;
 }
 
@@ -175,7 +174,8 @@ void kill_lagging_particles()
           i_copy = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
         }while(!good[i_copy] || gsl_rng_uniform(dnest_gsl_r) >= exp(log_push(level_assignments[i_copy])));
 
-        particles[i] = particles[i_copy];
+        //particles[i] = particles[i_copy];
+        copy_model(particles+i*particle_offset_size, particles + i_copy*particle_offset_size);
         log_likelihoods[i] = log_likelihoods[i_copy];
         level_assignments[i] = level_assignments[i_copy];
         deletions++;
@@ -220,8 +220,7 @@ void save_particle()
 
   int which = gsl_rng_uniform_int(dnest_gsl_r,options.num_particles);
 
-
-  print_particle(fsample, &particles[which]);
+  print_particle(fsample, particles+ which * particle_offset_size);
 
   fprintf(fsample_info, "%d %e %f %d\n", level_assignments[which], 
     log_likelihoods[which].value,
@@ -268,21 +267,19 @@ void mcmc_run()
 
 void update_particle(unsigned int which)
 {
-  ModelType *particle = &(particles[which]);
+  void *particle = particles+ which*particle_offset_size;
   LikelihoodType *logl = &(log_likelihoods[which]);
   
   Level *level = &(levels[level_assignments[which]]);
 
-  ModelType proposal;
+  void *proposal = create_model();
   LikelihoodType logl_proposal;
   double log_H;
 
-  //proposal = *particle;
-  memcpy(&proposal, particle, sizeof(ModelType));
+  copy_model(proposal, particle);
+  log_H = perturb(proposal);
   
-  log_H = perturb(&proposal);
-  
-  logl_proposal.value = log_likelihoods_cal(&proposal);
+  logl_proposal.value = log_likelihoods_cal(proposal);
   logl_proposal.tiebreaker =  logl_proposal.tiebreaker + gsl_rng_uniform(dnest_gsl_r);
   wrap(&logl_proposal.tiebreaker, 0.0, 1.0);
 
@@ -291,9 +288,7 @@ void update_particle(unsigned int which)
 
   if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value < logl_proposal.value)
   {
-    //*particle = proposal;
-    //*logl = logl_proposal;
-    memcpy(particle, &proposal, sizeof(ModelType));
+    copy_model(particle, proposal);
     memcpy(logl, &logl_proposal, sizeof(LikelihoodType));
     level->accepts++;
   }
@@ -308,6 +303,7 @@ void update_particle(unsigned int which)
     else
       break; // exit the loop if it does not satify higher levels
   }
+  free(proposal);
 }
 
 void update_level_assignment(unsigned int which)
@@ -396,6 +392,12 @@ void initialize_output_file()
   fprintf(fsample_info, "# level assignment, log likelihood, tiebreaker, ID.\n");
 }
 
+void close_output_file()
+{
+  fclose(fsample);
+  fclose(fsample_info);
+}
+
 void setup(int argc, char** argv)
 {
   int i;
@@ -411,11 +413,14 @@ void setup(int argc, char** argv)
   regularisation = options.new_level_interval;
   save_to_disk = true;
 
+// particles
+  particle_offset_size = size_of_modeltype/sizeof(void);
+  particles = (void *)malloc(options.num_particles*size_of_modeltype);
+  
 // initialise sampler
   all_above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
   above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
 
-  particles = (ModelType *)malloc(options.num_particles*sizeof(ModelType));
   log_likelihoods = (LikelihoodType *)malloc(2*options.num_particles * sizeof(LikelihoodType));
   level_assignments = (unsigned int*)malloc(options.num_particles * sizeof(unsigned int));
 
@@ -438,10 +443,9 @@ void setup(int argc, char** argv)
   
   for(i=0; i<options.num_particles; i++)
   {
-    from_prior(&particles[i]);
-    
-    log_likelihoods[i].value = log_likelihoods_cal(&particles[i]);
-    log_likelihoods[i].tiebreaker = gsl_rng_uniform(dnest_gsl_r);
+    from_prior(particles+i*particle_offset_size);
+    log_likelihoods[i].value = log_likelihoods_cal(particles+i*particle_offset_size);
+    log_likelihoods[i].tiebreaker = dnest_rand();
     level_assignments[i] = 0;
   }
   
@@ -453,8 +457,14 @@ void setup(int argc, char** argv)
 
 void finalise()
 {
-  fclose(fsample);
-  fclose(fsample_info);
+  free(particles);
+  free(all_above);
+  free(above);
+  free(log_likelihoods);
+  free(level_assignments);
+  free(levels);
+  gsl_rng_free(dnest_gsl_r);
+  printf("# Finalizing dnest.\n");
 }
 
 
@@ -463,7 +473,7 @@ void options_load()
   FILE *fp;
   char buf[BUF_MAX_LENGTH];
 
-  fp = fopen("OPTIONS", "r");
+  fp = fopen(options_file, "r");
 
   if(fp == NULL)
   {

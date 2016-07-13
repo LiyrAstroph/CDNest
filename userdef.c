@@ -12,29 +12,55 @@
 #include <math.h>
 #include <gsl/gsl_rng.h>
 
+#include "dnestvars.h"
 #include "userdef.h"
-#include "dnestproto.h"
+
+int num_data_points;
+DataType *data;
+
 
 int main(int argc, char **argv)
-{
+{ 
+  /* setup szie of modeltype, which is used for dnest */
+  size_of_modeltype = sizeof(ModelType);
   
+  /* setup number of data points and allocate memory */
+  num_data_points = 100;
+  data = (DataType *)malloc(num_data_points * sizeof(DataType));
+  
+  /* load data */
   data_load();
+  
+  /* run dnest */
+  strcpy(options_file, "OPTIONS");
   dnest(argc, argv);
-  return 1;
+  
+  
+  strcpy(options_file, "OPTIONS_2D");
+  dnest(argc, argv);
+  
+  /* free memory */
+  free(data);
+  return 0;
 }
 
 /*====================================================*/
 /* users responsible for following struct definitions */
 
-void from_prior(ModelType *model)
+void from_prior(const void *model)
 {
   int i;
+  ModelType *pm = (ModelType *)model;
   for(i=0; i<num_params; i++)
-		model->params[i] = -0.5 + dnest_rand();
+  {
+    (*pm).params[i] = -0.5 + dnest_rand();
+  }
+  
 }
 
-double log_likelihoods_cal(ModelType *model)
+double log_likelihoods_cal(const void *model)
 {
+  ModelType *pm = (ModelType *)model;
   double logL;
   const double u = 0.01;
 	const double v = 0.1;
@@ -46,8 +72,8 @@ double log_likelihoods_cal(ModelType *model)
   int i;
 	for(i=0; i<num_params; i++)
 	{
-		logl1 += -0.5*pow(((*model).params[i] - 0.031)/u, 2);
-		logl2 += -0.5*pow((*model).params[i]/v, 2);
+		logl1 += -0.5*pow(((*pm).params[i] - 0.031)/u, 2);
+		logl2 += -0.5*pow( (*pm).params[i]/v, 2);
 	}
 	logl1 += log(100.);
   
@@ -58,21 +84,22 @@ double log_likelihoods_cal(ModelType *model)
   return logL;
 }
 
-double perturb(ModelType *model)
+double perturb(const void *model)
 {
+  ModelType *pm = (ModelType *)model;
   double logH = 0.0;
   int which = dnest_rand_int(num_params);
-	model->params[which] += dnest_randh();
-	wrap(&model->params[which], -0.5, 0.5);
+	(*pm).params[which] += dnest_randh();
+	wrap(&pm->params[which], -0.5, 0.5);
   return logH;
 }
 
-void print_particle(FILE *fp, ModelType *model)
+void print_particle(FILE *fp, const void *model)
 {
   int i;
   for(i=0; i<num_params; i++)
   {
-    fprintf(fp, "%f ", (*model).params[i]);
+    fprintf(fp, "%f ", ((ModelType *)model)->params[i]);
   }
   fprintf(fp, "\n");
 }
@@ -81,9 +108,6 @@ void data_load()
 {
   FILE *fp;
   int i;
-
-  num_data_points = 100;
-  data = (DataType *)malloc(num_data_points * sizeof(DataType));
 
   fp = fopen("data.txt", "r");
   if(fp == NULL)
@@ -98,4 +122,20 @@ void data_load()
     //printf("%f %f\n", data[i].x, data[i].y);
   }
   fclose(fp);
+}
+/*========================================================*/
+
+void copy_model(const void *dest, const void *src)
+{
+  memcpy(dest, src, sizeof(ModelType));
+}
+
+void *create_model()
+{
+  return (void *)malloc(sizeof(ModelType));
+}
+
+int get_num_params()
+{
+  return num_params;
 }
