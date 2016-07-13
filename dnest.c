@@ -42,6 +42,7 @@ void run()
     do_bookkeeping();
   }
 
+  /* output state of sampler */
   FILE *fp;
   fp = fopen(options.sampler_state_file, "w");
   fprintf(fp, "%d %d\n", size_levels, count_saves);
@@ -84,7 +85,7 @@ void do_bookkeeping()
     {
       kill_lagging_particles();
     }
-
+    
     created_level = true;
   }
 
@@ -174,14 +175,13 @@ void kill_lagging_particles()
           i_copy = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
         }while(!good[i_copy] || gsl_rng_uniform(dnest_gsl_r) >= exp(log_push(level_assignments[i_copy])));
 
-        //particles[i] = particles[i_copy];
         copy_model(particles+i*particle_offset_size, particles + i_copy*particle_offset_size);
         log_likelihoods[i] = log_likelihoods[i_copy];
         level_assignments[i] = level_assignments[i_copy];
         deletions++;
 
         printf("# Replacing lagging particle.\n");
-        printf(" This has happened %d times.\n", deletions);
+        printf("# This has happened %d times.\n", deletions);
       }
     }
   }
@@ -189,6 +189,7 @@ void kill_lagging_particles()
     printf("# Warning: all particles lagging! Very rare.\n");
 }
 
+/* save levels */
 void save_levels()
 {
   if(!save_to_disk)
@@ -208,6 +209,7 @@ void save_levels()
   fclose(fp);
 }
 
+/* save particle */
 void save_particle()
 {
   count_saves++;
@@ -220,13 +222,14 @@ void save_particle()
 
   int which = gsl_rng_uniform_int(dnest_gsl_r,options.num_particles);
 
-  print_particle(fsample, particles+ which * particle_offset_size);
+  print_particle(fsample, particles + which * particle_offset_size);
 
   fprintf(fsample_info, "%d %e %f %d\n", level_assignments[which], 
     log_likelihoods[which].value,
     log_likelihoods[which].tiebreaker,
     which);
 }
+
 void mcmc_run()
 {
   unsigned int which;
@@ -234,7 +237,7 @@ void mcmc_run()
   
   for(i = 0; i<options.thread_steps; i++)
   {
-    //if(count_mcmc_steps >= 10000)printf("FFFF %d\n", options.num_particles);
+    /* randomly select out one particle to update */
     which = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
     //if(count_mcmc_steps >= 10000)printf("FFFF\n");
     //printf("%d\n", which);
@@ -251,9 +254,6 @@ void mcmc_run()
       update_level_assignment(which);
       update_particle(which);
     }
-    //printf("%f %f %f\n", particles[which].param[0], particles[which].param[1], particles[which].param[2]);
-    //printf("level:%d\n", level_assignments[which]);
-    //printf("%e\n", log_likelihoods[which].value);
 
     if( !enough_levels()  && levels[size_levels-1].log_likelihood.value < log_likelihoods[which].value)
     {
@@ -407,6 +407,7 @@ void setup(int argc, char** argv)
   gsl_rng_set(dnest_gsl_r, time(NULL));
 
   options_load();
+  printf("%s\n",  options.posterior_sample_file);
   
   num_threads = 1;
   compression = exp(1.0);
@@ -477,7 +478,7 @@ void options_load()
 
   if(fp == NULL)
   {
-    fprintf(stderr, "ERROR: Cannot open file OPTIONS.\n");
+    fprintf(stderr, "ERROR: Cannot open file %s.\n", options_file);
     exit(0);
   }
 
@@ -509,12 +510,27 @@ void options_load()
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%d", &options.max_num_saves);
 
+  fgets(buf, BUF_MAX_LENGTH, fp);
+  sscanf(buf, "%s", options.sample_file);
+  
+  fgets(buf, BUF_MAX_LENGTH, fp);
+  sscanf(buf, "%s", options.sample_info_file);
+  
+  fgets(buf, BUF_MAX_LENGTH, fp);
+  sscanf(buf, "%s", options.levels_file);
+  
+  fgets(buf, BUF_MAX_LENGTH, fp);
+  sscanf(buf, "%s", options.sampler_state_file);
+  
+  fgets(buf, BUF_MAX_LENGTH, fp);
+  sscanf(buf, "%s", options.posterior_sample_file);
+  
   fclose(fp);
 
-  strcpy(options.sample_file, "sample.txt");
+/*  strcpy(options.sample_file, "sample.txt");
   strcpy(options.sample_info_file, "sample_info.txt");
   strcpy(options.levels_file, "levels.txt");
-  strcpy(options.sampler_state_file, "sampler_state.txt");
+  strcpy(options.sampler_state_file, "sampler_state.txt");*/
 }
 
 

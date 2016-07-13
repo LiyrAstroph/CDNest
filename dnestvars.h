@@ -54,6 +54,7 @@ typedef struct
   char sample_info_file[STR_MAX_LENGTH];
   char levels_file[STR_MAX_LENGTH];
   char sampler_state_file[STR_MAX_LENGTH];
+  char posterior_sample_file[STR_MAX_LENGTH];
 }Options;
 extern Options options;
 extern char options_file[STR_MAX_LENGTH];
@@ -115,14 +116,14 @@ void initialize_output_file();
 void close_output_file();
 /*=====================================================*/
 // users responsible for following functions
-void data_load();
-void print_particle(FILE *fp, const void *model);
-void from_prior(const void *model);
-double log_likelihoods_cal(const void *model);
-double perturb(const void *model);
-void copy_model(const void *dest, const void *src);
-void *create_model();
-int get_num_params();
+extern void (*data_load)();
+extern void (*print_particle)(FILE *fp, const void *model);
+extern void (*from_prior)(const void *model);
+extern double (*log_likelihoods_cal)(const void *model);
+extern double (*perturb)(const void *model);
+extern void (*copy_model)(const void *dest, const void *src);
+extern void* (*create_model)();
+extern int (*get_num_params)();
 /*=====================================================*/
 
 #endif

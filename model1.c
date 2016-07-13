@@ -13,13 +13,13 @@
 #include <gsl/gsl_rng.h>
 
 #include "dnestvars.h"
-#include "userdef.h"
+#include "model1.h"
 
 int num_data_points;
 DataType *data;
 
 
-int main(int argc, char **argv)
+void userdef(int argc, char **argv)
 { 
   /* setup szie of modeltype, which is used for dnest */
   size_of_modeltype = sizeof(ModelType);
@@ -28,26 +28,35 @@ int main(int argc, char **argv)
   num_data_points = 100;
   data = (DataType *)malloc(num_data_points * sizeof(DataType));
   
+  /* setup functions used for dnest*/
+  from_prior = from_prior_thismodel;
+  data_load = data_load_thismodel;
+  log_likelihoods_cal = log_likelihoods_cal_thismodel;
+  perturb = perturb_thismodel;
+  print_particle = print_particle_thismodel;
+  copy_model = copy_model_thismodel;
+  create_model = create_model_thismodel;
+  get_num_params = get_num_params_thismodel;
+  
   /* load data */
   data_load();
   
   /* run dnest */
-  strcpy(options_file, "OPTIONS");
+  strcpy(options_file, "OPTIONS1");
   dnest(argc, argv);
   
   
-  strcpy(options_file, "OPTIONS_2D");
-  dnest(argc, argv);
+//  strcpy(options_file, "OPTIONS_2D");
+//  dnest(argc, argv);
   
   /* free memory */
   free(data);
-  return 0;
 }
 
 /*====================================================*/
 /* users responsible for following struct definitions */
 
-void from_prior(const void *model)
+void from_prior_thismodel(const void *model)
 {
   int i;
   ModelType *pm = (ModelType *)model;
@@ -55,10 +64,9 @@ void from_prior(const void *model)
   {
     (*pm).params[i] = -0.5 + dnest_rand();
   }
-  
 }
 
-double log_likelihoods_cal(const void *model)
+double log_likelihoods_cal_thismodel(const void *model)
 {
   ModelType *pm = (ModelType *)model;
   double logL;
@@ -84,7 +92,7 @@ double log_likelihoods_cal(const void *model)
   return logL;
 }
 
-double perturb(const void *model)
+double perturb_thismodel(const void *model)
 {
   ModelType *pm = (ModelType *)model;
   double logH = 0.0;
@@ -94,7 +102,7 @@ double perturb(const void *model)
   return logH;
 }
 
-void print_particle(FILE *fp, const void *model)
+void print_particle_thismodel(FILE *fp, const void *model)
 {
   int i;
   for(i=0; i<num_params; i++)
@@ -104,7 +112,7 @@ void print_particle(FILE *fp, const void *model)
   fprintf(fp, "\n");
 }
 
-void data_load()
+void data_load_thismodel()
 {
   FILE *fp;
   int i;
@@ -125,17 +133,18 @@ void data_load()
 }
 /*========================================================*/
 
-void copy_model(const void *dest, const void *src)
+
+void copy_model_thismodel(const void *dest, const void *src)
 {
   memcpy(dest, src, sizeof(ModelType));
 }
 
-void *create_model()
+void* create_model_thismodel()
 {
   return (void *)malloc(sizeof(ModelType));
 }
 
-int get_num_params()
+int get_num_params_thismodel()
 {
   return num_params;
 }

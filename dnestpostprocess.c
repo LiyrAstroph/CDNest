@@ -278,7 +278,7 @@ void postprocess()
   }
   
   //save posterior sample
-  fp = fopen("posterior_sample.txt", "w");
+  fp = fopen(options.posterior_sample_file, "w");
   for(i=0; i<num_ps; i++)
   {
     print_particle(fp, posterior_sample + i*size_of_modeltype);
