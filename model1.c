@@ -17,9 +17,9 @@
 
 int num_data_points;
 DataType *data;
+ModelType best_model_thismodel, best_model_std_thismodel;
 
-
-void userdef(int argc, char **argv)
+void model1(int argc, char **argv)
 { 
   /* setup szie of modeltype, which is used for dnest */
   size_of_modeltype = sizeof(ModelType);
@@ -37,6 +37,7 @@ void userdef(int argc, char **argv)
   copy_model = copy_model_thismodel;
   create_model = create_model_thismodel;
   get_num_params = get_num_params_thismodel;
+  copy_best_model = copy_best_model_thismodel;
   
   /* load data */
   data_load();
@@ -45,10 +46,10 @@ void userdef(int argc, char **argv)
   strcpy(options_file, "OPTIONS1");
   dnest(argc, argv);
   
-  
-//  strcpy(options_file, "OPTIONS_2D");
-//  dnest(argc, argv);
-  
+  int j;
+  for(j = 0; j<num_params; j++)
+    printf("Best params %d %f +- %f\n", j, best_model_thismodel.params[j], best_model_std_thismodel.params[j]);
+    
   /* free memory */
   free(data);
 }
@@ -130,6 +131,12 @@ void data_load_thismodel()
     //printf("%f %f\n", data[i].x, data[i].y);
   }
   fclose(fp);
+}
+
+void copy_best_model_thismodel(const void *bm, const void *bm_std)
+{  
+  memcpy(&best_model_thismodel, bm, size_of_modeltype);
+  memcpy(&best_model_std_thismodel, bm_std, size_of_modeltype);
 }
 /*========================================================*/
 

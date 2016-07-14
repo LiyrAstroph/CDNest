@@ -293,7 +293,7 @@ void postprocess()
   
   for(j=0; j<num_params; j++)
   {
-    pbm = (double *)(best_model + j*size_of_modeltype);
+    pbm = (double *)(best_model + j*sizeof(double));
     *pbm = 0.0;
     for(i=0; i<num_ps; i++)
     {
@@ -302,7 +302,7 @@ void postprocess()
     }
     *pbm /= num_ps;
     
-    pbm_std = (double *)(best_model_std + j*size_of_modeltype);
+    pbm_std = (double *)(best_model_std + j*sizeof(double));
     *pbm_std = 0.0;
     for(i=0; i<num_ps; i++)
     {
@@ -310,12 +310,17 @@ void postprocess()
        *pbm_std += pow( *pm - *pbm, 2.0 );
      }
     *pbm_std = sqrt(*pbm_std/(num_ps - 1.0));
-    printf("Best params %d %f +- %f\n", j, *pbm, *pbm_std);
+    //printf("Best params %d %f +- %f\n", j, *pbm, *pbm_std);
   }
+  
+  copy_best_model(best_model, best_model_std);
   
   for(i=0; i<num_levels; i++)
    free(levels_orig[i]);
   free(levels_orig);
+  
+  free(best_model);
+  free(best_model_std);
 }
 
 int cmp_sample(const void *pa, const void *pb)

@@ -407,7 +407,6 @@ void setup(int argc, char** argv)
   gsl_rng_set(dnest_gsl_r, time(NULL));
 
   options_load();
-  printf("%s\n",  options.posterior_sample_file);
   
   num_threads = 1;
   compression = exp(1.0);
@@ -478,7 +477,7 @@ void options_load()
 
   if(fp == NULL)
   {
-    fprintf(stderr, "ERROR: Cannot open file %s.\n", options_file);
+    fprintf(stderr, "# ERROR: Cannot open file %s.\n", options_file);
     exit(0);
   }
 

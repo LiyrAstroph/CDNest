@@ -37,6 +37,9 @@ extern int size_of_modeltype;
 extern int num_data_points;
 extern DataType *data;
 
+/* best model */
+extern ModelType best_model_thismodel, best_model_std_thismodel;
+
 /* functions */
 void from_prior_thismodel2(const void *model);
 void data_load_thismodel2();
@@ -46,6 +49,7 @@ double perturb_thismodel2(const void *model);
 void copy_model_thismodel2(const void *dest, const void *src);
 void* create_model_thismodel2();
 int get_num_params_thismodel2();
+void copy_best_model_thismodel2(const void *bm, const void *bm_std);
 
 void (*data_load)();
 void (*print_particle)(FILE *fp, const void *model);
@@ -55,4 +59,5 @@ double (*perturb)(const void *model);
 void (*copy_model)(const void *dest, const void *src);
 void* (*create_model)();
 int (*get_num_params)();
+void (*copy_best_model)(const void *bm, const void *bm_std);
 #endif

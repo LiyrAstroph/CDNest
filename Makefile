@@ -17,8 +17,8 @@ LAPACK_LIBS = -L/usr/lib64 -llapacke -llapack -lblas
 #CBLAS_INCL  = -I/usr/include 
 #CBLAS_LIBS  = -L/usr/lib64/atlas -lcblas
 
-MPICHLIB = -L/usr/local/share/mpich2/lib -lmpich
-MPIINCL  = -I/usr/local/share/mpich2/include
+MPICHLIB = $(shell pkg-config --libs mpich)
+MPIINCL  = $(shell pkg-config --cflags mpich)
 
 OPTIMIZE    = 
 endif

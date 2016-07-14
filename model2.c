@@ -17,7 +17,7 @@
 
 int num_data_points;
 DataType *data;
-
+ModelType best_model_thismodel, best_model_std_thismodel;
 
 void model2(int argc, char **argv)
 { 
@@ -37,6 +37,7 @@ void model2(int argc, char **argv)
   copy_model = copy_model_thismodel2;
   create_model = create_model_thismodel2;
   get_num_params = get_num_params_thismodel2;
+  copy_best_model = copy_best_model_thismodel2;
   
   /* load data */
   data_load();
@@ -45,6 +46,9 @@ void model2(int argc, char **argv)
   strcpy(options_file, "OPTIONS2");
   dnest(argc, argv);
   
+  int j;
+  for(j = 0; j<num_params; j++)
+    printf("Best params %d %f +- %f\n", j, best_model_thismodel.params[j], best_model_std_thismodel.params[j]);
   
   /* free memory */
   free(data);
@@ -142,6 +146,12 @@ void data_load_thismodel2()
     //printf("%f %f\n", data[i].x, data[i].y);
   }
   fclose(fp);
+}
+
+void copy_best_model_thismodel2(const void *bm, const void *bm_std)
+{
+  memcpy(&best_model_thismodel, bm, size_of_modeltype);
+  memcpy(&best_model_std_thismodel, bm_std, size_of_modeltype);
 }
 /*========================================================*/
 

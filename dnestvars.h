@@ -124,6 +124,7 @@ extern double (*perturb)(const void *model);
 extern void (*copy_model)(const void *dest, const void *src);
 extern void* (*create_model)();
 extern int (*get_num_params)();
+extern void (*copy_best_model)(const void *bm, const void *bm_std);
 /*=====================================================*/
 
 #endif
