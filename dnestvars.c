@@ -45,4 +45,4 @@ LikelihoodType *all_above;
 unsigned int count_saves;
 unsigned long long int count_mcmc_steps;
 LikelihoodType *above;
-int size_above;
+int size_above, size_all_above;

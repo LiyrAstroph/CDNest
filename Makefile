@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-CC       = gcc -O3 -Wall
+CC       = mpicc -g -O3 -Wall
 
 #---------target system
 #SYSTEM="Darwin"

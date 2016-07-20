@@ -318,6 +318,19 @@ void postprocess()
   for(i=0; i<num_levels; i++)
    free(levels_orig[i]);
   free(levels_orig);
+
+  for(i=0; i<num_samples; i++)
+    free(sample_info[i]);
+  free(sample_info);
+
+  free(logx_samples);
+  free(logx_samples_thisLevel);
+  free(logp_samples);
+  free(logP_samples);
+  free(logl_samples_thisLevel);
+  free(sandwhich);
+  free(sample);
+  free(posterior_sample);
   
   free(best_model);
   free(best_model_std);

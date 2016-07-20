@@ -40,6 +40,8 @@ extern DataType *data;
 /* best model */
 extern ModelType best_model_thismodel, best_model_std_thismodel;
 
+extern int thisktask, totaltask;
+
 /* functions */
 void from_prior_thismodel(const void *model);
 void data_load_thismodel();

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <mpi.h>
 #include <gsl/gsl_rng.h>
 
 #include "dnestvars.h"
@@ -40,15 +41,22 @@ void model2(int argc, char **argv)
   copy_best_model = copy_best_model_thismodel2;
   
   /* load data */
-  data_load();
+  if(thistask == 0)
+  {
+    data_load();
+  }
+  MPI_Bcast(data, num_data_points*sizeof(DataType), MPI_BYTE, 0, MPI_COMM_WORLD);
   
   /* run dnest */
   strcpy(options_file, "OPTIONS2");
   dnest(argc, argv);
   
-  int j;
-  for(j = 0; j<num_params; j++)
-    printf("Best params %d %f +- %f\n", j, best_model_thismodel.params[j], best_model_std_thismodel.params[j]);
+  if(thistask == 0)
+  {
+    int j;
+    for(j = 0; j<num_params; j++)
+      printf("Best params %d %f +- %f\n", j, best_model_thismodel.params[j], best_model_std_thismodel.params[j]);
+  }
   
   /* free memory */
   free(data);

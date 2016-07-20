@@ -40,15 +40,22 @@ void model1(int argc, char **argv)
   copy_best_model = copy_best_model_thismodel;
   
   /* load data */
-  data_load();
+  if(thistask == 0)
+  {
+    data_load();
+  }
+  
   
   /* run dnest */
   strcpy(options_file, "OPTIONS1");
   dnest(argc, argv);
   
-  int j;
-  for(j = 0; j<num_params; j++)
-    printf("Best params %d %f +- %f\n", j, best_model_thismodel.params[j], best_model_std_thismodel.params[j]);
+  if(thistask == 0)
+  {
+    int j;
+    for(j = 0; j<num_params; j++)
+      printf("Best params %d %f +- %f\n", j, best_model_thismodel.params[j], best_model_std_thismodel.params[j]);
+  }
     
   /* free memory */
   free(data);

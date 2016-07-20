@@ -80,9 +80,10 @@ extern LikelihoodType *all_above;
 extern unsigned int count_saves;
 extern unsigned long long int count_mcmc_steps;
 extern LikelihoodType *above;
-extern int size_above;
+extern int size_above, size_all_above;
 
 
+extern int thistask, totaltask;
 //***********************************************
 /*                  functions                  */
 double mod(double y, double x);
