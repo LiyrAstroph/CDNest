@@ -38,9 +38,9 @@ int particle_offset_size;
 LikelihoodType *log_likelihoods;
 unsigned int *level_assignments;
 
-int size_levels;  
+int size_levels, size_levels_combine;  
 Level *levels;
-Level *copies_of_levels;
+Level *copies_of_levels, *levels_combine;
 LikelihoodType *all_above;
 unsigned int count_saves;
 unsigned long long int count_mcmc_steps;

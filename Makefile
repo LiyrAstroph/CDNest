@@ -20,6 +20,9 @@ LAPACK_LIBS = -L/usr/lib64 -llapacke -llapack -lblas
 MPICHLIB = $(shell pkg-config --libs mpich)
 MPIINCL  = $(shell pkg-config --cflags mpich)
 
+#MPICHLIB = -L/usr/local/share/mpich2/lib -lmpich
+#MPIINCL  = -I/usr/local/share/mpich2/include
+
 OPTIMIZE    = 
 endif
 
@@ -61,8 +64,8 @@ OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/dnestpostprocess.o $(SRC)/model1
 
 $(EXEC): $(OBJS)
 	cd $(SRC)
-	$(CC) $(OPTIMIZE) $(OBJS) $(LIBS) -o $@
-	$(CC) $(OPTIMIZE) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c $(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c
+	$(CC) $(OPTIMIZE) $(CFLAGS) $(OBJS) $(LIBS) -o $@
+	$(CC) $(OPTIMIZE) $(CFLAGS) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c $(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c
 	#ar rcs libdnest.a dnest.o dnestvars.o
 
 $(OBJS): $(INCL)

@@ -45,10 +45,8 @@ void run()
 
   while(true)
   {
-    
     mcmc_run();
     MPI_Barrier(MPI_COMM_WORLD);
-
     //check for termination
     if(options.max_num_saves !=0 &&
         count_saves != 0 && (count_saves%options.max_num_saves == 0))
@@ -84,7 +82,7 @@ void run()
     MPI_Gatherv(above, size_above * sizeof(LikelihoodType), MPI_BYTE, 
                 all_above, buf_size_above, buf_displs, MPI_BYTE, 0, MPI_COMM_WORLD);
 
-
+    
     // reset size_above 
     size_above = 0;
 
@@ -93,33 +91,35 @@ void run()
       count_mcmc_steps += options.thread_steps * totaltask;
 
       levels_orig = malloc(size_levels * sizeof(Level));
-      memcpy(levels_orig, levels, size_levels*sizeof(Level));
+      memcpy(levels_orig, levels_combine, size_levels_combine*sizeof(Level));
 
       pl = copies_of_levels;
 
       for(i=0; i< totaltask; i++)
       {
-        pl += i*size_levels;
-
         for(j=0; j<size_levels; j++)
         {
           //printf("%d %d %d\n", i, pl[j].accepts, levels_orig[j].accepts);
-          levels[j].accepts += (pl[j].accepts - levels_orig[j].accepts);
-          levels[j].tries += (pl[j].tries - levels_orig[j].tries);
-          levels[j].visits += (pl[j].visits - levels_orig[j].visits);
-          levels[j].exceeds += (pl[j].exceeds - levels_orig[j].exceeds);
+          levels_combine[j].accepts += (pl[j].accepts - levels_orig[j].accepts);
+          levels_combine[j].tries += (pl[j].tries - levels_orig[j].tries);
+          levels_combine[j].visits += (pl[j].visits - levels_orig[j].visits);
+          levels_combine[j].exceeds += (pl[j].exceeds - levels_orig[j].exceeds);
         }
+        pl += size_levels;
       }
 
       free(levels_orig);
 
       do_bookkeeping();
+      
+      size_levels = size_levels_combine;
+      memcpy(levels, levels_combine, size_levels * sizeof(Level));
     }
     
-    //broadcase levels
+    //broadcast levels
     MPI_Bcast(&size_levels, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&count_saves, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, 0,  MPI_COMM_WORLD);    
+    MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, 0,  MPI_COMM_WORLD); 
   }
 
   if(thistask == 0)
@@ -140,18 +140,18 @@ void do_bookkeeping()
   int i;
   bool created_level = false;
 
-  if(!enough_levels() && size_all_above >= options.new_level_interval)
+  if(!enough_levels(levels_combine, size_levels_combine) && size_all_above >= options.new_level_interval)
   {
     // in descending order 
     qsort(all_above, size_all_above, sizeof(LikelihoodType), cmp);
     int index = (int)( (1.0/compression) * size_all_above);
 
     Level level_tmp = {all_above[index], 0.0, 0, 0, 0, 0};
-    levels[size_levels] = level_tmp;
-    size_levels++;
+    levels_combine[size_levels_combine] = level_tmp;
+    size_levels_combine++;
     
     printf("# Creating level %d with log likelihood = %e.\n", 
-               size_levels-1, levels[size_levels-1].log_likelihood.value);
+               size_levels_combine-1, levels_combine[size_levels_combine-1].log_likelihood.value);
 
     // clear out the last index records
     for(i=index; i<size_all_above; i++)
@@ -161,20 +161,20 @@ void do_bookkeeping()
     }
     size_all_above = index;
 
-    if(enough_levels())
+    if(enough_levels(levels_combine, size_levels_combine))
     {
       renormalise_visits();
-      options.max_num_levels = size_levels;
+      options.max_num_levels = size_levels_combine;
       printf("# Done creating levles.\n");
     }
     else
     {
       kill_lagging_particles();
     }
-    
+
     created_level = true;
   }
-
+  
   recalculate_log_X();
 
   if(created_level)
@@ -188,6 +188,7 @@ void do_bookkeeping()
     if(!created_level)
       save_levels();
   }
+
 }
 
 void recalculate_log_X()
@@ -195,11 +196,11 @@ void recalculate_log_X()
   int i;
 
   levels[0].log_X = 0.0;
-  for(i=1; i<size_levels; i++)
+  for(i=1; i<size_levels_combine; i++)
   {
-    levels[i].log_X = levels[i-1].log_X 
-    + log( (double)( (levels[i-1].exceeds + 1.0/compression * regularisation)
-                    /(levels[i-1].visits + regularisation)  ) );
+    levels_combine[i].log_X = levels_combine[i-1].log_X 
+    + log( (double)( (levels_combine[i-1].exceeds + 1.0/compression * regularisation)
+                    /(levels_combine[i-1].visits + regularisation)  ) );
   }
 }
 
@@ -207,18 +208,18 @@ void renormalise_visits()
 {
   size_t i;
 
-  for(i=0; i<size_levels; i++)
+  for(i=0; i<size_levels_combine; i++)
   {
-    if(levels[i].tries >= regularisation)
+    if(levels_combine[i].tries >= regularisation)
     {
-      levels[i].accepts = ((double)(levels[i].accepts+1) / (double)(levels[i].tries+1)) * regularisation;
-      levels[i].tries = regularisation;
+      levels_combine[i].accepts = ((double)(levels_combine[i].accepts+1) / (double)(levels_combine[i].tries+1)) * regularisation;
+      levels_combine[i].tries = regularisation;
     }
 
-    if(levels[i].visits >= regularisation)
+    if(levels_combine[i].visits >= regularisation)
     {
-      levels[i].exceeds = ( (double) (levels[i].exceeds+1) / (double)(levels[i].visits + 1) ) * regularisation;
-      levels[i].visits = regularisation;
+      levels_combine[i].exceeds = ( (double) (levels_combine[i].exceeds+1) / (double)(levels_combine[i].visits + 1) ) * regularisation;
+      levels_combine[i].visits = regularisation;
     }
   }
 }
@@ -288,11 +289,11 @@ void save_levels()
 
   fp = fopen(options.levels_file, "w");
   fprintf(fp, "# log_X, log_likelihood, tiebreaker, accepts, tries, exceeds, visits\n");
-  for(i=0; i<size_levels; i++)
+  for(i=0; i<size_levels_combine; i++)
   {
-    fprintf(fp, "%14.12g %14.12g %f %llu %llu %llu %llu\n", levels[i].log_X, levels[i].log_likelihood.value, 
-      levels[i].log_likelihood.tiebreaker, levels[i].accepts,
-      levels[i].tries, levels[i].exceeds, levels[i].visits);
+    fprintf(fp, "%14.12g %14.12g %f %llu %llu %llu %llu\n", levels_combine[i].log_X, levels_combine[i].log_likelihood.value, 
+      levels_combine[i].log_likelihood.tiebreaker, levels_combine[i].accepts,
+      levels_combine[i].tries, levels[i].exceeds, levels_combine[i].visits);
   }
   fclose(fp);
 }
@@ -325,6 +326,7 @@ void mcmc_run()
   
   for(i = 0; i<options.thread_steps; i++)
   {
+
     /* randomly select out one particle to update */
     which = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
     //if(count_mcmc_steps >= 10000)printf("FFFF\n");
@@ -332,9 +334,10 @@ void mcmc_run()
     //printf("%f %f %f\n", particles[which].param[0], particles[which].param[1], particles[which].param[2]);
     //printf("level:%d\n", level_assignments[which]);
     //printf("%e\n", log_likelihoods[which].value);
-
+    
     if(gsl_rng_uniform(dnest_gsl_r) <= 0.5)
     {
+
       update_particle(which);
       update_level_assignment(which);
     }
@@ -343,13 +346,13 @@ void mcmc_run()
       update_level_assignment(which);
       update_particle(which);
     }
-
-    if( !enough_levels()  && levels[size_levels-1].log_likelihood.value < log_likelihoods[which].value)
+    
+    if( !enough_levels(levels, size_levels)  && levels[size_levels-1].log_likelihood.value < log_likelihoods[which].value)
     {
       above[size_above] = log_likelihoods[which];
       size_above++;
     }
-
+    
   }
 }
 
@@ -429,38 +432,38 @@ double log_push(unsigned int which_level)
     printf("level overflow.\n");
     exit(0);
   }
-  if(enough_levels())
+  if(enough_levels(levels_combine, size_levels_combine))
     return 0.0;
 
   int i = which_level - (size_levels - 1);
   return i/options.lambda;
 }
 
-bool enough_levels()
+bool enough_levels(Level *l, int size_l)
 {
   int i;
 
   if(options.max_num_levels == 0)
   {
-    if(size_levels < 10)
+    if(size_l < 10)
       return false;
 
     int num_levels_to_check = 20;
-    if(size_levels > 80)
-      num_levels_to_check = (int)(sqrt(20) * sqrt(0.25*size_levels));
+    if(size_l > 80)
+      num_levels_to_check = (int)(sqrt(20) * sqrt(0.25*size_l));
 
-    int k = size_levels - 1;
+    int k = size_l - 1;
 
     for(i= 0; i<num_levels_to_check; i++)
     {
-      if(levels[k].log_likelihood.value - levels[k-1].log_likelihood.value
+      if(l[k].log_likelihood.value - l[k-1].log_likelihood.value
         >=0.8)
         return false;
       k--;
     }
     return true;
   }
-  return (size_levels >= options.max_num_levels);
+  return (size_l >= options.max_num_levels);
 }
 
 void initialize_output_file()
@@ -499,7 +502,7 @@ void setup(int argc, char** argv)
 
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
   dnest_gsl_r = gsl_rng_alloc (dnest_gsl_T);
-  gsl_rng_set(dnest_gsl_r, time(NULL) + thistask);
+  gsl_rng_set(dnest_gsl_r, 10 + thistask);
 
   if(thistask == 0)
     options_load();
@@ -528,13 +531,19 @@ void setup(int argc, char** argv)
   {
     levels = (Level *)malloc(options.max_num_levels * sizeof(Level));
     if(thistask == 0)
+    {
+      levels_combine = (Level *)malloc(options.max_num_levels * sizeof(Level));
       copies_of_levels = (Level *)malloc(totaltask * options.max_num_levels * sizeof(Level));
+    }
   }
   else
   {
     levels = (Level *)malloc(LEVEL_NUM_MAX * sizeof(Level));
     if(thistask == 0)
+    {
+      levels_combine = (Level *)malloc(LEVEL_NUM_MAX * sizeof(Level));
       copies_of_levels = (Level *)malloc(totaltask * LEVEL_NUM_MAX * sizeof(Level));
+    }
   }
   
 
@@ -549,6 +558,13 @@ void setup(int argc, char** argv)
   Level level_tmp = {like_tmp, 0.0, 0, 0, 0, 0};
   levels[size_levels] = level_tmp;
   size_levels++;
+
+  if(thistask == 0)
+  {
+    size_levels_combine = 0;
+    levels_combine[size_levels_combine] = level_tmp;
+    size_levels_combine++;
+  }
   
   for(i=0; i<options.num_particles; i++)
   {
