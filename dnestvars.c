@@ -27,7 +27,6 @@ char options_file[STR_MAX_LENGTH];
 
 // sampler
 bool save_to_disk;
-unsigned int num_threads;
 double compression;
 unsigned int regularisation;
 
@@ -45,4 +44,6 @@ LikelihoodType *all_above;
 unsigned int count_saves;
 unsigned long long int count_mcmc_steps;
 LikelihoodType *above;
-int size_above, size_all_above;
+unsigned int size_above, size_all_above;
+
+int root;

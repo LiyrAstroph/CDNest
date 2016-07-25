@@ -48,7 +48,7 @@ double logsumexp(double *x, int n)
   return log(sum) + max;
 }
 
-void postprocess()
+void postprocess(double temperature)
 {
   FILE *fp;
   
@@ -115,6 +115,7 @@ void postprocess()
       fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_info_file);
       exit(0);
     }
+    sample_info[i][1] /= temperature;
   }
   fclose(fp);
   

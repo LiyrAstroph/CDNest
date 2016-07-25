@@ -80,10 +80,11 @@ extern LikelihoodType *all_above;
 extern unsigned int count_saves;
 extern unsigned long long int count_mcmc_steps;
 extern LikelihoodType *above;
-extern int size_above, size_all_above;
+extern unsigned int size_above, size_all_above;
 
 
 extern int thistask, totaltask;
+extern int root;
 //***********************************************
 /*                  functions                  */
 double mod(double y, double x);
@@ -112,7 +113,7 @@ double dnest_randh();
 double dnest_rand();
 double dnest_randn();
 int dnest_rand_int(int size);
-void postprocess();
+void postprocess(double temperature);
 void initialize_output_file();
 void close_output_file();
 /*=====================================================*/

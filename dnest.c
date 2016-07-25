@@ -24,10 +24,12 @@ int dnest(int argc, char** argv)
   initialize_output_file();
   run();
   close_output_file();
-
-  if(thistask == 0)
+   
+  // postprocess, calculate evidence, generate posterior sample.
+  double temperature = 1.0;
+  if(thistask == root)
   {
-    postprocess();
+    postprocess(temperature);
   }
 
   finalise();
@@ -40,26 +42,31 @@ void run()
   Level *pl, *levels_orig;
   int *buf_size_above, *buf_displs;
   
-  buf_size_above = malloc(totaltask * sizeof(int));  
-  buf_displs = malloc(totaltask * sizeof(int));
+  if(thistask == root)
+  {
+    buf_size_above = malloc(totaltask * sizeof(int));  
+    buf_displs = malloc(totaltask * sizeof(int));
+  }
 
   while(true)
   {
     mcmc_run();
     MPI_Barrier(MPI_COMM_WORLD);
+
     //check for termination
     if(options.max_num_saves !=0 &&
         count_saves != 0 && (count_saves%options.max_num_saves == 0))
       break;
     
-    // gather the levels
-    //printf("Gather ....%d %d %d\n", thistask, count_mcmc_steps, size_levels*sizeof(Level));
+    //gather levels
     MPI_Gather(levels, size_levels*sizeof(Level), MPI_BYTE, 
-             copies_of_levels, size_levels*sizeof(Level), MPI_BYTE, 0, MPI_COMM_WORLD);
+             copies_of_levels, size_levels*sizeof(Level), MPI_BYTE, root, MPI_COMM_WORLD);
+    
+    //gather size_above 
+    MPI_Gather(&size_above, 1, MPI_INT, buf_size_above, 1, MPI_INT, root, MPI_COMM_WORLD);
 
-    MPI_Gather(&size_above, 1, MPI_INT, buf_size_above, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-    if(thistask == 0)
+    // task 0 responsible for updating levels
+    if(thistask == root)
     {
       size_all_above_incr = 0;
       for(i = 0; i<totaltask; i++)
@@ -78,61 +85,62 @@ void run()
       //update size_all_above
       size_all_above += size_all_above_incr; 
     }
-
-    MPI_Gatherv(above, size_above * sizeof(LikelihoodType), MPI_BYTE, 
-                all_above, buf_size_above, buf_displs, MPI_BYTE, 0, MPI_COMM_WORLD);
-
     
+    // gather above into all_above, stored in task 0, note that its size is different among tasks
+    MPI_Gatherv(above, size_above * sizeof(LikelihoodType), MPI_BYTE, 
+                all_above, buf_size_above, buf_displs, MPI_BYTE, root, MPI_COMM_WORLD);
+
     // reset size_above 
     size_above = 0;
 
-    if(thistask == 0)
+    if(thistask == root)
     {
       count_mcmc_steps += options.thread_steps * totaltask;
 
-      levels_orig = malloc(size_levels * sizeof(Level));
+      //backup levels_combine
+      levels_orig = malloc(size_levels_combine * sizeof(Level));
       memcpy(levels_orig, levels_combine, size_levels_combine*sizeof(Level));
 
+      //scan over all copies of levels
       pl = copies_of_levels;
-
       for(i=0; i< totaltask; i++)
       {
-        for(j=0; j<size_levels; j++)
+        for(j=0; j<size_levels_combine; j++)
         {
-          //printf("%d %d %d\n", i, pl[j].accepts, levels_orig[j].accepts);
           levels_combine[j].accepts += (pl[j].accepts - levels_orig[j].accepts);
           levels_combine[j].tries += (pl[j].tries - levels_orig[j].tries);
           levels_combine[j].visits += (pl[j].visits - levels_orig[j].visits);
           levels_combine[j].exceeds += (pl[j].exceeds - levels_orig[j].exceeds);
+          //printf("%d %d\n", thistask, (pl[j].accepts - levels_orig[j].accepts) );;
         }
-        pl += size_levels;
+        pl += size_levels_combine;
       }
 
       free(levels_orig);
 
       do_bookkeeping();
-      
+
       size_levels = size_levels_combine;
       memcpy(levels, levels_combine, size_levels * sizeof(Level));
     }
     
     //broadcast levels
-    MPI_Bcast(&size_levels, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&count_saves, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, 0,  MPI_COMM_WORLD); 
+    MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
+    MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
+    MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
   }
 
-  if(thistask == 0)
+  if(thistask == root)
   {
     /* output state of sampler */
     FILE *fp;
     fp = fopen(options.sampler_state_file, "w");
     fprintf(fp, "%d %d\n", size_levels, count_saves);
     fclose(fp);
+
+    free(buf_size_above);
+    free(buf_displs);
   }
-  
-  free(buf_size_above);
-  free(buf_displs);
 }
 
 void do_bookkeeping()
@@ -432,7 +440,7 @@ double log_push(unsigned int which_level)
     printf("level overflow.\n");
     exit(0);
   }
-  if(enough_levels(levels_combine, size_levels_combine))
+  if(enough_levels(levels, size_levels))
     return 0.0;
 
   int i = which_level - (size_levels - 1);
@@ -459,7 +467,10 @@ bool enough_levels(Level *l, int size_l)
       if(l[k].log_likelihood.value - l[k-1].log_likelihood.value
         >=0.8)
         return false;
+
       k--;
+      if( k < 1 )
+        break;
     }
     return true;
   }
@@ -468,7 +479,7 @@ bool enough_levels(Level *l, int size_l)
 
 void initialize_output_file()
 {
-  if(thistask != 0)
+  if(thistask != root)
     return;
 
   fsample = fopen(options.sample_file, "w");
@@ -489,7 +500,7 @@ void initialize_output_file()
 
 void close_output_file()
 {
-  if(thistask != 0 )
+  if(thistask != root )
     return;
 
   fclose(fsample);
@@ -500,26 +511,29 @@ void setup(int argc, char** argv)
 {
   int i;
 
+  // root task.
+  root = 0;
+  
+  // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
   dnest_gsl_r = gsl_rng_alloc (dnest_gsl_T);
   gsl_rng_set(dnest_gsl_r, 10 + thistask);
 
-  if(thistask == 0)
+  // read options
+  if(thistask == root)
     options_load();
-
-  MPI_Bcast(&options, sizeof(Options), MPI_BYTE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&options, sizeof(Options), MPI_BYTE, root, MPI_COMM_WORLD);
   
-  num_threads = 1;
   compression = exp(1.0);
   regularisation = options.new_level_interval;
   save_to_disk = true;
 
-// particles
+  // particles
   particle_offset_size = size_of_modeltype/sizeof(void);
   particles = (void *)malloc(options.num_particles*size_of_modeltype);
   
-// initialise sampler
-  if(thistask == 0)
+  // initialise sampler
+  if(thistask == root)
     all_above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
 
   above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
@@ -530,7 +544,7 @@ void setup(int argc, char** argv)
   if(options.max_num_levels != 0)
   {
     levels = (Level *)malloc(options.max_num_levels * sizeof(Level));
-    if(thistask == 0)
+    if(thistask == root)
     {
       levels_combine = (Level *)malloc(options.max_num_levels * sizeof(Level));
       copies_of_levels = (Level *)malloc(totaltask * options.max_num_levels * sizeof(Level));
@@ -539,7 +553,7 @@ void setup(int argc, char** argv)
   else
   {
     levels = (Level *)malloc(LEVEL_NUM_MAX * sizeof(Level));
-    if(thistask == 0)
+    if(thistask == root)
     {
       levels_combine = (Level *)malloc(LEVEL_NUM_MAX * sizeof(Level));
       copies_of_levels = (Level *)malloc(totaltask * LEVEL_NUM_MAX * sizeof(Level));
@@ -559,7 +573,7 @@ void setup(int argc, char** argv)
   levels[size_levels] = level_tmp;
   size_levels++;
 
-  if(thistask == 0)
+  if(thistask == root)
   {
     size_levels_combine = 0;
     levels_combine[size_levels_combine] = level_tmp;
@@ -587,14 +601,14 @@ void finalise()
   free(log_likelihoods);
   free(level_assignments);
   free(levels);
-  if(thistask == 0)
+  if(thistask == root)
   {
     free(all_above);
     free(copies_of_levels);
   }
   gsl_rng_free(dnest_gsl_r);
 
-  if(thistask == 0)
+  if(thistask == root)
     printf("# Finalizing dnest.\n");
 }
 
