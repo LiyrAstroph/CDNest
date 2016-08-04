@@ -256,7 +256,7 @@ void postprocess(double temperature)
   int num_ps = moreSample*ESS;
   void *posterior_sample;
   int which;
-  
+
   posterior_sample = malloc(num_ps * size_of_modeltype);
   
   max = logP_samples[0];

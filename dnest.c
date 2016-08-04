@@ -93,10 +93,10 @@ void run()
     // reset size_above 
     size_above = 0;
 
+    count_mcmc_steps += options.thread_steps * totaltask;
+
     if(thistask == root)
     {
-      count_mcmc_steps += options.thread_steps * totaltask;
-
       //backup levels_combine
       levels_orig = malloc(size_levels_combine * sizeof(Level));
       memcpy(levels_orig, levels_combine, size_levels_combine*sizeof(Level));
@@ -123,11 +123,16 @@ void run()
       size_levels = size_levels_combine;
       memcpy(levels, levels_combine, size_levels * sizeof(Level));
     }
-    
+
     //broadcast levels
     MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
-    MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
+    //MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
     MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
+
+    if(count_mcmc_steps >= (count_saves + 1)*options.save_interval)
+    {
+      save_particle();
+    }
   }
 
   if(thistask == root)
@@ -191,7 +196,7 @@ void do_bookkeeping()
   if(count_mcmc_steps >= (count_saves + 1)*options.save_interval)
   {
 
-    save_particle();
+    //save_particle();
 
     if(!created_level)
       save_levels();
@@ -314,17 +319,78 @@ void save_particle()
   if(!save_to_disk)
     return;
   
-  if(count_saves%1 == 0)
-    printf("# Saving particle to disk. N= %d.\n", count_saves);
+  int whichparticle, whichtask;
+  void *particle_message;
+  
+  if(thistask == root)
+  {
+    if(count_saves%1 == 0)
+      printf("# Saving particle to disk. N= %d.\n", count_saves);
 
-  int which = gsl_rng_uniform_int(dnest_gsl_r,options.num_particles);
+    whichtask = gsl_rng_uniform_int(dnest_gsl_r,totaltask);
+  }
 
-  print_particle(fsample, particles + which * particle_offset_size);
+  MPI_Bcast(&whichtask, 1, MPI_INT, root, MPI_COMM_WORLD);
 
-  fprintf(fsample_info, "%d %e %f %d\n", level_assignments[which], 
-    log_likelihoods[which].value,
-    log_likelihoods[which].tiebreaker,
-    which);
+  if(whichtask != root)
+  {
+    if(thistask == whichtask)
+    {
+      int size_message = size_of_modeltype + 2*sizeof(int) + 2*sizeof(double);
+      particle_message = (void *)malloc(size_message);
+      whichparticle = gsl_rng_uniform_int(dnest_gsl_r,options.num_particles);
+      memcpy(particle_message, particles + whichparticle * particle_offset_size, size_of_modeltype);
+      memcpy(particle_message + size_of_modeltype, &log_likelihoods[whichparticle].value, 2*sizeof(double));
+      memcpy(particle_message + size_of_modeltype + 2*sizeof(double), &level_assignments[whichparticle], sizeof(int));
+      memcpy(particle_message + size_of_modeltype + 2*sizeof(double) + sizeof(int), &whichparticle, sizeof(int));
+
+      MPI_Send(particle_message, size_message, MPI_BYTE, root, 1, MPI_COMM_WORLD);
+
+      //printf("%f %f\n", log_likelihoods[whichparticle].value, log_likelihoods[whichparticle].tiebreaker);
+
+      free(particle_message);
+    }
+    if(thistask == root)
+    {
+      MPI_Status status;
+      int size_message = size_of_modeltype + 2*sizeof(int) + 2*sizeof(double);
+      int whichlevel;
+      LikelihoodType logl;
+
+      particle_message = (void *)malloc(size_message);
+
+      MPI_Recv(particle_message, size_message, MPI_BYTE, whichtask, 1, MPI_COMM_WORLD, &status);
+
+      memcpy(&logl, particle_message + size_of_modeltype, 2*sizeof(double) );
+      memcpy(&whichlevel, particle_message + size_of_modeltype + 2*sizeof(double), sizeof(int) );
+      memcpy(&whichparticle, particle_message + size_of_modeltype + 2*sizeof(double) + sizeof(int), sizeof(int) );
+      
+      //printf("%f %f\n", logl.value, logl.tiebreaker);
+
+      print_particle(fsample, particle_message);
+
+      fprintf(fsample_info, "%d %e %f %d\n", whichlevel, 
+        logl.value,
+        logl.tiebreaker,
+        whichtask * options.num_particles + whichparticle);
+
+      free(particle_message);
+    }
+  }
+  else
+  {
+    if(thistask == root)
+    {
+      whichparticle =  gsl_rng_uniform_int(dnest_gsl_r,options.num_particles);
+
+      print_particle(fsample, particles + whichparticle * particle_offset_size);
+
+      fprintf(fsample_info, "%d %e %f %d\n", level_assignments[whichparticle], 
+        log_likelihoods[whichparticle].value,
+        log_likelihoods[whichparticle].tiebreaker,
+        whichtask * options.num_particles + whichparticle);
+    }
+  }
 }
 
 void mcmc_run()
@@ -517,7 +583,7 @@ void setup(int argc, char** argv)
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
   dnest_gsl_r = gsl_rng_alloc (dnest_gsl_T);
-  gsl_rng_set(dnest_gsl_r, 10 + thistask);
+  gsl_rng_set(dnest_gsl_r, time(NULL) + thistask);
 
   // read options
   if(thistask == root)

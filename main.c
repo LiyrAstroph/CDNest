@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-extern void model2(int argc, char **argv);
+extern void model1(int argc, char **argv);
 extern void model2(int argc, char **argv);
 
 int thistask, totaltask;
