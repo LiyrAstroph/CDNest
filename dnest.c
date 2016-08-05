@@ -22,7 +22,7 @@ int dnest(int argc, char** argv)
 {
   setup(argc, argv);
   initialize_output_file();
-  run();
+  dnest_run();
   close_output_file();
    
   // postprocess, calculate evidence, generate posterior sample.
@@ -36,7 +36,7 @@ int dnest(int argc, char** argv)
   return 0;
 }
 
-void run()
+void dnest_run()
 {
   int i, j, size_all_above_incr;
   Level *pl, *levels_orig;
@@ -50,7 +50,7 @@ void run()
 
   while(true)
   {
-    mcmc_run();
+    dnest_mcmc_run();
     MPI_Barrier(MPI_COMM_WORLD);
 
     //check for termination
@@ -393,7 +393,7 @@ void save_particle()
   }
 }
 
-void mcmc_run()
+void dnest_mcmc_run()
 {
   unsigned int which;
   unsigned int i;

@@ -16,16 +16,21 @@
 #include "model1.h"
 
 int num_data_points;
+int num_params;
+
 DataType *data;
-ModelType best_model_thismodel, best_model_std_thismodel;
+void *best_model_thismodel, *best_model_std_thismodel;
 
 void model1(int argc, char **argv)
 { 
   /* setup szie of modeltype, which is used for dnest */
-  size_of_modeltype = sizeof(ModelType);
+  num_params = 20;
+  size_of_modeltype = num_params * sizeof(double);
+  best_model_thismodel = malloc(size_of_modeltype);
+  best_model_std_thismodel = malloc(size_of_modeltype);
   
   /* setup number of data points and allocate memory */
-  num_data_points = 100;
+  num_data_points = 0;
   data = (DataType *)malloc(num_data_points * sizeof(DataType));
   
   /* setup functions used for dnest*/
@@ -45,7 +50,6 @@ void model1(int argc, char **argv)
     data_load();
   }
   
-  
   /* run dnest */
   strcpy(options_file, "OPTIONS1");
   dnest(argc, argv);
@@ -54,7 +58,7 @@ void model1(int argc, char **argv)
   {
     int j;
     for(j = 0; j<num_params; j++)
-      printf("Best params %d %f +- %f\n", j, best_model_thismodel.params[j], best_model_std_thismodel.params[j]);
+      printf("Best params %d %f +- %f\n", j, *((double *)best_model_thismodel + j), *((double *)best_model_std_thismodel+j) );
   }
     
   /* free memory */
@@ -67,16 +71,16 @@ void model1(int argc, char **argv)
 void from_prior_thismodel(const void *model)
 {
   int i;
-  ModelType *pm = (ModelType *)model;
+  double *params = (double *)model;
   for(i=0; i<num_params; i++)
   {
-    (*pm).params[i] = -0.5 + dnest_rand();
+    params[i] = -0.5 + dnest_rand();
   }
 }
 
 double log_likelihoods_cal_thismodel(const void *model)
 {
-  ModelType *pm = (ModelType *)model;
+  double *params = (double *)model;
   double logL;
   const double u = 0.01;
 	const double v = 0.1;
@@ -88,8 +92,8 @@ double log_likelihoods_cal_thismodel(const void *model)
   int i;
 	for(i=0; i<num_params; i++)
 	{
-		logl1 += -0.5*pow(((*pm).params[i] - 0.031)/u, 2);
-		logl2 += -0.5*pow( (*pm).params[i]/v, 2);
+		logl1 += -0.5*pow(( params[i] - 0.031)/u, 2);
+		logl2 += -0.5*pow(  params[i]/v, 2);
 	}
 	logl1 += log(100.);
   
@@ -102,60 +106,47 @@ double log_likelihoods_cal_thismodel(const void *model)
 
 double perturb_thismodel(const void *model)
 {
-  ModelType *pm = (ModelType *)model;
+  double *params = (double *)model;
   double logH = 0.0;
   int which = dnest_rand_int(num_params);
-	(*pm).params[which] += dnest_randh();
-	wrap(&pm->params[which], -0.5, 0.5);
+	params[which] += dnest_randh();
+	wrap(&params[which], -0.5, 0.5);
   return logH;
 }
 
 void print_particle_thismodel(FILE *fp, const void *model)
 {
   int i;
+  double *params = (double *)model;
   for(i=0; i<num_params; i++)
   {
-    fprintf(fp, "%f ", ((ModelType *)model)->params[i]);
+    fprintf(fp, "%f ", params[i] );
   }
   fprintf(fp, "\n");
 }
 
 void data_load_thismodel()
 {
-  FILE *fp;
-  int i;
-
-  fp = fopen("data.txt", "r");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "ERROR: Cannot open file data.txt.\n");
-    exit(0);
-  }
-
-  for(i=0; i<num_data_points; i++)
-  {
-    fscanf(fp, "%lf %lf\n", &data[i].x, &data[i].y);
-    //printf("%f %f\n", data[i].x, data[i].y);
-  }
-  fclose(fp);
+  // no data for this model
+  return;
 }
 
 void copy_best_model_thismodel(const void *bm, const void *bm_std)
 {  
-  memcpy(&best_model_thismodel, bm, size_of_modeltype);
-  memcpy(&best_model_std_thismodel, bm_std, size_of_modeltype);
+  memcpy(best_model_thismodel, bm, size_of_modeltype);
+  memcpy(best_model_std_thismodel, bm_std, size_of_modeltype);
 }
 /*========================================================*/
 
 
 void copy_model_thismodel(const void *dest, const void *src)
 {
-  memcpy(dest, src, sizeof(ModelType));
+  memcpy(dest, src, size_of_modeltype);
 }
 
 void* create_model_thismodel()
 {
-  return (void *)malloc(sizeof(ModelType));
+  return (void *)malloc(size_of_modeltype);
 }
 
 int get_num_params_thismodel()

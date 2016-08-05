@@ -97,8 +97,8 @@ void setup(int argc, char** argv);
 void finalise();
 
 int dnest(int argc, char **argv);
-void run();
-void mcmc_run();
+void dnest_run();
+void dnest_mcmc_run();
 void update_particle(unsigned int which);
 void update_level_assignment(unsigned int which);
 double log_push(unsigned int which_level);
@@ -118,7 +118,6 @@ void initialize_output_file();
 void close_output_file();
 /*=====================================================*/
 // users responsible for following functions
-extern void (*data_load)();
 extern void (*print_particle)(FILE *fp, const void *model);
 extern void (*from_prior)(const void *model);
 extern double (*log_likelihoods_cal)(const void *model);

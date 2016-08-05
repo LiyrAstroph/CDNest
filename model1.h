@@ -21,14 +21,10 @@ typedef struct
   double y;
 }DataType;
 
-/* model type */
-#define num_params (20)
-typedef struct
-{
-  double params[num_params];
-}ModelType;
-
 /*===================================================*/
+
+/* number of model parameters */
+extern int num_params;
 
 /* szie of modeltype, which is used for dnest */
 extern int size_of_modeltype;
@@ -38,7 +34,7 @@ extern int num_data_points;
 extern DataType *data;
 
 /* best model */
-extern ModelType best_model_thismodel, best_model_std_thismodel;
+extern void *best_model_thismodel, *best_model_std_thismodel;
 
 extern int thisktask, totaltask;
 
@@ -62,4 +58,5 @@ void (*copy_model)(const void *dest, const void *src);
 void* (*create_model)();
 int (*get_num_params)();
 void (*copy_best_model)(const void *bm, const void *bm_std);
+
 #endif
