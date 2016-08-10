@@ -244,7 +244,7 @@ void kill_lagging_particles()
   bool *good;
   good = (bool *)malloc(options.num_particles * sizeof(bool));
 
-  double max_log_push = DBL_MAX;
+  double max_log_push = -DBL_MAX;
 
   unsigned int num_bad = 0;
   size_t i;
