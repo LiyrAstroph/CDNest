@@ -208,7 +208,7 @@ void recalculate_log_X()
 {
   int i;
 
-  levels[0].log_X = 0.0;
+  levels_combine[0].log_X = 0.0;
   for(i=1; i<size_levels_combine; i++)
   {
     levels_combine[i].log_X = levels_combine[i-1].log_X 
