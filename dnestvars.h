@@ -83,6 +83,7 @@ extern LikelihoodType *above;
 extern unsigned int size_above, size_all_above;
 
 
+extern int which_particle_update; // which particule to be updated
 extern int thistask, totaltask;
 extern int root;
 //***********************************************

@@ -36,6 +36,7 @@ extern DataType *data;
 /* best model */
 extern void *best_model_thismodel, *best_model_std_thismodel;
 
+extern int which_particle_update; // which particule to be updated
 extern int thisktask, totaltask;
 
 /* functions */

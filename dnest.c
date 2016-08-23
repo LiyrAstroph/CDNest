@@ -403,6 +403,8 @@ void dnest_mcmc_run()
 
     /* randomly select out one particle to update */
     which = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
+
+    which_particle_update = which;
     //if(count_mcmc_steps >= 10000)printf("FFFF\n");
     //printf("%d\n", which);
     //printf("%f %f %f\n", particles[which].param[0], particles[which].param[1], particles[which].param[2]);
@@ -411,7 +413,6 @@ void dnest_mcmc_run()
     
     if(gsl_rng_uniform(dnest_gsl_r) <= 0.5)
     {
-
       update_particle(which);
       update_level_assignment(which);
     }

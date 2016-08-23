@@ -16,6 +16,7 @@
 #include "dnestvars.h"
 #include "model2.h"
 
+int which_particle_update;
 int num_data_points;
 int num_params;
 
