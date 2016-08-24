@@ -42,6 +42,7 @@ void dnest_run()
   Level *pl, *levels_orig;
   int *buf_size_above, *buf_displs;
   
+  // used to gather levels' information
   if(thistask == root)
   {
     buf_size_above = malloc(totaltask * sizeof(int));  
@@ -76,6 +77,7 @@ void dnest_run()
         buf_size_above[i] *= sizeof(LikelihoodType);
       }
 
+      // store new points following the end of all_above array.
       buf_displs[0] = size_all_above * sizeof(LikelihoodType);
       for(i=1; i<totaltask; i++)
       {
@@ -90,7 +92,7 @@ void dnest_run()
     MPI_Gatherv(above, size_above * sizeof(LikelihoodType), MPI_BYTE, 
                 all_above, buf_size_above, buf_displs, MPI_BYTE, root, MPI_COMM_WORLD);
 
-    // reset size_above 
+    // reset size_above for each task
     size_above = 0;
 
     count_mcmc_steps += options.thread_steps * totaltask;
