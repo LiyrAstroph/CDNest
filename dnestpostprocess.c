@@ -50,6 +50,7 @@ double logsumexp(double *x, int n)
 
 void postprocess(double temperature)
 {
+  printf("# Starts postprocess.\n");
   FILE *fp;
   
   double **levels_orig, **sample_info;
@@ -335,6 +336,8 @@ void postprocess(double temperature)
   
   free(best_model);
   free(best_model_std);
+
+  printf("# Ends dnest postprocess.\n");
 }
 
 int cmp_sample(const void *pa, const void *pb)

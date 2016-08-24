@@ -649,6 +649,7 @@ void setup(int argc, char** argv)
   
   for(i=0; i<options.num_particles; i++)
   {
+    which_particle_update = i;
     from_prior(particles+i*particle_offset_size);
     log_likelihoods[i].value = log_likelihoods_cal(particles+i*particle_offset_size);
     log_likelihoods[i].tiebreaker = dnest_rand();
@@ -668,6 +669,7 @@ void finalise()
   free(log_likelihoods);
   free(level_assignments);
   free(levels);
+
   if(thistask == root)
   {
     free(all_above);
