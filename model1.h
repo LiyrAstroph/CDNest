@@ -40,22 +40,22 @@ extern int which_particle_update; // which particule to be updated
 extern int thisktask, totaltask;
 
 /* functions */
-void from_prior_thismodel(const void *model);
+void from_prior_thismodel(void *model);
 void data_load_thismodel();
 void print_particle_thismodel(FILE *fp, const void *model);
 double log_likelihoods_cal_thismodel(const void *model);
-double perturb_thismodel(const void *model);
-void copy_model_thismodel(const void *dest, const void *src);
+double perturb_thismodel(void *model);
+void copy_model_thismodel(void *dest, const void *src);
 void* create_model_thismodel();
 int get_num_params_thismodel();
 void copy_best_model_thismodel(const void *bm, const void *bm_std);
 
 void (*data_load)();
 void (*print_particle)(FILE *fp, const void *model);
-void (*from_prior)(const void *model);
+void (*from_prior)(void *model);
 double (*log_likelihoods_cal)(const void *model);
-double (*perturb)(const void *model);
-void (*copy_model)(const void *dest, const void *src);
+double (*perturb)(void *model);
+void (*copy_model)(void *dest, const void *src);
 void* (*create_model)();
 int (*get_num_params)();
 void (*copy_best_model)(const void *bm, const void *bm_std);

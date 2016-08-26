@@ -71,7 +71,7 @@ void model2(int argc, char **argv)
 /*====================================================*/
 /* users responsible for following struct definitions */
 
-void from_prior_thismodel2(const void *model)
+void from_prior_thismodel2(void *model)
 {
   double *params = (double *)model;
 
@@ -102,7 +102,7 @@ double log_likelihoods_cal_thismodel2(const void *model)
   return logL;
 }
 
-double perturb_thismodel2(const void *model)
+double perturb_thismodel2(void *model)
 { 
   double *params = (double *)model;
   double logH = 0.0;
@@ -172,7 +172,7 @@ void copy_best_model_thismodel2(const void *bm, const void *bm_std)
 /*========================================================*/
 
 
-void copy_model_thismodel2(const void *dest, const void *src)
+void copy_model_thismodel2(void *dest, const void *src)
 {
   memcpy(dest, src, size_of_modeltype);
 }
