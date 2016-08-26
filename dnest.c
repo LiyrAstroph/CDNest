@@ -449,7 +449,7 @@ void update_particle(unsigned int which)
   log_H = perturb(proposal);
   
   logl_proposal.value = log_likelihoods_cal(proposal);
-  logl_proposal.tiebreaker =  logl_proposal.tiebreaker + gsl_rng_uniform(dnest_gsl_r);
+  logl_proposal.tiebreaker =  (*logl).tiebreaker + gsl_rng_uniform(dnest_gsl_r);
   wrap(&logl_proposal.tiebreaker, 0.0, 1.0);
 
   if(log_H > 0.0)
