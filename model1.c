@@ -10,14 +10,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <mpi.h>
 #include <gsl/gsl_rng.h>
 
 #include "dnestvars.h"
 #include "model1.h"
 
 int which_particle_update;
+int *perturb_accept;
 int num_data_points;
 int num_params;
+int num_particles;
 
 DataType *data;
 void *best_model_thismodel, *best_model_std_thismodel;
@@ -53,6 +56,14 @@ void model1(int argc, char **argv)
   
   /* run dnest */
   strcpy(options_file, "OPTIONS1");
+  if(thistask == 0)
+  {
+    get_num_particles1(options_file);
+  }
+  MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+  perturb_accept = malloc(num_particles * sizeof(int));
+
   dnest(argc, argv);
   
   if(thistask == 0)
@@ -64,6 +75,27 @@ void model1(int argc, char **argv)
     
   /* free memory */
   free(data);
+  free(perturb_accept);
+}
+
+void get_num_particles1(char *fname)
+{
+  FILE *fp;
+  char buf[BUF_MAX_LENGTH];
+  fp = fopen(fname, "r");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s\n", fname);
+    exit(-1);
+  }
+
+  buf[0]='#';
+  while(buf[0]=='#')
+  {
+    fgets(buf, BUF_MAX_LENGTH, fp);
+  }
+  sscanf(buf, "%d", &num_particles);
+  fclose(fp);
 }
 
 /*====================================================*/

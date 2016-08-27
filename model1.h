@@ -37,9 +37,12 @@ extern DataType *data;
 extern void *best_model_thismodel, *best_model_std_thismodel;
 
 extern int which_particle_update; // which particule to be updated
+extern int *perturb_accept;
 extern int thisktask, totaltask;
 
+
 /* functions */
+void get_num_particles1(char *fname);
 void from_prior_thismodel(void *model);
 void data_load_thismodel();
 void print_particle_thismodel(FILE *fp, const void *model);

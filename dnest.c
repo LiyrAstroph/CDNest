@@ -455,11 +455,14 @@ void update_particle(unsigned int which)
   if(log_H > 0.0)
     log_H = 0.0;
 
+  perturb_accept[which] = 0;
   if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value < logl_proposal.value)
   {
     copy_model(particle, proposal);
     memcpy(logl, &logl_proposal, sizeof(LikelihoodType));
     level->accepts++;
+
+    perturb_accept[which] = 1;
   }
   level->tries++;
 
