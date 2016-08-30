@@ -136,9 +136,13 @@ void dnest_run()
       save_particle();
     }
   }
+  
 
   if(thistask == root)
   {
+    //save levels
+    save_levels();
+
     /* output state of sampler */
     FILE *fp;
     fp = fopen(options.sampler_state_file, "w");
@@ -192,7 +196,7 @@ void do_bookkeeping()
   
   recalculate_log_X();
 
-  if(created_level)
+/*  if(created_level)
     save_levels();
 
   if(count_mcmc_steps >= (count_saves + 1)*options.save_interval)
@@ -202,7 +206,7 @@ void do_bookkeeping()
 
     if(!created_level)
       save_levels();
-  }
+  }*/
 
 }
 
