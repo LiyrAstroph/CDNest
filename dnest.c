@@ -600,6 +600,7 @@ void setup(int argc, char** argv)
   gsl_rng_set(dnest_gsl_r, time(NULL) + thistask);
 #else
   gsl_rng_set(dnest_gsl_r, 9999 + thistask);
+  printf("# debugging, random seed %d\n", 9999 + thistask);
 #endif  
 
   // read options

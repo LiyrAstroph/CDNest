@@ -1,7 +1,9 @@
 SHELL=/bin/bash
 CC       = mpicc -g -O3 -Wall
-OPTIMIZE = 
+OPTIMIZE =
+ 
 OPTIMIZE += -DDebug
+
 #---------target system
 #SYSTEM="Darwin"
 SYSTEM="Linux"
@@ -24,7 +26,7 @@ MPIINCL  = $(shell pkg-config --cflags mpich)
 #MPICHLIB = -L/usr/local/share/mpich2/lib -lmpich
 #MPIINCL  = -I/usr/local/share/mpich2/include
 
-OPTIMIZE    = 
+OPTIMIZE    += 
 endif
 
 ifeq ($(SYSTEM), "Darwin")
@@ -38,7 +40,7 @@ LAPACK_LIBS = -framework vecLib -L /usr/local/share/lapack/lib -llapacke -llapac
 #-lcblas 
 CBLAS_INCL  =
 CBLAS_LIBS  =     
-OPTIMIZE    = 
+OPTIMIZE    += 
 endif
 
 ifeq ($(SYSTEM), "Cluster")

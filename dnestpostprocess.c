@@ -271,6 +271,7 @@ void postprocess(double temperature)
   gsl_rng_set(dnest_post_gsl_r, time(NULL) + thistask);
 #else
   gsl_rng_set(dnest_post_gsl_r, 8888 + thistask);
+  printf("# debugging, random seed %d\n", 8888 + thistask);
 #endif  
 
   posterior_sample = malloc(num_ps * size_of_modeltype);
@@ -359,7 +360,7 @@ void postprocess(double temperature)
   free(best_model_std);
 
   gsl_rng_free(dnest_post_gsl_r);
-  
+
   printf("# Ends dnest postprocess.\n");
 }
 
