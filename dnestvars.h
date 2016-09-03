@@ -61,7 +61,7 @@ extern char options_file[STR_MAX_LENGTH];
 
 extern void *particles;
 extern int size_of_modeltype;
-extern int particle_offset_size;
+extern int particle_offset_size, particle_offset_double;
 
 // sampler
 extern bool save_to_disk;
@@ -82,6 +82,8 @@ extern unsigned long long int count_mcmc_steps;
 extern LikelihoodType *above;
 extern unsigned int size_above, size_all_above;
 
+//the limits of parameters for each level;
+extern double *limits;
 
 extern int which_particle_update; // which particule to be updated
 extern int thistask, totaltask;
@@ -108,6 +110,7 @@ bool enough_levels(Level *l, int size_l);
 void do_bookkeeping();
 void save_levels();
 void save_particle();
+void save_limits();
 void kill_lagging_particles();
 void renormalise_visits();
 void recalculate_log_X();

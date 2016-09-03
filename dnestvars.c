@@ -32,7 +32,7 @@ unsigned int regularisation;
 
 void *particles;
 int size_of_modeltype;
-int particle_offset_size;
+int particle_offset_size, particle_offset_double;
 
 LikelihoodType *log_likelihoods;
 unsigned int *level_assignments;
@@ -45,5 +45,7 @@ unsigned int count_saves;
 unsigned long long int count_mcmc_steps;
 LikelihoodType *above;
 unsigned int size_above, size_all_above;
+
+double *limits;
 
 int root;

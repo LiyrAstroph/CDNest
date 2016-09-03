@@ -145,6 +145,7 @@ void dnest_run()
   {
     //save levels
     save_levels();
+    save_limits();
 
     /* output state of sampler */
     FILE *fp;
@@ -320,6 +321,23 @@ void save_levels()
   fclose(fp);
 }
 
+void save_limits()
+{
+  int i, j;
+  FILE *fp;
+
+  fp = fopen("limits.txt", "w");
+  for(i=0; i<size_levels_combine; i++)
+  {
+    fprintf(fp, "%d  ", i);
+    for(j=0; j<particle_offset_double; j++)
+      fprintf(fp, "%f  %f  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
+
+    fprintf(fp, "\n");
+  }
+  fclose(fp);
+}
+
 /* save particle */
 void save_particle()
 {
@@ -436,7 +454,6 @@ void dnest_mcmc_run()
       above[size_above] = log_likelihoods[which];
       size_above++;
     }
-    
   }
 }
 
@@ -487,6 +504,8 @@ void update_particle(unsigned int which)
 
 void update_level_assignment(unsigned int which)
 {
+  int i;
+
   int proposal = level_assignments[which] 
                  + (int)( pow(10.0, 2*gsl_rng_uniform(dnest_gsl_r))*gsl_ran_gaussian(dnest_gsl_r, 1.0));
 
@@ -508,6 +527,16 @@ void update_level_assignment(unsigned int which)
   if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_A) && levels[proposal].log_likelihood.value < log_likelihoods[which].value)
   {
     level_assignments[which] = proposal;
+
+// update the limits of the level
+    double *particle = (double *) (particles+ which*particle_offset_size);
+    for(i=0; i<particle_offset_double; i++)
+    {
+      limits[proposal * 2 * particle_offset_double +  i*2] = 
+            fmin(limits[proposal * 2* particle_offset_double +  i*2], particle[i]);
+      limits[proposal * 2 * particle_offset_double +  i*2+1] = 
+            fmax(limits[proposal * 2 * particle_offset_double +  i*2+1], particle[i]);
+    }
   }
 
 }
@@ -588,7 +617,7 @@ void close_output_file()
 
 void setup(int argc, char** argv)
 {
-  int i;
+  int i, j;
 
   // root task.
   root = 0;
@@ -614,6 +643,7 @@ void setup(int argc, char** argv)
 
   // particles
   particle_offset_size = size_of_modeltype/sizeof(void);
+  particle_offset_double = size_of_modeltype/sizeof(double);
   particles = (void *)malloc(options.num_particles*size_of_modeltype);
   
   // initialise sampler
@@ -633,6 +663,16 @@ void setup(int argc, char** argv)
       levels_combine = (Level *)malloc(options.max_num_levels * sizeof(Level));
       copies_of_levels = (Level *)malloc(totaltask * options.max_num_levels * sizeof(Level));
     }
+
+    limits = malloc(options.max_num_levels * particle_offset_double * 2 * sizeof(double));
+    for(i=0; i<options.max_num_levels; i++)
+    {
+      for(j=0; j<particle_offset_double; j++)
+      {
+        limits[i*2*particle_offset_double+ j*2] = DBL_MAX;
+        limits[i*2*particle_offset_double + j*2 + 1] = -DBL_MAX;
+      }
+    }
   }
   else
   {
@@ -641,6 +681,16 @@ void setup(int argc, char** argv)
     {
       levels_combine = (Level *)malloc(LEVEL_NUM_MAX * sizeof(Level));
       copies_of_levels = (Level *)malloc(totaltask * LEVEL_NUM_MAX * sizeof(Level));
+    }
+
+    limits = malloc(LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
+    for(i=0; i<LEVEL_NUM_MAX; i++)
+    {
+      for(j=0; j<particle_offset_double; j++)
+      {
+        limits[i*2*particle_offset_double + j*2] = DBL_MAX;
+        limits[i*2*particle_offset_double + j*2 + 1] = -DBL_MAX;
+      }
     }
   }
   
@@ -672,7 +722,7 @@ void setup(int argc, char** argv)
     log_likelihoods[i].tiebreaker = dnest_rand();
     level_assignments[i] = 0;
   }
-  
+
   /*ModelType proposal;
   printf("%f %f %f \n", particles[0].param[0], particles[0].param[1], particles[0].param[2] );
   proposal = particles[0];
@@ -686,6 +736,8 @@ void finalise()
   free(log_likelihoods);
   free(level_assignments);
   free(levels);
+  free(limits);
+
 
   if(thistask == root)
   {
