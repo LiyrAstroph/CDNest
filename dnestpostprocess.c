@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <time.h>
 #include <string.h>
 #include <gsl/gsl_rng.h>
 
@@ -261,6 +262,17 @@ void postprocess(double temperature)
   void *posterior_sample;
   int which;
 
+  const gsl_rng_type * dnest_post_gsl_T;
+  gsl_rng * dnest_post_gsl_r;
+
+  dnest_post_gsl_T = (gsl_rng_type *) gsl_rng_default;
+  dnest_post_gsl_r = gsl_rng_alloc (dnest_post_gsl_T);
+#ifndef Debug
+  gsl_rng_set(dnest_post_gsl_r, time(NULL) + thistask);
+#else
+  gsl_rng_set(dnest_post_gsl_r, 8888 + thistask);
+#endif  
+
   posterior_sample = malloc(num_ps * size_of_modeltype);
   
   max = logP_samples[0];
@@ -273,8 +285,8 @@ void postprocess(double temperature)
   {
     while(true)
     {
-      which = dnest_rand_int(num_samples);
-      if(log(dnest_rand()) < logP_samples[which])
+      which =  gsl_rng_uniform_int(dnest_post_gsl_r, num_samples);
+      if(log(gsl_rng_uniform(dnest_post_gsl_r)) < logP_samples[which])
       {
         copy_model(posterior_sample+j*size_of_modeltype, sample+which*size_of_modeltype);
         break;
@@ -284,6 +296,11 @@ void postprocess(double temperature)
   
   //save posterior sample
   fp = fopen(options.posterior_sample_file, "w");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s.\n", options.posterior_sample_file);
+    exit(0);
+  }
   for(i=0; i<num_ps; i++)
   {
     print_particle(fp, posterior_sample + i*size_of_modeltype);
@@ -341,6 +358,8 @@ void postprocess(double temperature)
   free(best_model);
   free(best_model_std);
 
+  gsl_rng_free(dnest_post_gsl_r);
+  
   printf("# Ends dnest postprocess.\n");
 }
 

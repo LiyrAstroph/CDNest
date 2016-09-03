@@ -66,7 +66,7 @@ void model2(int argc, char **argv)
   perturb_accept = malloc(num_particles * sizeof(int));
 
   dnest(argc, argv);
-  
+  dnest_postprocess(1.0);
   if(thistask == 0)
   {
     int j;

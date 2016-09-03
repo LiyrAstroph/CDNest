@@ -115,6 +115,7 @@ double dnest_randh();
 double dnest_rand();
 double dnest_randn();
 int dnest_rand_int(int size);
+void dnest_postprocess(double temperature);
 void postprocess(double temperature);
 void initialize_output_file();
 void close_output_file();

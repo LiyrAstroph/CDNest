@@ -24,16 +24,19 @@ int dnest(int argc, char** argv)
   initialize_output_file();
   dnest_run();
   close_output_file();
-   
-  // postprocess, calculate evidence, generate posterior sample.
-  double temperature = 1.0;
-  if(thistask == root)
-  {
-    postprocess(temperature);
-  }
 
   finalise();
   return 0;
+}
+
+// postprocess, calculate evidence, generate posterior sample.
+void dnest_postprocess(double temperature)
+{
+  if(thistask == root)
+  {
+    options_load();
+    postprocess(temperature);
+  }
 }
 
 void dnest_run()
@@ -593,7 +596,11 @@ void setup(int argc, char** argv)
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
   dnest_gsl_r = gsl_rng_alloc (dnest_gsl_T);
+#ifndef Debug
   gsl_rng_set(dnest_gsl_r, time(NULL) + thistask);
+#else
+  gsl_rng_set(dnest_gsl_r, 9999 + thistask);
+#endif  
 
   // read options
   if(thistask == root)

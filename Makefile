@@ -1,6 +1,7 @@
 SHELL=/bin/bash
 CC       = mpicc -g -O3 -Wall
-
+OPTIMIZE = 
+OPTIMIZE += -DDebug
 #---------target system
 #SYSTEM="Darwin"
 SYSTEM="Linux"
