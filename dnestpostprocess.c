@@ -53,7 +53,7 @@ void postprocess(double temperature)
   printf("# Starts postprocess.\n");
   FILE *fp;
   
-  double **levels_orig, **sample_info;
+  double **levels_orig, **sample_info, *logl;
   int *sandwhich;
   void *sample;
   int i, j;
@@ -88,6 +88,7 @@ void postprocess(double temperature)
   // allocate memory for samples
   num_params = get_num_params();
   sample = (void *)malloc(num_samples * size_of_modeltype);
+  logl = (void *)malloc(num_samples * sizeof(double));
   sandwhich = malloc(num_samples * sizeof(int));
   
   // read levels
@@ -116,10 +117,10 @@ void postprocess(double temperature)
       fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_info_file);
       exit(0);
     }
-    sample_info[i][1] /= temperature;
+    logl[i] = sample_info[i][1] / temperature;
   }
   fclose(fp);
-  
+
   // read sample
   double *psample;
   fp = fopen(options.sample_file, "r");
@@ -150,7 +151,7 @@ void postprocess(double temperature)
       if( sample_info[i][1] > levels_orig[j][1] )
         sandwhich[i] = j;
     }
-    //printf("%f %d\n", sample_info[i][1], sandwhich[i]);
+    //printf("%f %d\n", logl[i], sandwhich[i]);
   }
   
   double *logx_samples, *logp_samples, *logP_samples;
@@ -233,7 +234,8 @@ void postprocess(double temperature)
   for(j = 0; j < num_samples; j++)
   {
     logp_samples[j] -= sum;
-    logP_samples[j] = logp_samples[j] + sample_info[j][1];
+    //logP_samples[j] = logp_samples[j] + sample_info[j][1];
+    logP_samples[j] = logp_samples[j] + logl[j];
   }
   
   logz_estimates = logsumexp(logP_samples, num_samples);
@@ -243,7 +245,8 @@ void postprocess(double temperature)
   for(j=0; j<num_samples; j++)
   {
     logP_samples[j] -= logz_estimates; 
-    H_estimates += exp(logP_samples[j]) * sample_info[j][1];
+    //H_estimates += exp(logP_samples[j]) * sample_info[j][1];
+    H_estimates += exp(logP_samples[j]) * logl[j];
     ESS += -logP_samples[j]*exp(logP_samples[j]);
   }
   ESS = exp(ESS);
@@ -324,6 +327,7 @@ void postprocess(double temperature)
   for(i=0; i<num_samples; i++)
     free(sample_info[i]);
   free(sample_info);
+  free(logl);
 
   free(logx_samples);
   free(logx_samples_thisLevel);
