@@ -41,9 +41,10 @@ void dnest_postprocess(double temperature)
 
 void dnest_run()
 {
-  int i, j, size_all_above_incr;
+  int i, j, k, size_all_above_incr;
   Level *pl, *levels_orig;
   int *buf_size_above, *buf_displs;
+  double *plimits;
   
   // used to gather levels' information
   if(thistask == root)
@@ -65,6 +66,10 @@ void dnest_run()
     //gather levels
     MPI_Gather(levels, size_levels*sizeof(Level), MPI_BYTE, 
              copies_of_levels, size_levels*sizeof(Level), MPI_BYTE, root, MPI_COMM_WORLD);
+
+    //gather limits
+    MPI_Gather(limits, size_levels*particle_offset_double*2, MPI_DOUBLE, 
+               copies_of_limits, size_levels*particle_offset_double*2, MPI_DOUBLE, root, MPI_COMM_WORLD );
     
     //gather size_above 
     MPI_Gather(&size_above, 1, MPI_INT, buf_size_above, 1, MPI_INT, root, MPI_COMM_WORLD);
@@ -123,6 +128,24 @@ void dnest_run()
 
       free(levels_orig);
 
+      // scan over all copies of limits
+      plimits = copies_of_limits;
+      for(i=0; i< totaltask; i++)
+      {
+        for(j=0; j < size_levels; j++)
+        {
+          for(k=0; k<particle_offset_double; k++)
+          {
+            limits[j * particle_offset_double *2 + k*2 ] = fmin(limits[j * particle_offset_double *2 + k*2 ],
+              plimits[j * particle_offset_double *2 + k*2]);
+            limits[j * particle_offset_double *2 + k*2 +1 ] = fmax(limits[j * particle_offset_double *2 + k*2 +1 ],
+              plimits[j * particle_offset_double *2 + k*2 + 1]);
+          }
+          
+        }
+        plimits += size_levels * particle_offset_double * 2;
+      }
+
       do_bookkeeping();
 
       size_levels = size_levels_combine;
@@ -133,6 +156,7 @@ void dnest_run()
     MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
     //MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
     MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
+    MPI_Bcast(limits, size_levels * particle_offset_double *2, MPI_DOUBLE, root, MPI_COMM_WORLD);
 
     if(count_mcmc_steps >= (count_saves + 1)*options.save_interval)
     {
@@ -326,7 +350,7 @@ void save_limits()
   int i, j;
   FILE *fp;
 
-  fp = fopen("limits.txt", "w");
+  fp = fopen(options.limits_file, "w");
   for(i=0; i<size_levels_combine; i++)
   {
     fprintf(fp, "%d  ", i);
@@ -470,6 +494,9 @@ void update_particle(unsigned int which)
   double log_H;
 
   copy_model(proposal, particle);
+  
+  which_level_update = level_assignments[which];
+
   log_H = perturb(proposal);
   
   logl_proposal.value = log_likelihoods_cal(proposal);
@@ -621,7 +648,7 @@ void setup(int argc, char** argv)
 
   // root task.
   root = 0;
-  
+
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
   dnest_gsl_r = gsl_rng_alloc (dnest_gsl_T);
@@ -665,6 +692,7 @@ void setup(int argc, char** argv)
     }
 
     limits = malloc(options.max_num_levels * particle_offset_double * 2 * sizeof(double));
+    copies_of_limits = malloc( totaltask * options.max_num_levels * particle_offset_double * 2 * sizeof(double));
     for(i=0; i<options.max_num_levels; i++)
     {
       for(j=0; j<particle_offset_double; j++)
@@ -684,6 +712,7 @@ void setup(int argc, char** argv)
     }
 
     limits = malloc(LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
+    copies_of_limits = malloc(totaltask * LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
     for(i=0; i<LEVEL_NUM_MAX; i++)
     {
       for(j=0; j<particle_offset_double; j++)
@@ -806,6 +835,9 @@ void options_load()
   
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.posterior_sample_file);
+
+  fgets(buf, BUF_MAX_LENGTH, fp);
+  sscanf(buf, "%s", options.limits_file);
   
   fclose(fp);
 

@@ -17,6 +17,7 @@
 #include "model1.h"
 
 int which_particle_update;
+int which_level_update;
 int *perturb_accept;
 int num_data_points;
 int num_params;
@@ -141,10 +142,21 @@ double log_likelihoods_cal_thismodel(const void *model)
 double perturb_thismodel(void *model)
 {
   double *params = (double *)model;
-  double logH = 0.0;
+  double logH = 0.0, width, limit1, limit2;
   int which = dnest_rand_int(num_params);
-	params[which] += dnest_randh();
-	wrap(&params[which], -0.5, 0.5);
+  if(which_level_update != 0)
+  {
+    limit1 = limits[(which_level_update-1) * num_params *2 + which *2 ];
+    limit2 = limits[(which_level_update-1) * num_params *2 + which *2 + 1];
+  }
+  else
+  {
+    limit1 = -0.5;
+    limit2 = 0.5;
+  }
+  width = (limit2 - limit1);
+	params[which] += width * dnest_randh();
+	wrap(&params[which], limit1, limit2);
   return logH;
 }
 

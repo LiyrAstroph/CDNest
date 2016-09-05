@@ -55,6 +55,7 @@ typedef struct
   char levels_file[STR_MAX_LENGTH];
   char sampler_state_file[STR_MAX_LENGTH];
   char posterior_sample_file[STR_MAX_LENGTH];
+  char limits_file[STR_MAX_LENGTH];
 }Options;
 extern Options options;
 extern char options_file[STR_MAX_LENGTH];
@@ -83,9 +84,10 @@ extern LikelihoodType *above;
 extern unsigned int size_above, size_all_above;
 
 //the limits of parameters for each level;
-extern double *limits;
+extern double *limits, *copies_of_limits;
 
-extern int which_particle_update; // which particule to be updated
+extern int which_particle_update; // which particle to be updated
+extern int which_level_update;    // which level to be updated;
 extern int thistask, totaltask;
 extern int *perturb_accept;
 extern int root;

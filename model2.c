@@ -17,6 +17,7 @@
 #include "model2.h"
 
 int which_particle_update;
+int which_level_update;
 int *perturb_accept;
 int num_data_points;
 int num_params;
@@ -136,27 +137,57 @@ double log_likelihoods_cal_thismodel2(const void *model)
 double perturb_thismodel2(void *model)
 { 
   double *params = (double *)model;
-  double logH = 0.0;
+  double logH = 0.0, width, limit1, limit2;
   int which = dnest_rand_int(num_params);
   
+
+  if(which_level_update != 0)
+  {
+    limit1 = limits[(which_level_update-1) * num_params *2 + which *2 ];
+    limit2 = limits[(which_level_update-1) * num_params *2 + which *2 + 1];
+  }
+  width = (limit2 - limit1);
+
 	if(which == 0)
 	{
+    if(which_level_update == 0)
+    {
+      width = 1E3;
+    }
 		logH -= -0.5*pow(params[0]/1E3, 2);
-		params[0] += 1E3*dnest_randh();
+		params[0] += width*dnest_randh();
 		logH += -0.5*pow(params[0]/1E3, 2);
 	}
 	else if(which == 1)
 	{
+    if(which_level_update == 0)
+    {
+      width = 1E3;
+    }
+
 		logH -= -0.5*pow(params[1]/1E3, 2);
-		params[1] += 1E3*dnest_randh();
+		params[1] += width*dnest_randh();
 		logH += -0.5*pow(params[1]/1E3, 2);
 	}
 	else
 	{
+    if(which_level_update == 0)
+    {
+      limit1 = -10.0;
+      limit2 = 10.0;
+      width = 20.0;
+    }
+    else
+    {
+      limit1 = log(limit1);
+      limit2 = log(limit2);
+      width = limit2 - limit1;
+    }
+    
 		// Usual log-uniform prior trick
 		params[2] = log(params[2]);
-		params[2] += 20.*dnest_randh();
-		wrap(&(params[2]), -10., 10.);
+		params[2] += width*dnest_randh();
+		wrap(&(params[2]), limit1, limit2);
 		params[2] = exp(params[2]);
 	}
   
@@ -183,7 +214,7 @@ void data_load_thismodel2()
   fp = fopen("road.txt", "r");
   if(fp == NULL)
   {
-    fprintf(stderr, "ERROR: Cannot open file data.txt.\n");
+    fprintf(stderr, "ERROR: Cannot open file road.txt.\n");
     exit(0);
   }
 
