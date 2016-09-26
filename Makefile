@@ -1,6 +1,6 @@
 SHELL=/bin/bash
-CC       = mpicc -g -O3 -Wall
-OPTIMIZE =
+CC       = mpicc 
+OPTIMIZE = -O2 -Wall
 #OPTIMIZE += -DDebug
 
 #---------target system

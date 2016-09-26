@@ -145,8 +145,9 @@ double perturb_thismodel2(void *model)
   {
     limit1 = limits[(which_level_update-1) * num_params *2 + which *2 ];
     limit2 = limits[(which_level_update-1) * num_params *2 + which *2 + 1];
+    width = (limit2 - limit1);
   }
-  width = (limit2 - limit1);
+  
 
 	if(which == 0)
 	{
@@ -187,7 +188,7 @@ double perturb_thismodel2(void *model)
 		// Usual log-uniform prior trick
 		params[2] = log(params[2]);
 		params[2] += width*dnest_randh();
-		wrap(&(params[2]), limit1, limit2);
+		wrap(&(params[2]), -10.0, 10.0);
 		params[2] = exp(params[2]);
 	}
   

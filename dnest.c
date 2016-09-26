@@ -55,6 +55,7 @@ void dnest_run()
 
   while(true)
   {
+
     dnest_mcmc_run();
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -496,13 +497,13 @@ void update_particle(unsigned int which)
   copy_model(proposal, particle);
   
   which_level_update = level_assignments[which];
-
+  
   log_H = perturb(proposal);
   
   logl_proposal.value = log_likelihoods_cal(proposal);
   logl_proposal.tiebreaker =  (*logl).tiebreaker + gsl_rng_uniform(dnest_gsl_r);
   wrap(&logl_proposal.tiebreaker, 0.0, 1.0);
-
+  
   if(log_H > 0.0)
     log_H = 0.0;
 
@@ -516,7 +517,7 @@ void update_particle(unsigned int which)
     perturb_accept[which] = 1;
   }
   level->tries++;
-
+  
   unsigned int current_level = level_assignments[which];
   for(; current_level < size_levels-1; ++current_level)
   {
@@ -850,14 +851,25 @@ void options_load()
 
 double mod(double y, double x)
 {
-   if(x <= 0)
-     printf("Warning in mod(double, double) (Utils.cpp)");
-   return (y/x - floor(y/x))*x;
+  if(x > 0.0)
+  {
+    return (y/x - floor(y/x))*x;
+  }
+  else if(x == 0.0)
+  {
+    return 0.0;
+  }
+  else
+  {
+    printf("Warning in mod(double, double) %e\n", x);
+    exit(0);
+  }
+  
 }
 
 void wrap(double *x, double min, double max)
 {
-   *x = mod(*x - min, max - min) + min;
+  *x = mod(*x - min, max - min) + min;
 }
 
 int mod_int(int y, int x)
