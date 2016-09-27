@@ -872,6 +872,12 @@ void wrap(double *x, double min, double max)
   *x = mod(*x - min, max - min) + min;
 }
 
+void wrap_limit(double *x, double min, double max)
+{
+
+  *x = fmax(fmin(*x, max), min);
+}
+
 int mod_int(int y, int x)
 {
   if(y >= 0)

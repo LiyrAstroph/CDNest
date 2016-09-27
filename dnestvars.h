@@ -95,6 +95,7 @@ extern int root;
 /*                  functions                  */
 double mod(double y, double x);
 void wrap(double *x, double min, double max);
+void wrap_limit(double *x, double min, double max);
 int mod_int(int y, int x);
 int cmp(const void *pa, const void *pb);
 
