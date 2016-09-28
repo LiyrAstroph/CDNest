@@ -784,7 +784,7 @@ void finalise()
 void options_load()
 {
   FILE *fp;
-  char buf[BUF_MAX_LENGTH];
+  char buf[BUF_MAX_LENGTH], buf1[BUF_MAX_LENGTH];
 
   fp = fopen(options_file, "r");
 
@@ -798,6 +798,10 @@ void options_load()
   while(buf[0]=='#')
   {
     fgets(buf, BUF_MAX_LENGTH, fp);
+    if(sscanf(buf, "%s", buf1) < 1) // a blank line
+    {
+      buf[0] = '#';
+    }
   }
   sscanf(buf, "%d", &options.num_particles);
 
