@@ -51,7 +51,7 @@ void model3(int argc, char **argv)
   
   if(thistask == 0)
   {
-    get_num_particles2(options_file);
+    get_num_particles3(options_file);
   }
   MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
   perturb_accept = malloc(num_particles * sizeof(int));
@@ -66,7 +66,6 @@ void model3(int argc, char **argv)
   }
   
   /* free memory */
-  free(data);
   free(perturb_accept);
 }
 

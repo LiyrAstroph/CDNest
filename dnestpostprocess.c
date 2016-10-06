@@ -94,6 +94,11 @@ void postprocess(double temperature)
   
   // read levels
   fp = fopen(options.levels_file, "r");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s.\n", options.levels_file);
+    exit(0);
+  }
   fgets(buf, BUF_MAX_LENGTH, fp);
   for(i=0; i < num_levels; i++)
   {
@@ -109,6 +114,11 @@ void postprocess(double temperature)
   
   // read sample_info
   fp = fopen(options.sample_info_file, "r");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_info_file);
+    exit(0);
+  }
   fgets(buf, BUF_MAX_LENGTH, fp);
   for(i=0; i < num_samples; i++)
   {
@@ -125,6 +135,11 @@ void postprocess(double temperature)
   // read sample
   double *psample;
   fp = fopen(options.sample_file, "r");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_file);
+    exit(0);
+  }
   fgets(buf, BUF_MAX_LENGTH, fp);
   for(i=0; i < num_samples; i++)
   {
