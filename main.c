@@ -13,6 +13,7 @@
 
 extern void model1(int argc, char **argv);
 extern void model2(int argc, char **argv);
+extern void model3(int argc, char **argv);
 
 int thistask, totaltask;
 int namelen;
@@ -30,6 +31,9 @@ int main(int argc, char **argv)
   
   MPI_Barrier(MPI_COMM_WORLD);
   model2(argc, argv);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  model3(argc, argv);
 
   MPI_Finalize();
   return 0;

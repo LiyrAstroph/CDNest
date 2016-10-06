@@ -59,10 +59,10 @@ LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB)
 
 EXEC     = dnest
 SRC      = ./
-INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h
+INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h $(SRC)/model3.h
  
 OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/dnestpostprocess.o $(SRC)/model1.o \
-       $(SRC)/main.o $(SRC)/model2.o
+       $(SRC)/main.o $(SRC)/model2.o $(SRC)/model3.o
 
 $(EXEC): $(OBJS)
 	cd $(SRC)
