@@ -323,36 +323,6 @@ void postprocess(double temperature)
   }
   fclose(fp);
   
-  void *best_model, *best_model_std;
-  best_model = (void *)malloc(size_of_modeltype);
-  best_model_std = (void *)malloc(size_of_modeltype);
-  
-  double *pm, *pbm, *pbm_std;
-  
-  for(j=0; j<num_params; j++)
-  {
-    pbm = (double *)(best_model + j*sizeof(double));
-    *pbm = 0.0;
-    for(i=0; i<num_ps; i++)
-    {
-      pm = (double *)(posterior_sample + i*size_of_modeltype + j*sizeof(double));
-      *pbm += *pm;
-    }
-    *pbm /= num_ps;
-    
-    pbm_std = (double *)(best_model_std + j*sizeof(double));
-    *pbm_std = 0.0;
-    for(i=0; i<num_ps; i++)
-    {
-       pm = (double *)(posterior_sample + i*size_of_modeltype + j*sizeof(double));
-       *pbm_std += pow( *pm - *pbm, 2.0 );
-     }
-    *pbm_std = sqrt(*pbm_std/(num_ps - 1.0));
-    //printf("Best params %d %f +- %f\n", j, *pbm, *pbm_std);
-  }
-  
-  copy_best_model(best_model, best_model_std);
-  
   for(i=0; i<num_levels; i++)
    free(levels_orig[i]);
   free(levels_orig);
@@ -370,9 +340,6 @@ void postprocess(double temperature)
   free(sandwhich);
   free(sample);
   free(posterior_sample);
-  
-  free(best_model);
-  free(best_model_std);
 
   gsl_rng_free(dnest_post_gsl_r);
 
