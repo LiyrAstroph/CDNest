@@ -147,6 +147,17 @@ void dnest_run()
         plimits += size_levels * particle_offset_double * 2;
       }
 
+      // limits of smaller levels should be larger than those of higher levels
+      for(j=size_levels-2; j >= 0; j--)
+        for(k=0; k<particle_offset_double; k++)
+        {
+          limits[ j * particle_offset_double *2 + k*2 ] = fmin( limits[ j * particle_offset_double *2 + k*2 ],
+                    limits[ (j+1) * particle_offset_double *2 + k*2 ] );
+
+          limits[ j * particle_offset_double *2 + k*2 + 1] = fmax( limits[ j * particle_offset_double *2 + k*2 +1 ],
+                    limits[ (j+1) * particle_offset_double *2 + k*2 + 1 ] );
+        }
+
       do_bookkeeping();
 
       size_levels = size_levels_combine;
