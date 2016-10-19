@@ -16,4 +16,5 @@ sample_info3.txt # sample_info file
 levels3.txt  #
 sampler_state3.txt  # 
 posterior_sample3.txt  #
+posterior_sample_info3.txt  #
 limits3.txt

@@ -853,6 +853,9 @@ void options_load()
   sscanf(buf, "%s", options.posterior_sample_file);
 
   fgets(buf, BUF_MAX_LENGTH, fp);
+  sscanf(buf, "%s", options.posterior_sample_info_file);
+
+  fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.limits_file);
   
   fclose(fp);

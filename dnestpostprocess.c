@@ -275,6 +275,7 @@ void postprocess(double temperature)
   
   int num_ps = moreSample*ESS;
   void *posterior_sample;
+  double *posterior_sample_info;
   int which;
 
   const gsl_rng_type * dnest_post_gsl_T;
@@ -290,6 +291,7 @@ void postprocess(double temperature)
 #endif  
 
   posterior_sample = malloc(num_ps * size_of_modeltype);
+  posterior_sample_info = malloc(num_ps * sizeof(double));
   
   max = logP_samples[0];
   for(j=0; j<num_samples; j++)
@@ -304,6 +306,7 @@ void postprocess(double temperature)
       which =  gsl_rng_uniform_int(dnest_post_gsl_r, num_samples);
       if(log(gsl_rng_uniform(dnest_post_gsl_r)) < logP_samples[which])
       {
+        posterior_sample_info[j] = logP_samples[which];
         copy_model(posterior_sample+j*size_of_modeltype, sample+which*size_of_modeltype);
         break;
       }
@@ -321,6 +324,19 @@ void postprocess(double temperature)
   for(i=0; i<num_ps; i++)
   {
     print_particle(fp, posterior_sample + i*size_of_modeltype);
+  }
+  fclose(fp);
+
+  fp = fopen(options.posterior_sample_info_file, "w");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s.\n", options.posterior_sample_info_file);
+    exit(0);
+  }
+  fprintf(fp, "# %d\n", num_ps);
+  for(i=0; i<num_ps; i++)
+  {
+    fprintf(fp, "%f\n", posterior_sample_info[i]);
   }
   fclose(fp);
   
@@ -341,6 +357,7 @@ void postprocess(double temperature)
   free(sandwhich);
   free(sample);
   free(posterior_sample);
+  free(posterior_sample_info);
 
   gsl_rng_free(dnest_post_gsl_r);
 
