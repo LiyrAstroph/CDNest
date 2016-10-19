@@ -336,7 +336,7 @@ void postprocess(double temperature)
   fprintf(fp, "# %d\n", num_ps);
   for(i=0; i<num_ps; i++)
   {
-    fprintf(fp, "%f\n", posterior_sample_info[i]);
+    fprintf(fp, "%e\n", posterior_sample_info[i]);
   }
   fclose(fp);
   
