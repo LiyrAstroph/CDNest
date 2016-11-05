@@ -379,6 +379,8 @@ void save_particle()
 {
   count_saves++;
   
+  which_mcmc_steps = count_saves;
+
   if(!save_to_disk)
     return;
   
@@ -484,7 +486,7 @@ void dnest_mcmc_run()
       update_level_assignment(which);
       update_particle(which);
     }
-    
+        
     if( !enough_levels(levels, size_levels)  && levels[size_levels-1].log_likelihood.value < log_likelihoods[which].value)
     {
       above[size_above] = log_likelihoods[which];
@@ -668,7 +670,7 @@ void setup(int argc, char** argv)
   gsl_rng_set(dnest_gsl_r, time(NULL) + thistask);
 #else
   gsl_rng_set(dnest_gsl_r, 9999 + thistask);
-  printf("# debugging, random seed %d\n", 9999 + thistask);
+  printf("# debugging, task %d dnest random seed %d\n", thistask, 9999 + thistask);
 #endif  
 
   // read options
@@ -755,11 +757,13 @@ void setup(int argc, char** argv)
     size_levels_combine++;
   }
   
+  which_mcmc_steps = 0;
   for(i=0; i<options.num_particles; i++)
   {
     which_particle_update = i;
+    which_level_update = 0;
     from_prior(particles+i*particle_offset_size);
-    log_likelihoods[i].value = log_likelihoods_cal(particles+i*particle_offset_size);
+    log_likelihoods[i].value = log_likelihoods_cal_initial(particles+i*particle_offset_size);
     log_likelihoods[i].tiebreaker = dnest_rand();
     level_assignments[i] = 0;
   }

@@ -59,6 +59,7 @@ void (*data_load)();
 void (*print_particle)(FILE *fp, const void *model);
 void (*from_prior)(void *model);
 double (*log_likelihoods_cal)(const void *model);
+double (*log_likelihoods_cal_initial)(const void *model);
 double (*perturb)(void *model);
 void (*copy_model)(void *dest, const void *src);
 void* (*create_model)();

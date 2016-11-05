@@ -18,6 +18,7 @@
 
 int which_particle_update;
 int which_level_update;
+unsigned long long int which_mcmc_steps;//mcmc steps 
 int *perturb_accept;
 int num_data_points;
 int num_params;
@@ -42,6 +43,7 @@ void model2(int argc, char **argv)
   from_prior = from_prior_thismodel2;
   data_load = data_load_thismodel2;
   log_likelihoods_cal = log_likelihoods_cal_thismodel2;
+  log_likelihoods_cal_initial = log_likelihoods_cal_thismodel2;
   perturb = perturb_thismodel2;
   print_particle = print_particle_thismodel2;
   copy_model = copy_model_thismodel2;

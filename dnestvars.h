@@ -89,6 +89,7 @@ extern double *limits, *copies_of_limits;
 
 extern int which_particle_update; // which particle to be updated
 extern int which_level_update;    // which level to be updated;
+extern unsigned long long int which_mcmc_steps;//mcmc steps 
 extern int thistask, totaltask;
 extern int *perturb_accept;
 extern int root;
@@ -131,6 +132,7 @@ void close_output_file();
 extern void (*print_particle)(FILE *fp, const void *model);
 extern void (*from_prior)(void *model);
 extern double (*log_likelihoods_cal)(const void *model);
+extern double (*log_likelihoods_cal_initial)(const void *model);
 extern double (*perturb)(void *model);
 extern void (*copy_model)(void *dest, const void *src);
 extern void* (*create_model)();
