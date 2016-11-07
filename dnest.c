@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include <math.h>
 #include <float.h>
 #include <mpi.h>
@@ -173,6 +174,19 @@ void dnest_run()
     if(count_mcmc_steps >= (count_saves + 1)*options.save_interval)
     {
       save_particle();
+
+      if(thistask == root )
+      {
+        // save levels, limits, sync samples when running a number of steps
+        if( count_saves % (int)(0.2 * options.max_num_saves) == 0 )
+        {
+          save_levels();
+          save_limits();
+          fsync(fsample);
+          fsync(fsample_info);
+          printf("# Save levels, limits, and sync samples at N= %d.\n", count_saves);
+        }
+      }
     }
   }
   
