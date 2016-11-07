@@ -27,10 +27,10 @@ int main(int argc, char **argv)
   MPI_Get_processor_name(proc_name, &namelen);
 
   MPI_Barrier(MPI_COMM_WORLD);
-  //model1(argc, argv);
+  model1(argc, argv);
   
   MPI_Barrier(MPI_COMM_WORLD);
-  //model2(argc, argv);
+  model2(argc, argv);
 
   MPI_Barrier(MPI_COMM_WORLD);
   model3(argc, argv);
