@@ -180,11 +180,15 @@ void dnest_run()
         // save levels, limits, sync samples when running a number of steps
         if( count_saves % (int)(0.2 * options.max_num_saves) == 0 )
         {
-          save_levels();
+          if(size_levels_combine <= options.max_num_levels)
+          {
+            save_levels();
+            printf("# Save levels at N= %d.\n", count_saves);
+          }
           save_limits();
           fsync(fsample);
           fsync(fsample_info);
-          printf("# Save levels, limits, and sync samples at N= %d.\n", count_saves);
+          printf("# Save limits, and sync samples at N= %d.\n", count_saves);
         }
       }
     }
