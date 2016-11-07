@@ -146,7 +146,7 @@ double perturb_thismodel(void *model)
   double *params = (double *)model;
   double logH = 0.0, width, limit1, limit2;
   int which = dnest_rand_int(num_params);
-  if(which_level_update != 0)
+  if(which_mcmc_steps > 500 && which_level_update != 0)
   {
     limit1 = limits[(which_level_update-1) * num_params *2 + which *2 ];
     limit2 = limits[(which_level_update-1) * num_params *2 + which *2 + 1];

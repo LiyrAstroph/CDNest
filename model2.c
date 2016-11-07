@@ -143,11 +143,15 @@ double perturb_thismodel2(void *model)
   int which = dnest_rand_int(num_params);
   
 
-  if(which_level_update != 0)
+  if(which_mcmc_steps > 500 && which_level_update != 0)
   {
     limit1 = limits[(which_level_update-1) * num_params *2 + which *2 ];
     limit2 = limits[(which_level_update-1) * num_params *2 + which *2 + 1];
     width = (limit2 - limit1);
+  }
+  else
+  {
+    which_level_update = 0;
   }
   
 
