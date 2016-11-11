@@ -611,7 +611,7 @@ double log_push(unsigned int which_level)
     return 0.0;
 
   int i = which_level - (size_levels - 1);
-  return i/options.lambda;
+  return ((double)i)/options.lambda;
 }
 
 bool enough_levels(Level *l, int size_l)
