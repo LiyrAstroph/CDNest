@@ -186,8 +186,8 @@ void dnest_run()
             printf("# Save levels at N= %d.\n", count_saves);
           }
           save_limits();
-          fsync(fsample);
-          fsync(fsample_info);
+          fsync(fileno(fsample));
+          fsync(fileno(fsample_info));
           printf("# Save limits, and sync samples at N= %d.\n", count_saves);
         }
       }
@@ -215,7 +215,7 @@ void dnest_run()
 void do_bookkeeping()
 {
   int i;
-  bool created_level = false;
+  //bool created_level = false;
 
   if(!enough_levels(levels_combine, size_levels_combine) && size_all_above >= options.new_level_interval)
   {
@@ -249,7 +249,7 @@ void do_bookkeeping()
       kill_lagging_particles();
     }
 
-    created_level = true;
+    //created_level = true;
   }
   
   recalculate_log_X();
