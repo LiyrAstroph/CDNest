@@ -306,7 +306,7 @@ void postprocess(double temperature)
       which =  gsl_rng_uniform_int(dnest_post_gsl_r, num_samples);
       if(log(gsl_rng_uniform(dnest_post_gsl_r)) < logP_samples[which])
       {
-        posterior_sample_info[j] = logP_samples[which] + max; // add back the subtracted value.
+        posterior_sample_info[j] = logl[j]; // add back the subtracted value.
         copy_model(posterior_sample+j*size_of_modeltype, sample+which*size_of_modeltype);
         break;
       }
