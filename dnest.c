@@ -21,7 +21,43 @@
 
 int dnest(int argc, char** argv)
 {
+  int opt;
+  
   setup(argc, argv);
+  
+  // cope with argv
+  if(thistask == root )
+  {
+    opterr = 0;
+    optind = 0;
+    while( (opt = getopt(argc, argv, "r:s:")) != -1)
+    {
+      switch(opt)
+      {
+        case 'r':
+          flag_restart = 1;
+          strcpy(file_restart, optarg);
+          printf("# Dnest restart.\n");
+          break;
+        case 's':
+          strcpy(file_save_restart, optarg);
+          printf("# Save restart file %s.\n", file_save_restart);
+          break;
+        case '?':
+          printf("# Incorrect option -%c %s.\n", optopt, optarg);
+          exit(0);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  MPI_Bcast(&flag_restart, 1, MPI_BYTE, root, MPI_COMM_WORLD);
+
+  if(flag_restart==1)
+    dnest_restart();
+
   initialize_output_file();
   dnest_run();
   close_output_file();
@@ -56,14 +92,13 @@ void dnest_run()
 
   while(true)
   {
-
-    dnest_mcmc_run();
-    MPI_Barrier(MPI_COMM_WORLD);
-
     //check for termination
     if(options.max_num_saves !=0 &&
         count_saves != 0 && (count_saves%options.max_num_saves == 0))
       break;
+
+    dnest_mcmc_run();
+    MPI_Barrier(MPI_COMM_WORLD);
     
     //gather levels
     MPI_Gather(levels, size_levels*sizeof(Level), MPI_BYTE, 
@@ -183,6 +218,7 @@ void dnest_run()
           if(size_levels_combine <= options.max_num_levels)
           {
             save_levels();
+
             printf("# Save levels at N= %d.\n", count_saves);
           }
           save_limits();
@@ -194,6 +230,7 @@ void dnest_run()
     }
   }
   
+  dnest_save_restart();
 
   if(thistask == root)
   {
@@ -649,20 +686,31 @@ void initialize_output_file()
   if(thistask != root)
     return;
 
-  fsample = fopen(options.sample_file, "w");
+  if(flag_restart !=1)
+    fsample = fopen(options.sample_file, "w");
+  else
+    fsample = fopen(options.sample_file, "a");
+  
   if(fsample==NULL)
   {
     fprintf(stderr, "# Cannot open file sample.txt.\n");
     exit(0);
   }
-  fprintf(fsample, "# \n");
-  fsample_info = fopen(options.sample_info_file, "w");
+  if(flag_restart != 1)
+    fprintf(fsample, "# \n");
+
+  if(flag_restart != 1)
+    fsample_info = fopen(options.sample_info_file, "w");
+  else
+    fsample_info = fopen(options.sample_info_file, "a");
+
   if(fsample_info==NULL)
   {
     fprintf(stderr, "# Cannot open file sample_info.txt.\n");
     exit(0);
   }
-  fprintf(fsample_info, "# level assignment, log likelihood, tiebreaker, ID.\n");
+  if(flag_restart != 1)
+    fprintf(fsample_info, "# level assignment, log likelihood, tiebreaker, ID.\n");
 }
 
 void close_output_file()
@@ -959,3 +1007,190 @@ int cmp(const void *pa, const void *pb)
   
   return true;
 }
+
+/*!
+ *  Save sampler state for later restart. 
+ */
+void dnest_save_restart()
+{
+  FILE *fp;
+  int i, j;
+  void *particles_all;
+  LikelihoodType *log_likelihoods_all;
+  unsigned int *level_assignments_all;
+
+  if(thistask == root)
+  {
+    fp = fopen(file_save_restart, "w");
+    if(fp == NULL)
+    {
+      fprintf(stderr, "# Error: Cannot open file %s. \n", file_save_restart);
+      exit(0);
+    }
+
+    particles_all = (void *)malloc( options.num_particles *  totaltask * size_of_modeltype );
+
+
+    log_likelihoods_all = (LikelihoodType *)malloc(totaltask * options.num_particles * sizeof(LikelihoodType));
+    level_assignments_all = (unsigned int*)malloc(totaltask * options.num_particles * sizeof(unsigned int));
+  }
+
+  MPI_Gather(particles, options.num_particles * size_of_modeltype, MPI_BYTE, 
+    particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, root, MPI_COMM_WORLD);
+
+  MPI_Gather(level_assignments, options.num_particles * sizeof(unsigned int), MPI_BYTE, 
+    level_assignments_all, options.num_particles * sizeof(unsigned int), MPI_BYTE, root, MPI_COMM_WORLD);
+
+  MPI_Gather(log_likelihoods, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, 
+    log_likelihoods_all, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, root, MPI_COMM_WORLD);
+
+
+  if(thistask == root )
+  {
+    fprintf(fp, "%d %d\n", count_saves, count_mcmc_steps);
+    fprintf(fp, "%d\n", size_levels_combine);
+
+    for(i=0; i<size_levels_combine; i++)
+    {
+      fprintf(fp, "%14.12g %14.12g %f %llu %llu %llu %llu\n", levels_combine[i].log_X, levels_combine[i].log_likelihood.value, 
+        levels_combine[i].log_likelihood.tiebreaker, levels_combine[i].accepts,
+        levels_combine[i].tries, levels[i].exceeds, levels_combine[i].visits);
+    }
+
+    for(j=0; j<totaltask; j++)
+    {
+      for(i=0; i<options.num_particles; i++)
+      {
+        fprintf(fp, "%d %e %f\n", level_assignments_all[j*options.num_particles + i], 
+          log_likelihoods_all[j*options.num_particles + i].value,
+          log_likelihoods_all[j*options.num_particles + i].tiebreaker);      
+      }
+    }
+    
+    for(i=0; i<size_levels_combine; i++)
+    {
+      fprintf(fp, "%d  ", i);
+      for(j=0; j<particle_offset_double; j++)
+        fprintf(fp, "%f  %f  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
+
+      fprintf(fp, "\n");
+    }
+    
+    for(j=0; j<totaltask; j++)
+    {
+      for(i=0; i<options.num_particles; i++)
+      {
+        print_particle(fp, particles_all + (j * options.num_particles + i) * particle_offset_size);
+      } 
+    }
+    
+    fclose(fp);
+  }
+}
+
+void dnest_restart()
+{
+  FILE *fp;
+  int i, j, k, itmp;
+  void *particles_all;
+  unsigned int *level_assignments_all;
+  LikelihoodType *log_likelihoods_all;
+  double *particle;
+  char  buf[200];
+
+  if(thistask == root)
+  {
+    fp = fopen(file_restart, "r");
+    if(fp == NULL)
+    {
+      fprintf(stderr, "# Error: Cannot open file %s. \n", file_restart);
+      exit(0);
+    }
+
+    particles_all = (void *)malloc( options.num_particles *  totaltask * size_of_modeltype );
+    log_likelihoods_all = (LikelihoodType *)malloc(totaltask * options.num_particles * sizeof(LikelihoodType));
+    level_assignments_all = (unsigned int*)malloc(totaltask * options.num_particles * sizeof(unsigned int));
+
+    fscanf(fp, "%d %lld\n", &count_saves, &count_mcmc_steps);
+
+    // number of levels
+    fscanf(fp, "%d\n", &size_levels_combine);
+    // read levels
+    for(i=0; i<size_levels_combine; i++)
+    {
+      fscanf(fp, "%lf %lf %lf %lld %lld %lld %lld\n", &(levels_combine[i].log_X), &(levels_combine[i].log_likelihood.value), 
+        &(levels_combine[i].log_likelihood.tiebreaker), &(levels_combine[i].accepts),
+        &(levels_combine[i].tries), &(levels_combine[i].exceeds), &(levels_combine[i].visits) );
+      //printf("%d %d %d %d\n", levels_combine[i].accepts, levels_combine[i].tries, levels_combine[i].exceeds, levels_combine[i].visits);
+    }
+    size_levels = size_levels_combine;
+    memcpy(levels, levels_combine, size_levels * sizeof(Level));
+
+    // read level assignment
+
+    for(j=0; j<totaltask; j++)
+    {
+      for(i=0; i<options.num_particles; i++)
+      {
+        fscanf(fp, "%d %lf %lf\n", &(level_assignments_all[j*options.num_particles + i]), 
+          &(log_likelihoods_all[j*options.num_particles + i].value), 
+          &(log_likelihoods_all[j*options.num_particles + i].tiebreaker));
+      }
+    }
+
+    // read limits
+    for(i=0; i<size_levels; i++)
+    {
+      fscanf(fp, "%d", &itmp);
+      for(j=0; j<particle_offset_double; j++)
+        fscanf(fp, "%lf  %lf", &limits[i*2*particle_offset_double+j*2], &limits[i*2*particle_offset_double+j*2+1]);
+
+      fscanf(fp, "\n");
+    }
+
+    // read particles
+    for(j=0; j<totaltask; j++)
+    {
+      for(i=0; i<options.num_particles; i++)
+      {
+        particle = (double *) (particles_all + (j * options.num_particles + i) * size_of_modeltype);
+
+        for(k=0; k < particle_offset_double; k++)
+        {
+          fscanf(fp, "%lf", &particle[k]);
+        }
+        fscanf(fp, "\n");
+      }
+    }
+
+    fclose(fp);
+  }
+
+  MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&count_mcmc_steps, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
+
+  MPI_Bcast(limits, size_levels * particle_offset_double * 2, MPI_DOUBLE, root, MPI_COMM_WORLD);
+
+  MPI_Scatter(level_assignments_all, options.num_particles * sizeof(unsigned int), MPI_BYTE,
+      level_assignments, options.num_particles * sizeof(unsigned int), MPI_BYTE, root, MPI_COMM_WORLD);
+
+  MPI_Scatter(log_likelihoods_all, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, 
+      log_likelihoods, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, root, MPI_COMM_WORLD);
+
+  MPI_Scatter(particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, 
+    particles, options.num_particles * size_of_modeltype, MPI_BYTE, root, MPI_COMM_WORLD);
+
+  for(i=0; i<options.num_particles; i++)
+  {
+    which_particle_update = i;
+    which_level_update = level_assignments[i];
+    //printf("%d %d %f\n", thistask, i, log_likelihoods[i].value);
+    log_likelihoods[i].value = log_likelihoods_cal_initial(particles+i*particle_offset_size);
+    //printf("%d %d %f\n", thistask, i, log_likelihoods[i].value);
+  }
+  return;
+}
+
+

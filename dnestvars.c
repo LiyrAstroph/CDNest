@@ -49,3 +49,6 @@ unsigned int size_above, size_all_above;
 double *limits, *copies_of_limits;
 
 int root;
+
+int flag_restart;
+char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];

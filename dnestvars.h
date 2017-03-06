@@ -84,6 +84,9 @@ extern unsigned long long int count_mcmc_steps;
 extern LikelihoodType *above;
 extern unsigned int size_above, size_all_above;
 
+extern int flag_restart;
+extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
+
 //the limits of parameters for each level;
 extern double *limits, *copies_of_limits;
 
@@ -127,6 +130,8 @@ void dnest_postprocess(double temperature);
 void postprocess(double temperature);
 void initialize_output_file();
 void close_output_file();
+void dnest_save_restart();
+void dnest_restart();
 /*=====================================================*/
 // users responsible for following functions
 extern void (*print_particle)(FILE *fp, const void *model);
