@@ -41,7 +41,7 @@ int dnest(int argc, char** argv)
           break;
         case 's':
           strcpy(file_save_restart, optarg);
-          printf("# Save restart file %s.\n", file_save_restart);
+          printf("# Restart file %s.\n", file_save_restart);
           break;
         case '?':
           printf("# Incorrect option -%c %s.\n", optopt, optarg);
@@ -1047,6 +1047,8 @@ void dnest_save_restart()
 
   if(thistask == root )
   {
+    printf("# Save restart data to file %s.\n", parset.file_save_restart);
+
     fprintf(fp, "%d %d\n", count_saves, count_mcmc_steps);
     fprintf(fp, "%d\n", size_levels_combine);
 
