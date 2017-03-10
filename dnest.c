@@ -1047,7 +1047,7 @@ void dnest_save_restart()
 
   if(thistask == root )
   {
-    printf("# Save restart data to file %s.\n", parset.file_save_restart);
+    printf("# Save restart data to file %s.\n", file_save_restart);
 
     fprintf(fp, "%d %d\n", count_saves, count_mcmc_steps);
     fprintf(fp, "%d\n", size_levels_combine);
