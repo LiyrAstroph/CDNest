@@ -227,10 +227,15 @@ void dnest_run()
           printf("# Save limits, and sync samples at N= %d.\n", count_saves);
         }
       }
+
+      if( count_saves % (int)(0.2 * options.max_num_saves) == 0 )
+      {
+        dnest_save_restart();
+      }
     }
   }
   
-  dnest_save_restart();
+  //dnest_save_restart();
 
   if(thistask == root)
   {
@@ -1018,10 +1023,12 @@ void dnest_save_restart()
   void *particles_all;
   LikelihoodType *log_likelihoods_all;
   unsigned int *level_assignments_all;
+  char str[200];
 
   if(thistask == root)
   {
-    fp = fopen(file_save_restart, "w");
+    sprintf(str, "%s_%d", file_save_restart, count_saves);
+    fp = fopen(str, "w");
     if(fp == NULL)
     {
       fprintf(stderr, "# Error: Cannot open file %s. \n", file_save_restart);
@@ -1047,7 +1054,7 @@ void dnest_save_restart()
 
   if(thistask == root )
   {
-    printf("# Save restart data to file %s.\n", file_save_restart);
+    printf("# Save restart data to file %s.\n", str);
 
     fprintf(fp, "%d %d\n", count_saves, count_mcmc_steps);
     fprintf(fp, "%d\n", size_levels_combine);
