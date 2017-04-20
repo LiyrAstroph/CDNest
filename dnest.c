@@ -1198,6 +1198,15 @@ void dnest_restart()
     //printf("%d %d %f\n", thistask, i, log_likelihoods[i].value);
     log_likelihoods[i].value = log_likelihoods_cal_initial(particles+i*particle_offset_size);
     //printf("%d %d %f\n", thistask, i, log_likelihoods[i].value);
+
+    //due to randomness, the original level assignment may be incorrect. re-asign the level
+    while(log_likelihoods[i].value < levels[level_assignments[i]].log_likelihood.value)
+    {
+      printf("level assignment decrease %d %f %f %d.\n", i, log_likelihoods[i].value, 
+        levels[level_assignments[i]].log_likelihood.value, level_assignments[i]);
+      level_assignments[i]--;
+    }
+    
   }
   return;
 }
