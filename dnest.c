@@ -41,7 +41,7 @@ int dnest(int argc, char** argv)
           break;
         case 's':
           strcpy(file_save_restart, optarg);
-          printf("# Restart file %s.\n", file_save_restart);
+          printf("# Setting restart file %s.\n", file_save_restart);
           break;
         case '?':
           printf("# Incorrect option -%c %s.\n", optopt, optarg);
@@ -222,8 +222,8 @@ void dnest_run()
             printf("# Save levels at N= %d.\n", count_saves);
           }
           save_limits();
-          fsync(fileno(fsample));
-          fsync(fileno(fsample_info));
+          //fsync(fileno(fsample));
+          //fsync(fileno(fsample_info));
           printf("# Save limits, and sync samples at N= %d.\n", count_saves);
         }
       }
@@ -1028,7 +1028,7 @@ void dnest_save_restart()
   if(thistask == root)
   {
     sprintf(str, "%s_%d", file_save_restart, count_saves);
-    fp = fopen(str, "w");
+    fp = fopen(str, "wb");
     if(fp == NULL)
     {
       fprintf(stderr, "# Error: Cannot open file %s. \n", file_save_restart);
@@ -1056,40 +1056,53 @@ void dnest_save_restart()
   {
     printf("# Save restart data to file %s.\n", str);
 
-    fprintf(fp, "%d %d\n", count_saves, count_mcmc_steps);
-    fprintf(fp, "%d\n", size_levels_combine);
+    //fprintf(fp, "%d %d\n", count_saves, count_mcmc_steps);
+    //fprintf(fp, "%d\n", size_levels_combine);
+
+    fwrite(&count_saves, sizeof(int), 1, fp);
+    fwrite(&count_mcmc_steps, sizeof(int), 1, fp);
+    fwrite(&size_levels_combine, sizeof(int), 1, fp);
 
     for(i=0; i<size_levels_combine; i++)
     {
-      fprintf(fp, "%14.12g %14.12g %f %llu %llu %llu %llu\n", levels_combine[i].log_X, levels_combine[i].log_likelihood.value, 
-        levels_combine[i].log_likelihood.tiebreaker, levels_combine[i].accepts,
-        levels_combine[i].tries, levels[i].exceeds, levels_combine[i].visits);
+      //fprintf(fp, "%14.12g %14.12g %f %llu %llu %llu %llu\n", levels_combine[i].log_X, levels_combine[i].log_likelihood.value, 
+      //  levels_combine[i].log_likelihood.tiebreaker, levels_combine[i].accepts,
+      //  levels_combine[i].tries, levels[i].exceeds, levels_combine[i].visits);
+
+      fwrite(&levels_combine[i], sizeof(Level), 1, fp);
     }
 
     for(j=0; j<totaltask; j++)
     {
       for(i=0; i<options.num_particles; i++)
       {
-        fprintf(fp, "%d %e %f\n", level_assignments_all[j*options.num_particles + i], 
-          log_likelihoods_all[j*options.num_particles + i].value,
-          log_likelihoods_all[j*options.num_particles + i].tiebreaker);      
+        //fprintf(fp, "%d %e %f\n", level_assignments_all[j*options.num_particles + i], 
+        //  log_likelihoods_all[j*options.num_particles + i].value,
+        //  log_likelihoods_all[j*options.num_particles + i].tiebreaker);  
+
+        fwrite(&level_assignments_all[j*options.num_particles + i], sizeof(int), 1, fp);
+        fwrite(&log_likelihoods_all[j*options.num_particles + i], sizeof(LikelihoodType), 1, fp);    
       }
     }
     
     for(i=0; i<size_levels_combine; i++)
     {
-      fprintf(fp, "%d  ", i);
+      //fprintf(fp, "%d  ", i);
       for(j=0; j<particle_offset_double; j++)
-        fprintf(fp, "%f  %f  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
+      {
+        //fprintf(fp, "%f  %f  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
+        fwrite(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);
+      }
 
-      fprintf(fp, "\n");
+      //fprintf(fp, "\n");
     }
     
     for(j=0; j<totaltask; j++)
     {
       for(i=0; i<options.num_particles; i++)
       {
-        print_particle(fp, particles_all + (j * options.num_particles + i) * particle_offset_size);
+        //print_particle(fp, particles_all + (j * options.num_particles + i) * particle_offset_size);
+        fwrite(particles_all + (j * options.num_particles + i) * particle_offset_size, size_of_modeltype, 1, fp);
       } 
     }
     
@@ -1104,32 +1117,43 @@ void dnest_restart()
   void *particles_all;
   unsigned int *level_assignments_all;
   LikelihoodType *log_likelihoods_all;
-  double *particle;
+  void *particle;
   char  buf[200];
 
   if(thistask == root)
   {
-    fp = fopen(file_restart, "r");
+    fp = fopen(file_restart, "rb");
     if(fp == NULL)
     {
       fprintf(stderr, "# Error: Cannot open file %s. \n", file_restart);
       exit(0);
     }
 
+    printf("# Reading %s\n", file_restart);
+
     particles_all = (void *)malloc( options.num_particles *  totaltask * size_of_modeltype );
     log_likelihoods_all = (LikelihoodType *)malloc(totaltask * options.num_particles * sizeof(LikelihoodType));
     level_assignments_all = (unsigned int*)malloc(totaltask * options.num_particles * sizeof(unsigned int));
 
-    fscanf(fp, "%d %lld\n", &count_saves, &count_mcmc_steps);
-
+    //fscanf(fp, "%d %lld\n", &count_saves, &count_mcmc_steps);
     // number of levels
-    fscanf(fp, "%d\n", &size_levels_combine);
+    //fscanf(fp, "%d\n", &size_levels_combine);
+
+    fread(&count_saves, sizeof(int), 1, fp);
+    fread(&count_mcmc_steps, sizeof(int), 1, fp);
+    fread(&size_levels_combine, sizeof(int), 1, fp);
+
+    //printf("%d %d %d\n", count_saves, count_mcmc_steps, size_levels_combine);
+
     // read levels
     for(i=0; i<size_levels_combine; i++)
     {
-      fscanf(fp, "%lf %lf %lf %lld %lld %lld %lld\n", &(levels_combine[i].log_X), &(levels_combine[i].log_likelihood.value), 
-        &(levels_combine[i].log_likelihood.tiebreaker), &(levels_combine[i].accepts),
-        &(levels_combine[i].tries), &(levels_combine[i].exceeds), &(levels_combine[i].visits) );
+      //fscanf(fp, "%lf %lf %lf %lld %lld %lld %lld\n", &(levels_combine[i].log_X), &(levels_combine[i].log_likelihood.value), 
+      //  &(levels_combine[i].log_likelihood.tiebreaker), &(levels_combine[i].accepts),
+      //  &(levels_combine[i].tries), &(levels_combine[i].exceeds), &(levels_combine[i].visits) );
+
+      fread(&levels_combine[i], sizeof(Level), 1, fp);
+
       //printf("%d %d %d %d\n", levels_combine[i].accepts, levels_combine[i].tries, levels_combine[i].exceeds, levels_combine[i].visits);
     }
     size_levels = size_levels_combine;
@@ -1141,20 +1165,26 @@ void dnest_restart()
     {
       for(i=0; i<options.num_particles; i++)
       {
-        fscanf(fp, "%d %lf %lf\n", &(level_assignments_all[j*options.num_particles + i]), 
-          &(log_likelihoods_all[j*options.num_particles + i].value), 
-          &(log_likelihoods_all[j*options.num_particles + i].tiebreaker));
+        //fscanf(fp, "%d %lf %lf\n", &(level_assignments_all[j*options.num_particles + i]), 
+        //  &(log_likelihoods_all[j*options.num_particles + i].value), 
+        //  &(log_likelihoods_all[j*options.num_particles + i].tiebreaker));
+
+        fread(&level_assignments_all[j*options.num_particles + i], sizeof(int), 1, fp);
+        fread(&log_likelihoods_all[j*options.num_particles + i], sizeof(LikelihoodType), 1, fp); 
       }
     }
 
     // read limits
     for(i=0; i<size_levels; i++)
     {
-      fscanf(fp, "%d", &itmp);
+      //fscanf(fp, "%d", &itmp);
       for(j=0; j<particle_offset_double; j++)
-        fscanf(fp, "%lf  %lf", &limits[i*2*particle_offset_double+j*2], &limits[i*2*particle_offset_double+j*2+1]);
+      {
+        //fscanf(fp, "%lf  %lf", &limits[i*2*particle_offset_double+j*2], &limits[i*2*particle_offset_double+j*2+1]);
+        fread(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);      
+      }
 
-      fscanf(fp, "\n");
+      //fscanf(fp, "\n");
     }
 
     // read particles
@@ -1162,13 +1192,14 @@ void dnest_restart()
     {
       for(i=0; i<options.num_particles; i++)
       {
-        particle = (double *) (particles_all + (j * options.num_particles + i) * size_of_modeltype);
+        particle = (particles_all + (j * options.num_particles + i) * size_of_modeltype);
 
-        for(k=0; k < particle_offset_double; k++)
-        {
-          fscanf(fp, "%lf", &particle[k]);
-        }
-        fscanf(fp, "\n");
+        //for(k=0; k < particle_offset_double; k++)
+        //{
+        //  fscanf(fp, "%lf", &particle[k]);
+        //}
+        //fscanf(fp, "\n");
+        fread(particle, size_of_modeltype, 1, fp);
       }
     }
 
