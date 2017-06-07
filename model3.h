@@ -53,6 +53,7 @@ void copy_model_thismodel3(void *dest, const void *src);
 void* create_model_thismodel3();
 int get_num_params_thismodel3();
 void copy_best_model_thismodel3(const void *bm, const void *bm_std);
+void restart_clouds_model3(int iflag);
 
 void (*data_load)();
 void (*print_particle)(FILE *fp, const void *model);
@@ -64,4 +65,5 @@ void (*copy_model)(void *dest, const void *src);
 void* (*create_model)();
 int (*get_num_params)();
 void (*copy_best_model)(const void *bm, const void *bm_std);
+void (*restart_clouds)(int iflag);
 #endif

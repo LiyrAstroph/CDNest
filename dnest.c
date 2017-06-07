@@ -1108,6 +1108,8 @@ void dnest_save_restart()
     
     fclose(fp);
   }
+
+  restart_clouds(0);
 }
 
 void dnest_restart()
@@ -1222,14 +1224,16 @@ void dnest_restart()
   MPI_Scatter(particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, 
     particles, options.num_particles * size_of_modeltype, MPI_BYTE, root, MPI_COMM_WORLD);
 
+  
+  restart_clouds(1);
+
   for(i=0; i<options.num_particles; i++)
   {
     which_particle_update = i;
     which_level_update = level_assignments[i];
     //printf("%d %d %f\n", thistask, i, log_likelihoods[i].value);
-    log_likelihoods[i].value = log_likelihoods_cal_initial(particles+i*particle_offset_size);
+    log_likelihoods[i].value = log_likelihoods_cal_restart(particles+i*particle_offset_size);
     //printf("%d %d %f\n", thistask, i, log_likelihoods[i].value);
-
     //due to randomness, the original level assignment may be incorrect. re-asign the level
     while(log_likelihoods[i].value < levels[level_assignments[i]].log_likelihood.value)
     {

@@ -54,16 +54,18 @@ void copy_model_thismodel(void *dest, const void *src);
 void* create_model_thismodel();
 int get_num_params_thismodel();
 void copy_best_model_thismodel(const void *bm, const void *bm_std);
+void restart_clouds_model1(int iflag);
 
 void (*data_load)();
 void (*print_particle)(FILE *fp, const void *model);
 void (*from_prior)(void *model);
 double (*log_likelihoods_cal)(const void *model);
 double (*log_likelihoods_cal_initial)(const void *model);
+double (*log_likelihoods_cal_restart)(const void *model);
 double (*perturb)(void *model);
 void (*copy_model)(void *dest, const void *src);
 void* (*create_model)();
 int (*get_num_params)();
 void (*copy_best_model)(const void *bm, const void *bm_std);
-
+void (*restart_clouds)(int iflag);
 #endif

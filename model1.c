@@ -50,6 +50,7 @@ void model1(int argc, char **argv)
   create_model = create_model_thismodel;
   get_num_params = get_num_params_thismodel;
   copy_best_model = copy_best_model_thismodel;
+  restart_clouds = restart_clouds_model1;
   
   /* load data */
   if(thistask == 0)
@@ -200,4 +201,9 @@ void* create_model_thismodel()
 int get_num_params_thismodel()
 {
   return num_params;
+}
+
+void restart_clouds_model1(int iflag)
+{
+  return;
 }

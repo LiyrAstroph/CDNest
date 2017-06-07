@@ -184,3 +184,8 @@ int get_num_params_thismodel3()
 {
   return num_params;
 }
+
+void restart_clouds_moddel3(int iflag)
+{
+  return;
+}
