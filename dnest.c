@@ -222,8 +222,10 @@ void dnest_run()
             printf("# Save levels at N= %d.\n", count_saves);
           }
           save_limits();
-          //fsync(fileno(fsample));
-          //fsync(fileno(fsample_info));
+          fflush(fsample_info);
+          fsync(fileno(fsample_info));
+          fflush(fsample);
+          fsync(fileno(fsample));
           printf("# Save limits, and sync samples at N= %d.\n", count_saves);
         }
       }
