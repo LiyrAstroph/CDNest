@@ -111,26 +111,6 @@ void postprocess(double temperature)
     }
   }
   fclose(fp);
-  
-  // read sample_info
-  fp = fopen(options.sample_info_file, "r");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_info_file);
-    exit(0);
-  }
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  for(i=0; i < num_samples; i++)
-  {
-    fgets(buf, BUF_MAX_LENGTH, fp);
-    if(sscanf(buf, "%lf %lf %lf", &sample_info[i][0], &sample_info[i][1], &sample_info[i][2]) < 3)
-    {
-      fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_info_file);
-      exit(0);
-    }
-    logl[i] = sample_info[i][1] / temperature;
-  }
-  fclose(fp);
 
   // read sample
   double *psample;
@@ -157,6 +137,59 @@ void postprocess(double temperature)
   }
   fclose(fp);
   
+  // read sample_info
+  if(flag_sample_info == 0)
+  {
+    fp = fopen(options.sample_info_file, "r");
+    if(fp == NULL)
+    {
+      fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_info_file);
+      exit(0);
+    }
+    fgets(buf, BUF_MAX_LENGTH, fp);
+    for(i=0; i < num_samples; i++)
+    {
+      fgets(buf, BUF_MAX_LENGTH, fp);
+      if(sscanf(buf, "%lf %lf %lf", &sample_info[i][0], &sample_info[i][1], &sample_info[i][2]) < 3)
+      {
+        fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_info_file);
+        exit(0);
+      }
+    }
+    fclose(fp);
+  }
+  else
+  {
+    fp = fopen(options.sample_info_file, "w");
+    if(fp == NULL)
+    {
+      fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_info_file);
+      exit(0);
+    }
+    printf("# Dnest starts to recalculate the sample info.\n");
+    fprintf(fp, "# level assignment, log likelihood, tiebreaker, ID.\n");
+
+    for(i=0; i < num_samples; i++)
+    {
+      sample_info[i][1] = log_likelihoods_cal_initial(sample+i*size_of_modeltype);
+      sample_info[i][2] = dnest_rand();
+
+      j=num_levels-1;
+      while( (sample_info[i][1] < levels_orig[j][1]) && (j>=0) )
+      {
+        j--;
+      }
+      if(j == num_levels-1) j = num_levels - 2;
+
+      sample_info[i][0] = (double)dnest_rand_int(j+1);
+
+      fprintf(fp, "%d %e %f %d\n", (int)sample_info[i][0], sample_info[i][1], sample_info[i][2], 1);
+    }
+    fclose(fp);
+  }
+  for(i=0; i<num_samples; i++)
+    logl[i] = sample_info[i][1] / temperature;
+
   // finding sandwhiching levels for each samples
   for(i=0; i<num_samples; i++)
   {

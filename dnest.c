@@ -28,6 +28,7 @@ int dnest(int argc, char** argv)
   // cope with argv
   if(thistask == root )
   {
+    post_temp = 1.0;
     flag_restart = 0;
     flag_postprc = 0;
     flag_sample_info = 0;
@@ -56,7 +57,7 @@ int dnest(int argc, char** argv)
         case 'p':
           flag_postprc = 1;
           post_temp = 1.0;
-          printf("# Denst does postprocess.\n");
+          printf("# Dnest does postprocess.\n");
           break;
         case 't':
           post_temp = atof(optarg);
@@ -74,7 +75,7 @@ int dnest(int argc, char** argv)
           break;
         case 'c':
           flag_sample_info = 1;
-          printf("# Dnest recalculates posterior sample information.\n");
+          printf("# Dnest recalculates sample information.\n");
           break;
         case '?':
           printf("# Dnest incorrect option -%c %s.\n", optopt, optarg);
@@ -97,6 +98,12 @@ int dnest(int argc, char** argv)
     return 0;
   }
 
+  if(flag_sample_info == 1)
+  {
+    dnest_postprocess(post_temp);
+    return 0;
+  }
+
   if(flag_restart==1)
     dnest_restart();
 
@@ -104,9 +111,9 @@ int dnest(int argc, char** argv)
   dnest_run();
   close_output_file();
 
-  finalise();
-
   dnest_postprocess(post_temp);
+
+  finalise();
 
   return 0;
 }
