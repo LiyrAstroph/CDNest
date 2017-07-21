@@ -28,23 +28,56 @@ int dnest(int argc, char** argv)
   // cope with argv
   if(thistask == root )
   {
+    flag_restart = 0;
+    flag_postprc = 0;
+    flag_sample_info = 0;
+    
+    //int i;
+    //for(i=0; i<argc; i++)
+    //{
+    //  printf("%s\n", argv[i]);
+    //}
+
     opterr = 0;
     optind = 0;
-    while( (opt = getopt(argc, argv, "r:s:")) != -1)
+    while( (opt = getopt(argc, argv, "r:s:pt:c")) != -1)
     {
       switch(opt)
       {
         case 'r':
           flag_restart = 1;
           strcpy(file_restart, optarg);
-          printf("# Dnest restart.\n");
+          printf("# Dnest restarts.\n");
           break;
         case 's':
           strcpy(file_save_restart, optarg);
-          printf("# Setting restart file %s.\n", file_save_restart);
+          printf("# Dnest sets restart file %s.\n", file_save_restart);
+          break;
+        case 'p':
+          flag_postprc = 1;
+          post_temp = 1.0;
+          printf("# Denst does postprocess.\n");
+          break;
+        case 't':
+          post_temp = atof(optarg);
+          printf("# Dnest sets a temperature %f.\n", post_temp);
+          if(post_temp == 0.0)
+          {
+            printf("# Dnest incorrect option -t %s.\n", optarg);
+            exit(0);
+          }
+          if(post_temp < 1.0)
+          {
+            printf("# Dnest temperature should >= 1.0\n");
+            exit(0);
+          }
+          break;
+        case 'c':
+          flag_sample_info = 1;
+          printf("# Dnest recalculates posterior sample information.\n");
           break;
         case '?':
-          printf("# Incorrect option -%c %s.\n", optopt, optarg);
+          printf("# Dnest incorrect option -%c %s.\n", optopt, optarg);
           exit(0);
           break;
         default:
@@ -53,7 +86,16 @@ int dnest(int argc, char** argv)
     }
   }
 
-  MPI_Bcast(&flag_restart, 1, MPI_BYTE, root, MPI_COMM_WORLD);
+  MPI_Bcast(&flag_restart, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&flag_postprc, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&flag_sample_info, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&post_temp, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
+
+  if(flag_postprc == 1)
+  {
+    dnest_postprocess(post_temp);
+    return 0;
+  }
 
   if(flag_restart==1)
     dnest_restart();
@@ -63,6 +105,9 @@ int dnest(int argc, char** argv)
   close_output_file();
 
   finalise();
+
+  dnest_postprocess(post_temp);
+
   return 0;
 }
 
@@ -751,6 +796,7 @@ void setup(int argc, char** argv)
     options_load();
   MPI_Bcast(&options, sizeof(Options), MPI_BYTE, root, MPI_COMM_WORLD);
   
+  post_temp = 1.0;
   compression = exp(1.0);
   regularisation = options.new_level_interval*0.1;
   save_to_disk = true;

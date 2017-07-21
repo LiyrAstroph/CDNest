@@ -50,5 +50,6 @@ double *limits, *copies_of_limits;
 
 int root;
 
-int flag_restart;
+int flag_restart=0, flag_postprc=0, flag_sample_info=0;
+double post_temp=1.0;
 char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
