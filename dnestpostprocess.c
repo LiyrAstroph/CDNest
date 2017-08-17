@@ -110,6 +110,12 @@ void postprocess(double temperature)
   fgets(buf, BUF_MAX_LENGTH, fp);
   for(i=0; i < num_levels; i++)
   {
+    if(feof(fp) != 0)
+    {
+      fprintf(stderr, "# Error: file %s ends at %d.\n", options.levels_file, i);
+      exit(0);
+    }
+
     fgets(buf, BUF_MAX_LENGTH, fp);
     
     if(sscanf(buf, "%lf %lf %lf", &levels_orig[i][0], &levels_orig[i][1], &levels_orig[i][2]) < 3)
@@ -117,6 +123,7 @@ void postprocess(double temperature)
       fprintf(stderr, "# Error: Cannot read file %s.\n", options.levels_file);
       exit(0);
     }
+    buf[0]='\0';  // clear up buf
   }
   fclose(fp);
 
@@ -157,12 +164,18 @@ void postprocess(double temperature)
     fgets(buf, BUF_MAX_LENGTH, fp);
     for(i=0; i < num_samples; i++)
     {
+      if(feof(fp) != 0)
+      {
+        fprintf(stderr, "# Error: file %s ends at %d.\n", options.sample_info_file, i);
+        exit(0);
+      }
       fgets(buf, BUF_MAX_LENGTH, fp);
       if(sscanf(buf, "%lf %lf %lf", &sample_info[i][0], &sample_info[i][1], &sample_info[i][2]) < 3)
       {
         fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_info_file);
         exit(0);
       }
+      buf[0]='\0';  // clear buf
     }
     fclose(fp);
   }
