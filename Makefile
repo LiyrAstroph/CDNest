@@ -7,6 +7,8 @@ OPTIMIZE = -O2 -Wall
 #SYSTEM="Darwin"
 SYSTEM="Linux"
 #SYSTEM="Cluster"
+#SYSTEM="TianheII"
+
 
 ifeq ($(SYSTEM), "Linux")
 NCORE      :=$(grep -c ^processor /proc/cpuinfo)
@@ -52,6 +54,16 @@ LAPACK_LIBS = -L/mbh/mbhd01/user/liyanrong/soft/lapack/lib -llapacke -llapack -l
 #CBLAS_INCL  = -I/mbh/mbhd01/user/liyanrong/soft/atlas/include
 #CBLAS_LIBS  = -L/mbh/mbhd01/user/liyanrong/soft/atlas/lib -lcblas
 endif
+
+ifeq ($(SYSTEM), "TianheII")
+GSL_INCL =
+GSL_LIBS = -lgsl -lgslcblas -lm
+MPICHLIB = -lmpich
+MPIINCL  =
+LAPACK_INCL = -I/HOME/ihep_yrli_1/BIGDATA/soft/lapack/include
+LAPACK_LIBS = -L/HOME/ihep_yrli_1/BIGDATA/soft/lapack/lib -llapacke -llapack -lblas -lgfortran
+endif
+
 
 OPTIONS  = $(OPTIMIZE)
 CFLAGS   = $(OPTIONS) $(GSL_INCL) $(LAPACK_INCL) $(CBLAS_INCL) $(MPIINCL)
