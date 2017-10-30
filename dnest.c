@@ -990,6 +990,16 @@ void options_load()
   
   fclose(fp);
 
+  // check options.
+  
+  if(options.new_level_interval < totaltask * options.thread_steps)
+  {
+    printf("# incorrect options:\n");
+    printf("# new level interval should be equal to or larger than"); 
+    printf("  totaltask * thread step.\n");
+    exit(0);
+  }
+
 /*  strcpy(options.sample_file, "sample.txt");
   strcpy(options.sample_info_file, "sample_info.txt");
   strcpy(options.levels_file, "levels.txt");
