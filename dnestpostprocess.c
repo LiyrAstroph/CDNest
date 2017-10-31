@@ -153,7 +153,7 @@ void postprocess(double temperature)
   fclose(fp);
   
   // read sample_info
-  if(flag_sample_info == 0) //no need to recalculate
+  if(dnest_flag_sample_info == 0) //no need to recalculate
   {
     fp = fopen(options.sample_info_file, "r");
     if(fp == NULL)

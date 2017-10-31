@@ -28,10 +28,10 @@ int dnest(int argc, char** argv)
   // cope with argv
   if(thistask == root )
   {
-    post_temp = 1.0;
-    flag_restart = 0;
-    flag_postprc = 0;
-    flag_sample_info = 0;
+    dnest_post_temp = 1.0;
+    dnest_flag_restart = 0;
+    dnest_flag_postprc = 0;
+    dnest_flag_sample_info = 0;
     
     //int i;
     //for(i=0; i<argc; i++)
@@ -46,7 +46,7 @@ int dnest(int argc, char** argv)
       switch(opt)
       {
         case 'r':
-          flag_restart = 1;
+          dnest_flag_restart = 1;
           strcpy(file_restart, optarg);
           printf("# Dnest restarts.\n");
           break;
@@ -55,26 +55,26 @@ int dnest(int argc, char** argv)
           printf("# Dnest sets restart file %s.\n", file_save_restart);
           break;
         case 'p':
-          flag_postprc = 1;
-          post_temp = 1.0;
+          dnest_flag_postprc = 1;
+          dnest_post_temp = 1.0;
           printf("# Dnest does postprocess.\n");
           break;
         case 't':
-          post_temp = atof(optarg);
-          printf("# Dnest sets a temperature %f.\n", post_temp);
-          if(post_temp == 0.0)
+          dnest_post_temp = atof(optarg);
+          printf("# Dnest sets a temperature %f.\n", dnest_post_temp);
+          if(dnest_post_temp == 0.0)
           {
             printf("# Dnest incorrect option -t %s.\n", optarg);
             exit(0);
           }
-          if(post_temp < 1.0)
+          if(dnest_post_temp < 1.0)
           {
             printf("# Dnest temperature should >= 1.0\n");
             exit(0);
           }
           break;
         case 'c':
-          flag_sample_info = 1;
+          dnest_flag_sample_info = 1;
           printf("# Dnest recalculates sample information.\n");
           break;
         case '?':
@@ -87,31 +87,31 @@ int dnest(int argc, char** argv)
     }
   }
 
-  MPI_Bcast(&flag_restart, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&flag_postprc, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&flag_sample_info, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&post_temp, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_restart, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_postprc, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_sample_info, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
 
-  if(flag_postprc == 1)
+  if(dnest_flag_postprc == 1)
   {
-    dnest_postprocess(post_temp);
+    dnest_postprocess(dnest_post_temp);
     return 0;
   }
 
-  if(flag_sample_info == 1)
+  if(dnest_flag_sample_info == 1)
   {
-    dnest_postprocess(post_temp);
+    dnest_postprocess(dnest_post_temp);
     return 0;
   }
 
-  if(flag_restart==1)
+  if(dnest_flag_restart==1)
     dnest_restart();
 
   initialize_output_file();
   dnest_run();
   close_output_file();
 
-  dnest_postprocess(post_temp);
+  dnest_postprocess(dnest_post_temp);
 
   finalise();
 
@@ -745,7 +745,7 @@ void initialize_output_file()
   if(thistask != root)
     return;
 
-  if(flag_restart !=1)
+  if(dnest_flag_restart !=1)
     fsample = fopen(options.sample_file, "w");
   else
     fsample = fopen(options.sample_file, "a");
@@ -755,10 +755,10 @@ void initialize_output_file()
     fprintf(stderr, "# Cannot open file sample.txt.\n");
     exit(0);
   }
-  if(flag_restart != 1)
+  if(dnest_flag_restart != 1)
     fprintf(fsample, "# \n");
 
-  if(flag_restart != 1)
+  if(dnest_flag_restart != 1)
     fsample_info = fopen(options.sample_info_file, "w");
   else
     fsample_info = fopen(options.sample_info_file, "a");
@@ -768,7 +768,7 @@ void initialize_output_file()
     fprintf(stderr, "# Cannot open file sample_info.txt.\n");
     exit(0);
   }
-  if(flag_restart != 1)
+  if(dnest_flag_restart != 1)
     fprintf(fsample_info, "# level assignment, log likelihood, tiebreaker, ID.\n");
 }
 
@@ -803,7 +803,7 @@ void setup(int argc, char** argv)
     options_load();
   MPI_Bcast(&options, sizeof(Options), MPI_BYTE, root, MPI_COMM_WORLD);
   
-  post_temp = 1.0;
+  dnest_post_temp = 1.0;
   compression = exp(1.0);
   regularisation = options.new_level_interval*0.1;
   save_to_disk = true;

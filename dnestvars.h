@@ -84,8 +84,8 @@ extern unsigned long long int count_mcmc_steps;
 extern LikelihoodType *above;
 extern unsigned int size_above, size_all_above;
 
-extern int flag_restart, flag_postprc, flag_sample_info;
-extern double post_temp;
+extern int dnest_flag_restart, dnest_flag_postprc, dnest_flag_sample_info;
+extern double dnest_post_temp;
 extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
 //the limits of parameters for each level;
