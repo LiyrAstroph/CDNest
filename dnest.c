@@ -32,6 +32,7 @@ int dnest(int argc, char** argv)
     dnest_flag_restart = 0;
     dnest_flag_postprc = 0;
     dnest_flag_sample_info = 0;
+    dnest_flag_limits = 0;
 
     strcpy(file_save_restart, "restart_dnest.txt");
     
@@ -43,7 +44,7 @@ int dnest(int argc, char** argv)
 
     opterr = 0;
     optind = 0;
-    while( (opt = getopt(argc, argv, "r:s:pt:c")) != -1)
+    while( (opt = getopt(argc, argv, "r:s:pt:cl")) != -1)
     {
       switch(opt)
       {
@@ -79,6 +80,9 @@ int dnest(int argc, char** argv)
           dnest_flag_sample_info = 1;
           printf("# Dnest recalculates sample information.\n");
           break;
+        case 'l':
+          dnest_flag_limits = 1;
+          break;
         case '?':
           printf("# Dnest incorrect option -%c %s.\n", optopt, optarg);
           exit(0);
@@ -93,6 +97,7 @@ int dnest(int argc, char** argv)
   MPI_Bcast(&dnest_flag_postprc, 1, MPI_INT, root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_sample_info, 1, MPI_INT, root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_limits, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
 
   if(dnest_flag_postprc == 1)
   {
@@ -159,8 +164,11 @@ void dnest_run()
              copies_of_levels, size_levels*sizeof(Level), MPI_BYTE, root, MPI_COMM_WORLD);
 
     //gather limits
-    MPI_Gather(limits, size_levels*particle_offset_double*2, MPI_DOUBLE, 
+    if(dnest_flag_limits == 1)
+    {
+      MPI_Gather(limits, size_levels*particle_offset_double*2, MPI_DOUBLE, 
                copies_of_limits, size_levels*particle_offset_double*2, MPI_DOUBLE, root, MPI_COMM_WORLD );
+    }
     
     //gather size_above 
     MPI_Gather(&size_above, 1, MPI_INT, buf_size_above, 1, MPI_INT, root, MPI_COMM_WORLD);
@@ -220,33 +228,36 @@ void dnest_run()
       free(levels_orig);
 
       // scan over all copies of limits
-      plimits = copies_of_limits;
-      for(i=0; i< totaltask; i++)
+      if(dnest_flag_limits == 1)
       {
-        for(j=0; j < size_levels; j++)
+        plimits = copies_of_limits;
+        for(i=0; i< totaltask; i++)
         {
+          for(j=0; j < size_levels; j++)
+          {
+            for(k=0; k<particle_offset_double; k++)
+            {
+              limits[j * particle_offset_double *2 + k*2 ] = fmin(limits[j * particle_offset_double *2 + k*2 ],
+                plimits[j * particle_offset_double *2 + k*2]);
+              limits[j * particle_offset_double *2 + k*2 +1 ] = fmax(limits[j * particle_offset_double *2 + k*2 +1 ],
+                plimits[j * particle_offset_double *2 + k*2 + 1]);
+            }
+          
+          }
+          plimits += size_levels * particle_offset_double * 2;
+        }
+
+        // limits of smaller levels should be larger than those of higher levels
+        for(j=size_levels-2; j >= 0; j--)
           for(k=0; k<particle_offset_double; k++)
           {
-            limits[j * particle_offset_double *2 + k*2 ] = fmin(limits[j * particle_offset_double *2 + k*2 ],
-              plimits[j * particle_offset_double *2 + k*2]);
-            limits[j * particle_offset_double *2 + k*2 +1 ] = fmax(limits[j * particle_offset_double *2 + k*2 +1 ],
-              plimits[j * particle_offset_double *2 + k*2 + 1]);
-          }
-          
-        }
-        plimits += size_levels * particle_offset_double * 2;
-      }
-
-      // limits of smaller levels should be larger than those of higher levels
-      for(j=size_levels-2; j >= 0; j--)
-        for(k=0; k<particle_offset_double; k++)
-        {
-          limits[ j * particle_offset_double *2 + k*2 ] = fmin( limits[ j * particle_offset_double *2 + k*2 ],
+            limits[ j * particle_offset_double *2 + k*2 ] = fmin( limits[ j * particle_offset_double *2 + k*2 ],
                     limits[ (j+1) * particle_offset_double *2 + k*2 ] );
 
-          limits[ j * particle_offset_double *2 + k*2 + 1] = fmax( limits[ j * particle_offset_double *2 + k*2 +1 ],
+            limits[ j * particle_offset_double *2 + k*2 + 1] = fmax( limits[ j * particle_offset_double *2 + k*2 +1 ],
                     limits[ (j+1) * particle_offset_double *2 + k*2 + 1 ] );
-        }
+          }
+      }
 
       do_bookkeeping();
 
@@ -258,7 +269,9 @@ void dnest_run()
     MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
     //MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
     MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
-    MPI_Bcast(limits, size_levels * particle_offset_double *2, MPI_DOUBLE, root, MPI_COMM_WORLD);
+
+    if(dnest_flag_limits == 1)
+      MPI_Bcast(limits, size_levels * particle_offset_double *2, MPI_DOUBLE, root, MPI_COMM_WORLD);
 
     if(count_mcmc_steps >= (count_saves + 1)*options.save_interval)
     {
@@ -275,7 +288,8 @@ void dnest_run()
 
             printf("# Save levels at N= %d.\n", count_saves);
           }
-          save_limits();
+          if(dnest_flag_limits == 1)
+            save_limits();
           fflush(fsample_info);
           fsync(fileno(fsample_info));
           fflush(fsample);
@@ -297,7 +311,8 @@ void dnest_run()
   {
     //save levels
     save_levels();
-    save_limits();
+    if(dnest_flag_limits == 1)
+      save_limits();
 
     /* output state of sampler */
     FILE *fp;
@@ -686,13 +701,16 @@ void update_level_assignment(unsigned int which)
     level_assignments[which] = proposal;
 
 // update the limits of the level
-    double *particle = (double *) (particles+ which*particle_offset_size);
-    for(i=0; i<particle_offset_double; i++)
+    if(dnest_flag_limits == 1)
     {
-      limits[proposal * 2 * particle_offset_double +  i*2] = 
+      double *particle = (double *) (particles+ which*particle_offset_size);
+      for(i=0; i<particle_offset_double; i++)
+      {
+        limits[proposal * 2 * particle_offset_double +  i*2] = 
             fmin(limits[proposal * 2* particle_offset_double +  i*2], particle[i]);
-      limits[proposal * 2 * particle_offset_double +  i*2+1] = 
+        limits[proposal * 2 * particle_offset_double +  i*2+1] = 
             fmax(limits[proposal * 2 * particle_offset_double +  i*2+1], particle[i]);
+      }
     }
   }
 
@@ -833,14 +851,21 @@ void setup(int argc, char** argv)
       copies_of_levels = (Level *)malloc(totaltask * options.max_num_levels * sizeof(Level));
     }
 
-    limits = malloc(options.max_num_levels * particle_offset_double * 2 * sizeof(double));
-    copies_of_limits = malloc( totaltask * options.max_num_levels * particle_offset_double * 2 * sizeof(double));
-    for(i=0; i<options.max_num_levels; i++)
+    if(dnest_flag_limits == 1)
     {
-      for(j=0; j<particle_offset_double; j++)
+      limits = malloc(options.max_num_levels * particle_offset_double * 2 * sizeof(double));
+      for(i=0; i<options.max_num_levels; i++)
       {
-        limits[i*2*particle_offset_double+ j*2] = DBL_MAX;
-        limits[i*2*particle_offset_double + j*2 + 1] = -DBL_MAX;
+        for(j=0; j<particle_offset_double; j++)
+        {
+          limits[i*2*particle_offset_double+ j*2] = DBL_MAX;
+          limits[i*2*particle_offset_double + j*2 + 1] = -DBL_MAX;
+        }
+      }
+
+      if(thistask == root)
+      {
+        copies_of_limits = malloc( totaltask * options.max_num_levels * particle_offset_double * 2 * sizeof(double));
       }
     }
   }
@@ -853,14 +878,21 @@ void setup(int argc, char** argv)
       copies_of_levels = (Level *)malloc(totaltask * LEVEL_NUM_MAX * sizeof(Level));
     }
 
-    limits = malloc(LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
-    copies_of_limits = malloc(totaltask * LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
-    for(i=0; i<LEVEL_NUM_MAX; i++)
+    if(dnest_flag_limits == 1)
     {
-      for(j=0; j<particle_offset_double; j++)
+      limits = malloc(LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
+      for(i=0; i<LEVEL_NUM_MAX; i++)
       {
-        limits[i*2*particle_offset_double + j*2] = DBL_MAX;
-        limits[i*2*particle_offset_double + j*2 + 1] = -DBL_MAX;
+        for(j=0; j<particle_offset_double; j++)
+        {
+          limits[i*2*particle_offset_double + j*2] = DBL_MAX;
+          limits[i*2*particle_offset_double + j*2 + 1] = -DBL_MAX;
+        }
+      }
+
+      if(thistask == root)
+      {
+        copies_of_limits = malloc(totaltask * LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
       }
     }
   }
@@ -909,13 +941,17 @@ void finalise()
   free(log_likelihoods);
   free(level_assignments);
   free(levels);
-  free(limits);
+
+  if(dnest_flag_limits == 1)
+    free(limits);
 
 
   if(thistask == root)
   {
     free(all_above);
     free(copies_of_levels);
+    if(dnest_flag_limits == 1)
+      free(copies_of_limits);
   }
   gsl_rng_free(dnest_gsl_r);
 
@@ -1152,16 +1188,19 @@ void dnest_save_restart()
       }
     }
     
-    for(i=0; i<size_levels_combine; i++)
+    if(dnest_flag_limits == 1)
     {
-      //fprintf(fp, "%d  ", i);
-      for(j=0; j<particle_offset_double; j++)
+      for(i=0; i<size_levels_combine; i++)
       {
-        //fprintf(fp, "%f  %f  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
-        fwrite(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);
+        //fprintf(fp, "%d  ", i);
+        for(j=0; j<particle_offset_double; j++)
+        {
+          //fprintf(fp, "%f  %f  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
+          fwrite(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);
+        }
+  
+          //fprintf(fp, "\n");
       }
-
-      //fprintf(fp, "\n");
     }
     
     for(j=0; j<totaltask; j++)
@@ -1244,16 +1283,19 @@ void dnest_restart()
     }
 
     // read limits
-    for(i=0; i<size_levels; i++)
+    if(dnest_flag_limits == 1)
     {
-      //fscanf(fp, "%d", &itmp);
-      for(j=0; j<particle_offset_double; j++)
+      for(i=0; i<size_levels; i++)
       {
-        //fscanf(fp, "%lf  %lf", &limits[i*2*particle_offset_double+j*2], &limits[i*2*particle_offset_double+j*2+1]);
-        fread(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);      
+        //fscanf(fp, "%d", &itmp);
+        for(j=0; j<particle_offset_double; j++)
+        {
+          //fscanf(fp, "%lf  %lf", &limits[i*2*particle_offset_double+j*2], &limits[i*2*particle_offset_double+j*2+1]);
+          fread(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);      
+        }
+  
+          //fscanf(fp, "\n");
       }
-
-      //fscanf(fp, "\n");
     }
 
     // read particles
@@ -1280,7 +1322,8 @@ void dnest_restart()
   MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
   MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
 
-  MPI_Bcast(limits, size_levels * particle_offset_double * 2, MPI_DOUBLE, root, MPI_COMM_WORLD);
+  if(dnest_flag_limits == 1)
+    MPI_Bcast(limits, size_levels * particle_offset_double * 2, MPI_DOUBLE, root, MPI_COMM_WORLD);
 
   MPI_Scatter(level_assignments_all, options.num_particles * sizeof(unsigned int), MPI_BYTE,
       level_assignments, options.num_particles * sizeof(unsigned int), MPI_BYTE, root, MPI_COMM_WORLD);
