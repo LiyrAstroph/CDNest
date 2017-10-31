@@ -22,9 +22,7 @@
 int dnest(int argc, char** argv)
 {
   int opt;
-  
-  setup(argc, argv);
-  
+
   // cope with argv
   if(thistask == root )
   {
@@ -82,6 +80,7 @@ int dnest(int argc, char** argv)
           break;
         case 'l':
           dnest_flag_limits = 1;
+          printf("# Dnest level-dependent sampling.\n");
           break;
         case '?':
           printf("# Dnest incorrect option -%c %s.\n", optopt, optarg);
@@ -92,12 +91,14 @@ int dnest(int argc, char** argv)
       }
     }
   }
-
+  
   MPI_Bcast(&dnest_flag_restart, 1, MPI_INT, root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_postprc, 1, MPI_INT, root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_sample_info, 1, MPI_INT, root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
-  MPI_Bcast(&dnest_flag_limits, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, root, MPI_COMM_WORLD);
+
+  setup(argc, argv);
 
   if(dnest_flag_postprc == 1)
   {
@@ -606,7 +607,7 @@ void dnest_mcmc_run()
     //printf("%f %f %f\n", particles[which].param[0], particles[which].param[1], particles[which].param[2]);
     //printf("level:%d\n", level_assignments[which]);
     //printf("%e\n", log_likelihoods[which].value);
-    
+
     if(gsl_rng_uniform(dnest_gsl_r) <= 0.5)
     {
       update_particle(which);
@@ -712,6 +713,7 @@ void update_level_assignment(unsigned int which)
             fmax(limits[proposal * 2 * particle_offset_double +  i*2+1], particle[i]);
       }
     }
+
   }
 
 }
