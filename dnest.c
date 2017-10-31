@@ -32,6 +32,8 @@ int dnest(int argc, char** argv)
     dnest_flag_restart = 0;
     dnest_flag_postprc = 0;
     dnest_flag_sample_info = 0;
+
+    strcpy(file_save_restart, "restart_dnest.txt");
     
     //int i;
     //for(i=0; i<argc; i++)
