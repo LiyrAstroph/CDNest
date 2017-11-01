@@ -334,7 +334,7 @@ void do_bookkeeping()
   if(!enough_levels(levels_combine, size_levels_combine) && size_all_above >= options.new_level_interval)
   {
     // in descending order 
-    qsort(all_above, size_all_above, sizeof(LikelihoodType), cmp);
+    qsort(all_above, size_all_above, sizeof(LikelihoodType), dnest_cmp);
     int index = (int)( (1.0/compression) * size_all_above);
 
     Level level_tmp = {all_above[index], 0.0, 0, 0, 0, 0};
@@ -1104,7 +1104,7 @@ double dnest_randn()
   return gsl_ran_gaussian(dnest_gsl_r, 1.0);
 }
 
-int cmp(const void *pa, const void *pb)
+int dnest_cmp(const void *pa, const void *pb)
 {
   LikelihoodType *a = (LikelihoodType *)pa;
   LikelihoodType *b = (LikelihoodType *)pb;
