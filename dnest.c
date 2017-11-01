@@ -825,7 +825,7 @@ void setup(int argc, char** argv)
     options_load();
   MPI_Bcast(&options, sizeof(Options), MPI_BYTE, root, MPI_COMM_WORLD);
   
-  dnest_post_temp = 1.0;
+  //dnest_post_temp = 1.0;
   compression = exp(1.0);
   regularisation = options.new_level_interval*0.1;
   save_to_disk = true;
