@@ -635,7 +635,7 @@ void update_particle(unsigned int which)
   
   Level *level = &(levels[level_assignments[which]]);
 
-  void *proposal = create_model();
+  void *proposal = (void *)malloc(size_of_modeltype);
   LikelihoodType logl_proposal;
   double log_H;
 
