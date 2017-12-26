@@ -141,7 +141,6 @@ extern double (*log_likelihoods_cal)(const void *model);
 extern double (*log_likelihoods_cal_initial)(const void *model);
 extern double (*log_likelihoods_cal_restart)(const void *model);
 extern double (*perturb)(void *model);
-extern void (*copy_model)(void *dest, const void *src);
 extern int (*get_num_params)();
 extern void (*restart_clouds)(int iflag);
 /*=====================================================*/

@@ -453,7 +453,7 @@ void kill_lagging_particles()
           i_copy = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
         }while(!good[i_copy] || gsl_rng_uniform(dnest_gsl_r) >= exp(log_push(level_assignments[i_copy])));
 
-        copy_model(particles+i*particle_offset_size, particles + i_copy*particle_offset_size);
+        memcpy(particles+i*particle_offset_size, particles + i_copy*particle_offset_size, size_of_modeltype);
         log_likelihoods[i] = log_likelihoods[i_copy];
         level_assignments[i] = level_assignments[i_copy];
         deletions++;
@@ -639,7 +639,7 @@ void update_particle(unsigned int which)
   LikelihoodType logl_proposal;
   double log_H;
 
-  copy_model(proposal, particle);
+  memcpy(proposal, particle, size_of_modeltype);
   
   which_level_update = level_assignments[which];
   
@@ -655,7 +655,7 @@ void update_particle(unsigned int which)
   perturb_accept[which] = 0;
   if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value < logl_proposal.value)
   {
-    copy_model(particle, proposal);
+    memcpy(particle, proposal, size_of_modeltype);
     memcpy(logl, &logl_proposal, sizeof(LikelihoodType));
     level->accepts++;
 
