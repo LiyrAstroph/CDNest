@@ -680,7 +680,7 @@ void update_level_assignment(unsigned int which)
   int i;
 
   int proposal = level_assignments[which] 
-                 + (int)( pow(10.0, 2*gsl_rng_uniform(dnest_gsl_r))*gsl_ran_gaussian(dnest_gsl_r, 1.0));
+                 + (int)( pow(10.0, 2*gsl_rng_uniform(dnest_gsl_r))*gsl_ran_ugaussian(dnest_gsl_r));
 
   if(proposal == level_assignments[which])
     proposal =  ((gsl_rng_uniform(dnest_gsl_r) < 0.5)?(proposal-1):(proposal+1));
@@ -1086,7 +1086,7 @@ int mod_int(int y, int x)
 
 double dnest_randh()
 {
-  return pow(10.0, 1.5 - 3.0*fabs(gsl_ran_tdist(dnest_gsl_r, 2))) * gsl_ran_gaussian(dnest_gsl_r, 1.0);
+  return pow(10.0, 1.5 - 3.0*fabs(gsl_ran_tdist(dnest_gsl_r, 2))) * gsl_ran_ugaussian(dnest_gsl_r);
 }
 
 double dnest_rand()
@@ -1101,7 +1101,7 @@ int dnest_rand_int(int size)
 
 double dnest_randn()
 {
-  return gsl_ran_gaussian(dnest_gsl_r, 1.0);
+  return gsl_ran_ugaussian(dnest_gsl_r);
 }
 
 int dnest_cmp(const void *pa, const void *pb)
