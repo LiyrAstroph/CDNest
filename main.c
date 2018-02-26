@@ -11,9 +11,9 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-extern void model1(int argc, char **argv);
-extern void model2(int argc, char **argv);
-extern void model3(int argc, char **argv);
+extern void model1();
+extern void model2();
+extern void model3();
 
 int thistask, totaltask;
 int namelen;
@@ -27,13 +27,13 @@ int main(int argc, char **argv)
   MPI_Get_processor_name(proc_name, &namelen);
 
   MPI_Barrier(MPI_COMM_WORLD);
-  model1(argc, argv);
+  model1();
   
   MPI_Barrier(MPI_COMM_WORLD);
-  model2(argc, argv);
+  model2();
 
   MPI_Barrier(MPI_COMM_WORLD);
-  model3(argc, argv);
+  model3();
 
   MPI_Finalize();
   return 0;

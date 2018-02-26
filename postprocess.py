@@ -1,3 +1,6 @@
+#from DNest4 (https://github.com/eggplantbren/DNest3), developed by Brendon Brewer.
+#
+
 import copy
 import numpy as np
 import matplotlib.pyplot as plt

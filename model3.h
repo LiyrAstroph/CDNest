@@ -33,9 +33,6 @@ extern int size_of_modeltype;
 extern int num_data_points;
 extern DataType *data;
 
-/* best model */
-extern void *best_model_thismodel, *best_model_std_thismodel;
-
 extern int which_particle_update; // which particule to be updated
 extern int which_level_update;
 extern int *perturb_accept;
@@ -49,10 +46,7 @@ void data_load_thismodel3();
 void print_particle_thismodel3(FILE *fp, const void *model);
 double log_likelihoods_cal_thismodel3(const void *model);
 double perturb_thismodel3(void *model);
-void copy_model_thismodel3(void *dest, const void *src);
-void* create_model_thismodel3();
 int get_num_params_thismodel3();
-void copy_best_model_thismodel3(const void *bm, const void *bm_std);
 void restart_clouds_model3(int iflag);
 
 void (*data_load)();
@@ -61,9 +55,6 @@ void (*from_prior)(void *model);
 double (*log_likelihoods_cal)(const void *model);
 double (*log_likelihoods_cal_initial)(const void *model);
 double (*perturb)(void *model);
-void (*copy_model)(void *dest, const void *src);
-void* (*create_model)();
 int (*get_num_params)();
-void (*copy_best_model)(const void *bm, const void *bm_std);
 void (*restart_clouds)(int iflag);
 #endif

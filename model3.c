@@ -25,15 +25,25 @@ int num_params;
 int num_particles;
 
 DataType *data;
-void *best_model_thismodel, *best_model_std_thismodel;
 
-void model3(int argc, char **argv)
+void model3()
 { 
+  int i, argc=0, narg=4;
+  char **argv;
+
+  argv = malloc(narg*sizeof(char *));
+  for(i=0; i<narg; i++)
+  {
+    argv[i] = malloc(200*sizeof(char));
+  }
+  strcpy(argv[argc++], "dnest");
+  strcpy(argv[argc++], "-s");
+  strcpy(argv[argc++], "restart_dnest3.txt");
+  strcpy(argv[argc++], "-l"); //level-dependnet sampling
+
   /* setup szie of modeltype, which is used for dnest */
   num_params = 2;
   size_of_modeltype = num_params * sizeof(double);
-  best_model_thismodel = malloc(size_of_modeltype);
-  best_model_std_thismodel = malloc(size_of_modeltype);
   
   /* setup functions used for dnest*/
   from_prior = from_prior_thismodel3;
@@ -42,10 +52,8 @@ void model3(int argc, char **argv)
   log_likelihoods_cal_initial = log_likelihoods_cal_thismodel3;
   perturb = perturb_thismodel3;
   print_particle = print_particle_thismodel3;
-  copy_model = copy_model_thismodel3;
-  create_model = create_model_thismodel3;
   get_num_params = get_num_params_thismodel3;
-  copy_best_model = copy_best_model_thismodel3;
+  restart_clouds = restart_clouds_model3;
   
   
   /* run dnest */
@@ -59,16 +67,12 @@ void model3(int argc, char **argv)
   perturb_accept = malloc(num_particles * sizeof(int));
 
   dnest(argc, argv);
-  dnest_postprocess(1.0);
-  if(thistask == 0)
-  {
-    int j;
-    for(j = 0; j<num_params; j++)
-      printf("Best params %d %f +- %f\n", j, *((double *)best_model_thismodel+ j), *((double *)best_model_std_thismodel + j));
-  }
   
   /* free memory */
   free(perturb_accept);
+  for(i=0; i<narg; i++)
+    free(argv[i]);
+  free(argv);
 }
 
 void get_num_particles3(char *fname)
@@ -128,8 +132,11 @@ double perturb_thismodel3(void *model)
 {
   double *params = (double *)model;
   double logH = 0.0, width, limit1, limit2;
-  int which = dnest_rand_int(num_params);
-  if(which_mcmc_steps > 500 && which_level_update != 0 )
+  int which = dnest_rand_int(num_params), which_level;
+
+  which_level = which_level_update > (size_levels - 20)?(size_levels-20):which_level_update;
+  which_level = 0;
+  if(which_level > 0 )
   {
     limit1 = limits[(which_level_update-1) * num_params *2 + which *2 ];
     limit2 = limits[(which_level_update-1) * num_params *2 + which *2 + 1];
@@ -161,31 +168,15 @@ void data_load_thismodel3()
 {
   
 }
-
-void copy_best_model_thismodel3(const void *bm, const void *bm_std)
-{
-  memcpy(best_model_thismodel, bm, size_of_modeltype);
-  memcpy(best_model_std_thismodel, bm_std, size_of_modeltype);
-}
 /*========================================================*/
 
-
-void copy_model_thismodel3(void *dest, const void *src)
-{
-  memcpy(dest, src, size_of_modeltype);
-}
-
-void* create_model_thismodel3()
-{
-  return (void *)malloc(size_of_modeltype);
-}
 
 int get_num_params_thismodel3()
 {
   return num_params;
 }
 
-void restart_clouds_moddel3(int iflag)
+void restart_clouds_model3(int iflag)
 {
   return;
 }
