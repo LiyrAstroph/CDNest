@@ -104,8 +104,8 @@ void from_prior_thismodel3(void *model)
   double *params = (double *)model;
   for(i=0; i<num_params; i++)
   {
-    params[i] = -8.0 + 16.0 * dnest_rand();
-    wrap(&params[i], -8.0, 8.0);
+    params[i] = -6.0 + 12.0 * dnest_rand();
+    wrap(&params[i], -6.0, 6.0);
   }
 }
 
@@ -116,9 +116,9 @@ double log_likelihoods_cal_thismodel3(const void *model)
   double logl1;
   double logl2;
 
-  logl1 = -0.5 * pow( (sqrt((params[0] - 4.0)* (params[0] - 4.0) + params[1]*params[1])- 2.0)/0.1,  2.0)
+  logl1 = -0.5 * pow( (sqrt((params[0] - 3.0)* (params[0] - 3.0) + params[1]*params[1])- 2.0)/0.1,  2.0)
           - 0.5 * log(2.0*M_PI * 0.01);
-  logl2 = -0.5 * pow( (sqrt((params[0] + 4.0)* (params[0] + 4.0) + params[1]*params[1])- 2.0)/0.1,  2.0)
+  logl2 = -0.5 * pow( (sqrt((params[0] + 3.0)* (params[0] + 3.0) + params[1]*params[1])- 2.0)/0.1,  2.0)
           - 0.5 * log(2.0*M_PI * 0.01);
   
   double max = fmax(logl1, logl2);
@@ -143,12 +143,12 @@ double perturb_thismodel3(void *model)
   }
   else
   {
-    limit1 = -8.0;
-    limit2 = 8.0;
+    limit1 = -6.0;
+    limit2 = 6.0;
   }
   width = (limit2 - limit1);
   params[which] += width * dnest_randh();
-  wrap(&params[which], -8.0, 8.0);
+  wrap(&params[which], -6.0, 6.0);
   return logH;
 }
 /*=======================================================*/
