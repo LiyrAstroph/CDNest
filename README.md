@@ -1,4 +1,4 @@
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+(**To read this papge better, please use google chrome with the extension "GitHub with MathJax" **)
 
 # DNest_C
 
