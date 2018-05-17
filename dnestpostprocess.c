@@ -60,11 +60,11 @@ double logsumexp(double *x, int n)
 void postprocess(double temperature)
 {
   printf("# Starts postprocess.\n");
-  FILE *fp;
+  FILE *fp, *fp_sample;
   
   double **levels_orig, **sample_info, *logl;
   int *sandwhich;
-  void *sample;
+  double *psample;
   int i, j;
   int num_levels, num_samples, num_params;
   char buf[BUF_MAX_LENGTH];
@@ -96,9 +96,9 @@ void postprocess(double temperature)
   
   // allocate memory for samples
   num_params = get_num_params();
-  sample = (void *)malloc(num_samples * size_of_modeltype);
   logl = (void *)malloc(num_samples * sizeof(double));
   sandwhich = malloc(num_samples * sizeof(int));
+  psample = (double *)malloc(size_of_modeltype);
   
   // read levels
   fp = fopen(options.levels_file, "r");
@@ -124,31 +124,6 @@ void postprocess(double temperature)
       exit(0);
     }
     buf[0]='\0';  // clear up buf
-  }
-  fclose(fp);
-
-  // read sample
-  double *psample;
-  fp = fopen(options.sample_file, "r");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_file);
-    exit(0);
-  }
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  for(i=0; i < num_samples; i++)
-  {
-    for(j=0; j < num_params; j++)
-    {
-      psample = (double *)(sample+i*size_of_modeltype+ j*sizeof(double)) ;
-      if(fscanf(fp, "%lf", psample) < 1)
-      {
-        printf("%f\n", *psample);
-        fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_file);
-        exit(0);
-      }
-    }
-    //printf("%f %f %f\n", sample[i].params[0], sample[i].params[1], sample[i].params[2]);
   }
   fclose(fp);
   
@@ -190,9 +165,28 @@ void postprocess(double temperature)
     printf("# Dnest starts to recalculate the sample info.\n");
     fprintf(fp, "# level assignment, log likelihood, tiebreaker, ID.\n");
 
+    //read sample
+    fp_sample = fopen(options.sample_file, "r");
+    if(fp_sample == NULL)
+    {
+      fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_file);
+      exit(0);
+    }
+    fgets(buf, BUF_MAX_LENGTH, fp_sample);
+
     for(i=0; i < num_samples; i++)
     {
-      sample_info[i][1] = log_likelihoods_cal_initial(sample+i*size_of_modeltype);
+      for(j=0; j < num_params; j++)
+      {
+        if(fscanf(fp_sample, "%lf", psample+j) < 1)
+        {
+          printf("%f\n", *psample);
+          fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_file);
+          exit(0);
+        }
+      }
+
+      sample_info[i][1] = log_likelihoods_cal_initial((void *)psample);
       sample_info[i][2] = dnest_rand();
 
       for(j=0; j<num_levels; j++)
@@ -212,6 +206,7 @@ void postprocess(double temperature)
       fprintf(fp, "%d %e %f %d\n", (int)sample_info[i][0], sample_info[i][1], sample_info[i][2], 1);
     }
     fclose(fp);
+    fclose(fp_sample);
   }
   //tempering with a temperature
   for(i=0; i<num_samples; i++)
@@ -336,6 +331,7 @@ void postprocess(double temperature)
   int num_ps = moreSample*ESS;
   void *posterior_sample;
   double *posterior_sample_info;
+  int *posterior_sample_idx;
   int which;
 
   const gsl_rng_type * dnest_post_gsl_T;
@@ -352,7 +348,8 @@ void postprocess(double temperature)
 
   posterior_sample = malloc(num_ps * size_of_modeltype);
   posterior_sample_info = malloc(num_ps * sizeof(double));
-  
+  posterior_sample_idx = malloc(num_ps * sizeof(int)); // flag for which particle to save
+
   max = logP_samples[0];
   for(j=0; j<num_samples; j++)
     max = fmax(logP_samples[j], max);
@@ -367,12 +364,43 @@ void postprocess(double temperature)
       if(log(gsl_rng_uniform(dnest_post_gsl_r)) < logP_samples[which])
       {
         posterior_sample_info[j] = logl[j]; // add back the subtracted value.
-        memcpy(posterior_sample+j*size_of_modeltype, sample+which*size_of_modeltype, size_of_modeltype);
+        posterior_sample_idx[j]  = which;  // sample this particle
         break;
       }
     }
   }
+
+  // read sample and pick out selected particles
   
+  fp_sample = fopen(options.sample_file, "r");
+  if(fp_sample == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s.\n", options.sample_file);
+    exit(0);
+  }
+  fgets(buf, BUF_MAX_LENGTH, fp_sample);
+  for(i=0; i < num_samples; i++)
+  {
+    for(j=0; j < num_params; j++)
+    {
+      if(fscanf(fp_sample, "%lf", psample+j) < 1)
+      {
+        printf("%f\n", *psample);
+        fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_file);
+        exit(0);
+      }
+    }
+    for(j=0; j < num_ps; j++)
+    {
+      if(posterior_sample_idx[j] == i)
+      {
+        memcpy(posterior_sample+j*size_of_modeltype, (void *)psample, size_of_modeltype);
+      }
+    }
+    //printf("%f %f %f\n", sample[i].params[0], sample[i].params[1], sample[i].params[2]);
+  }
+  fclose(fp_sample);
+
   //save posterior sample
   fp = fopen(options.posterior_sample_file, "w");
   if(fp == NULL)
@@ -381,12 +409,14 @@ void postprocess(double temperature)
     exit(0);
   }
   fprintf(fp, "# %d\n", num_ps);
+
   for(i=0; i<num_ps; i++)
   {
     print_particle(fp, posterior_sample + i*size_of_modeltype);
   }
   fclose(fp);
 
+  //save posterior sample information
   fp = fopen(options.posterior_sample_info_file, "w");
   if(fp == NULL)
   {
@@ -415,9 +445,10 @@ void postprocess(double temperature)
   free(logP_samples);
   free(logl_samples_thisLevel);
   free(sandwhich);
-  free(sample);
+  free(psample);
   free(posterior_sample);
   free(posterior_sample_info);
+  free(posterior_sample_idx);
 
   gsl_rng_free(dnest_post_gsl_r);
 

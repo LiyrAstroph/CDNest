@@ -281,7 +281,7 @@ void dnest_run()
       if(thistask == root )
       {
         // save levels, limits, sync samples when running a number of steps
-        if( count_saves % (int)(0.2 * options.max_num_saves) == 0 )
+        if( count_saves % (int)(0.02 * options.max_num_saves) == 0 )
         {
           if(size_levels_combine <= options.max_num_levels)
           {
