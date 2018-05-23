@@ -41,7 +41,7 @@ int size_levels, size_levels_combine;
 Level *levels;
 Level *copies_of_levels, *levels_combine;
 LikelihoodType *all_above;
-unsigned int count_saves;
+unsigned int count_saves, num_saves;
 unsigned long long int count_mcmc_steps;
 LikelihoodType *above;
 unsigned int size_above, size_all_above;

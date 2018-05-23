@@ -79,7 +79,7 @@ extern int size_levels, size_levels_combine;
 extern Level *levels;
 extern Level *copies_of_levels, *levels_combine;
 extern LikelihoodType *all_above;
-extern unsigned int count_saves;
+extern unsigned int count_saves, num_saves;
 extern unsigned long long int count_mcmc_steps;
 extern LikelihoodType *above;
 extern unsigned int size_above, size_all_above;

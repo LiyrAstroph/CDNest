@@ -281,7 +281,7 @@ void dnest_run()
       if(thistask == root )
       {
         // save levels, limits, sync samples when running a number of steps
-        if( count_saves % (int)(0.02 * options.max_num_saves) == 0 )
+        if( count_saves % num_saves == 0 )
         {
           if(size_levels_combine <= options.max_num_levels)
           {
@@ -902,6 +902,8 @@ void setup(int argc, char** argv)
 
   count_mcmc_steps = 0;
   count_saves = 0;
+  num_saves = (int)fmax(0.02*options.max_num_saves, 1.0);
+
 
 // first level
   size_levels = 0;
