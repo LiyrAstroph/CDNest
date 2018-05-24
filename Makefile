@@ -45,14 +45,14 @@ OPTIMIZE    +=
 endif
 
 ifeq ($(SYSTEM), "Cluster")
-GSL_INCL = -I/mbh/mbhd01/user/liyanrong/soft/gsl/include
-GSL_LIBS = -L/mbh/mbhd01/user/liyanrong/soft/gsl/lib  -lgsl -lgslcblas -lm
-MPICHLIB = -L/mbh/mbhd01/user/liyanrong/soft/mpich3/lib -lmpich
-MPIINCL  = -I/mbh/mbhd01/user/liyanrong/soft/mpich3/include
-LAPACK_INCL = -I/mbh/mbhd01/user/liyanrong/soft/lapack/include
-LAPACK_LIBS = -L/mbh/mbhd01/user/liyanrong/soft/lapack/lib -llapacke -llapack -lblas -lgfortran
-#CBLAS_INCL  = -I/mbh/mbhd01/user/liyanrong/soft/atlas/include
-#CBLAS_LIBS  = -L/mbh/mbhd01/user/liyanrong/soft/atlas/lib -lcblas
+GSL_INCL = -I/sharefs/mbh/user/liyanrong/soft/gsl/include
+GSL_LIBS = -L/sharefs/mbh/user/liyanrong/soft/gsl/lib  -lgsl -lgslcblas -lm
+MPICHLIB = -L/sharefs/mbh/user/liyanrong/soft/mpich3/lib -lmpich
+MPIINCL  = -I/sharefs/mbh/user/liyanrong/soft/mpich3/include
+LAPACK_INCL = -I/sharefs/mbh/user/liyanrong/soft/lapack/include
+LAPACK_LIBS = -L/sharefs/mbh/user/liyanrong/soft/lapack/lib -llapacke -llapack -lblas -lgfortran
+#CBLAS_INCL  = -I/sharefs/mbh/user/liyanrong/soft/atlas/include
+#CBLAS_LIBS  = -L/sharefs/mbh/user/liyanrong/soft/atlas/lib -lcblas
 endif
 
 ifeq ($(SYSTEM), "TianheII")
