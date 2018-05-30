@@ -103,12 +103,15 @@ int dnest(int argc, char** argv)
   if(dnest_flag_postprc == 1)
   {
     dnest_postprocess(dnest_post_temp);
+    MPI_Barrier(MPI_COMM_WORLD);
+    finalise();
     return 0;
   }
 
   if(dnest_flag_sample_info == 1)
   {
     dnest_postprocess(dnest_post_temp);
+    finalise();
     return 0;
   }
 
