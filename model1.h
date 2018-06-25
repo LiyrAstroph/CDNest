@@ -50,7 +50,7 @@ double perturb_thismodel(void *model);
 void copy_model_thismodel(void *dest, const void *src);
 void* create_model_thismodel();
 int get_num_params_thismodel();
-void restart_clouds_model1(int iflag);
+void restart_action_model1(int iflag);
 
 void (*data_load)();
 void (*print_particle)(FILE *fp, const void *model);
@@ -60,5 +60,5 @@ double (*log_likelihoods_cal_initial)(const void *model);
 double (*log_likelihoods_cal_restart)(const void *model);
 double (*perturb)(void *model);
 int (*get_num_params)();
-void (*restart_clouds)(int iflag);
+void (*restart_action)(int iflag);
 #endif

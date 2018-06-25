@@ -1222,7 +1222,7 @@ void dnest_save_restart()
     fclose(fp);
   }
 
-  restart_clouds(0);
+  restart_action(0);
 }
 
 void dnest_restart()
@@ -1342,7 +1342,7 @@ void dnest_restart()
     particles, options.num_particles * size_of_modeltype, MPI_BYTE, root, MPI_COMM_WORLD);
 
   
-  restart_clouds(1);
+  restart_action(1);
 
   for(i=0; i<options.num_particles; i++)
   {

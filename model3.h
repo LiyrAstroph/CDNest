@@ -47,7 +47,7 @@ void print_particle_thismodel3(FILE *fp, const void *model);
 double log_likelihoods_cal_thismodel3(const void *model);
 double perturb_thismodel3(void *model);
 int get_num_params_thismodel3();
-void restart_clouds_model3(int iflag);
+void restart_action_model3(int iflag);
 
 void (*data_load)();
 void (*print_particle)(FILE *fp, const void *model);
@@ -56,5 +56,5 @@ double (*log_likelihoods_cal)(const void *model);
 double (*log_likelihoods_cal_initial)(const void *model);
 double (*perturb)(void *model);
 int (*get_num_params)();
-void (*restart_clouds)(int iflag);
+void (*restart_action)(int iflag);
 #endif

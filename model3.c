@@ -53,7 +53,7 @@ void model3()
   perturb = perturb_thismodel3;
   print_particle = print_particle_thismodel3;
   get_num_params = get_num_params_thismodel3;
-  restart_clouds = restart_clouds_model3;
+  restart_action = restart_action_model3;
   
   
   /* run dnest */
@@ -176,7 +176,7 @@ int get_num_params_thismodel3()
   return num_params;
 }
 
-void restart_clouds_model3(int iflag)
+void restart_action_model3(int iflag)
 {
   return;
 }

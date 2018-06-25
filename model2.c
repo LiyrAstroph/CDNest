@@ -59,7 +59,7 @@ void model2()
   perturb = perturb_thismodel2;
   print_particle = print_particle_thismodel2;
   get_num_params = get_num_params_thismodel2;
-  restart_clouds = restart_clouds_model2;
+  restart_action = restart_action_model2;
   
   /* load data */
   if(thistask == 0)
@@ -242,7 +242,7 @@ int get_num_params_thismodel2()
   return num_params;
 }
 
-void restart_clouds_model2(int iflag)
+void restart_action_model2(int iflag)
 {
   return;
 }
