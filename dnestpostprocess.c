@@ -326,6 +326,8 @@ void postprocess(double temperature)
   printf("H = %f\n", H_estimates);
   printf("Effective sample size = %f\n", ESS);
   
+  post_logz = logz_estimates;
+
   // resample to uniform weight
   
   int num_ps = moreSample*ESS;

@@ -88,6 +88,8 @@ extern int dnest_flag_restart, dnest_flag_postprc, dnest_flag_sample_info, dnest
 extern double dnest_post_temp;
 extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
+extern double post_logz;
+
 //the limits of parameters for each level;
 extern double *limits, *copies_of_limits;
 
@@ -109,7 +111,7 @@ void options_load();
 void setup(int argc, char** argv);
 void finalise();
 
-int dnest(int argc, char **argv);
+double dnest(int argc, char **argv);
 void dnest_run();
 void dnest_mcmc_run();
 void update_particle(unsigned int which);

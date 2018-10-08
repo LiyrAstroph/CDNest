@@ -19,7 +19,7 @@
 
 #include "dnestvars.h"
 
-int dnest(int argc, char** argv)
+double dnest(int argc, char** argv)
 {
   int opt;
 
@@ -105,14 +105,14 @@ int dnest(int argc, char** argv)
     dnest_postprocess(dnest_post_temp);
     MPI_Barrier(MPI_COMM_WORLD);
     finalise();
-    return 0;
+    return post_logz;
   }
 
   if(dnest_flag_sample_info == 1)
   {
     dnest_postprocess(dnest_post_temp);
     finalise();
-    return 0;
+    return post_logz;
   }
 
   if(dnest_flag_restart==1)
@@ -126,7 +126,7 @@ int dnest(int argc, char** argv)
 
   finalise();
 
-  return 0;
+  return post_logz;
 }
 
 // postprocess, calculate evidence, generate posterior sample.
@@ -137,6 +137,7 @@ void dnest_postprocess(double temperature)
     options_load();
     postprocess(temperature);
   }
+  MPI_Bcast(&post_logz, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
 }
 
 void dnest_run()

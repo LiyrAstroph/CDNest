@@ -46,6 +46,8 @@ unsigned long long int count_mcmc_steps;
 LikelihoodType *above;
 unsigned int size_above, size_all_above;
 
+double post_logz;
+
 double *limits, *copies_of_limits;
 
 int root;
