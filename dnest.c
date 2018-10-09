@@ -19,7 +19,7 @@
 
 #include "dnestvars.h"
 
-double dnest(int argc, char** argv)
+double dnest(int argc, char** argv, int num_params)
 {
   int opt;
 
@@ -27,7 +27,7 @@ double dnest(int argc, char** argv)
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
 
   // cope with argv
-  if(dnest_thistask == root )
+  if(dnest_thistask == dnest_root )
   {
     dnest_post_temp = 1.0;
     dnest_flag_restart = 0;
@@ -95,13 +95,13 @@ double dnest(int argc, char** argv)
     }
   }
   
-  MPI_Bcast(&dnest_flag_restart, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&dnest_flag_postprc, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&dnest_flag_sample_info, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
-  MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_restart, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_postprc, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_sample_info, 1, MPI_INT,dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
-  setup(argc, argv);
+  setup(argc, argv, num_params);
 
   if(dnest_flag_postprc == 1)
   {
@@ -135,12 +135,12 @@ double dnest(int argc, char** argv)
 // postprocess, calculate evidence, generate posterior sample.
 void dnest_postprocess(double temperature)
 {
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     options_load();
     postprocess(temperature);
   }
-  MPI_Bcast(&post_logz, 1, MPI_DOUBLE, root, MPI_COMM_WORLD);
+  MPI_Bcast(&post_logz, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
 }
 
 void dnest_run()
@@ -151,7 +151,7 @@ void dnest_run()
   double *plimits;
   
   // used to gather levels' information
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     buf_size_above = malloc(dnest_totaltask * sizeof(int));  
     buf_displs = malloc(dnest_totaltask * sizeof(int));
@@ -169,20 +169,20 @@ void dnest_run()
     
     //gather levels
     MPI_Gather(levels, size_levels*sizeof(Level), MPI_BYTE, 
-             copies_of_levels, size_levels*sizeof(Level), MPI_BYTE, root, MPI_COMM_WORLD);
+             copies_of_levels, size_levels*sizeof(Level), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
     //gather limits
     if(dnest_flag_limits == 1)
     {
       MPI_Gather(limits, size_levels*particle_offset_double*2, MPI_DOUBLE, 
-               copies_of_limits, size_levels*particle_offset_double*2, MPI_DOUBLE, root, MPI_COMM_WORLD );
+               copies_of_limits, size_levels*particle_offset_double*2, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD );
     }
     
     //gather size_above 
-    MPI_Gather(&size_above, 1, MPI_INT, buf_size_above, 1, MPI_INT, root, MPI_COMM_WORLD);
+    MPI_Gather(&size_above, 1, MPI_INT, buf_size_above, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
     // task 0 responsible for updating levels
-    if(dnest_thistask == root)
+    if(dnest_thistask == dnest_root)
     {
       size_all_above_incr = 0;
       for(i = 0; i<dnest_totaltask; i++)
@@ -205,14 +205,14 @@ void dnest_run()
     
     // gather above into all_above, stored in task 0, note that its size is different among tasks
     MPI_Gatherv(above, size_above * sizeof(LikelihoodType), MPI_BYTE, 
-                all_above, buf_size_above, buf_displs, MPI_BYTE, root, MPI_COMM_WORLD);
+                all_above, buf_size_above, buf_displs, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
     // reset size_above for each task
     size_above = 0;
 
     count_mcmc_steps += options.thread_steps * dnest_totaltask;
 
-    if(dnest_thistask == root)
+    if(dnest_thistask == dnest_root)
     {
       //backup levels_combine
       levels_orig = malloc(size_levels_combine * sizeof(Level));
@@ -274,18 +274,18 @@ void dnest_run()
     }
 
     //broadcast levels
-    MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
+    MPI_Bcast(&size_levels, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
     //MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
-    MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
+    MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, dnest_root,  MPI_COMM_WORLD); 
 
     if(dnest_flag_limits == 1)
-      MPI_Bcast(limits, size_levels * particle_offset_double *2, MPI_DOUBLE, root, MPI_COMM_WORLD);
+      MPI_Bcast(limits, size_levels * particle_offset_double *2, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
 
     if(count_mcmc_steps >= (count_saves + 1)*options.save_interval)
     {
       save_particle();
 
-      if(dnest_thistask == root )
+      if(dnest_thistask == dnest_root )
       {
         // save levels, limits, sync samples when running a number of steps
         if( count_saves % num_saves == 0 )
@@ -315,7 +315,7 @@ void dnest_run()
   
   //dnest_save_restart();
 
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     //save levels
     save_levels();
@@ -524,7 +524,7 @@ void save_particle()
   int whichparticle, whichtask;
   void *particle_message;
   
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     if(count_saves%1 == 0)
       printf("# Saving particle to disk. N= %d.\n", count_saves);
@@ -532,9 +532,9 @@ void save_particle()
     whichtask = gsl_rng_uniform_int(dnest_gsl_r,dnest_totaltask);
   }
 
-  MPI_Bcast(&whichtask, 1, MPI_INT, root, MPI_COMM_WORLD);
+  MPI_Bcast(&whichtask, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
-  if(whichtask != root)
+  if(whichtask != dnest_root)
   {
     if(dnest_thistask == whichtask)
     {
@@ -546,13 +546,13 @@ void save_particle()
       memcpy(particle_message + size_of_modeltype + 2*sizeof(double), &level_assignments[whichparticle], sizeof(int));
       memcpy(particle_message + size_of_modeltype + 2*sizeof(double) + sizeof(int), &whichparticle, sizeof(int));
 
-      MPI_Send(particle_message, size_message, MPI_BYTE, root, 1, MPI_COMM_WORLD);
+      MPI_Send(particle_message, size_message, MPI_BYTE, dnest_root, 1, MPI_COMM_WORLD);
 
       //printf("%f %f\n", log_likelihoods[whichparticle].value, log_likelihoods[whichparticle].tiebreaker);
 
       free(particle_message);
     }
-    if(dnest_thistask == root)
+    if(dnest_thistask == dnest_root)
     {
       MPI_Status status;
       int size_message = size_of_modeltype + 2*sizeof(int) + 2*sizeof(double);
@@ -581,7 +581,7 @@ void save_particle()
   }
   else
   {
-    if(dnest_thistask == root)
+    if(dnest_thistask == dnest_root)
     {
       whichparticle =  gsl_rng_uniform_int(dnest_gsl_r,options.num_particles);
 
@@ -769,7 +769,7 @@ bool enough_levels(Level *l, int size_l)
 
 void initialize_output_file()
 {
-  if(dnest_thistask != root)
+  if(dnest_thistask != dnest_root)
     return;
 
   if(dnest_flag_restart !=1)
@@ -801,19 +801,19 @@ void initialize_output_file()
 
 void close_output_file()
 {
-  if(dnest_thistask != root )
+  if(dnest_thistask != dnest_root )
     return;
 
   fclose(fsample);
   fclose(fsample_info);
 }
 
-void setup(int argc, char** argv)
+void setup(int argc, char** argv, int num_params)
 {
   int i, j;
 
   // root task.
-  root = 0;
+  dnest_root = 0;
 
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
@@ -825,10 +825,12 @@ void setup(int argc, char** argv)
   printf("# debugging, task %d dnest random seed %d\n", dnest_thistask, 9999 + dnest_thistask);
 #endif  
 
+  size_of_modeltype = num_params * sizeof(double);
+
   // read options
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
     options_load();
-  MPI_Bcast(&options, sizeof(Options), MPI_BYTE, root, MPI_COMM_WORLD);
+  MPI_Bcast(&options, sizeof(Options), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
   
   //dnest_post_temp = 1.0;
   compression = exp(1.0);
@@ -841,7 +843,7 @@ void setup(int argc, char** argv)
   particles = (void *)malloc(options.num_particles*size_of_modeltype);
   
   // initialise sampler
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
     all_above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
 
   above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
@@ -852,7 +854,7 @@ void setup(int argc, char** argv)
   if(options.max_num_levels != 0)
   {
     levels = (Level *)malloc(options.max_num_levels * sizeof(Level));
-    if(dnest_thistask == root)
+    if(dnest_thistask == dnest_root)
     {
       levels_combine = (Level *)malloc(options.max_num_levels * sizeof(Level));
       copies_of_levels = (Level *)malloc(dnest_totaltask * options.max_num_levels * sizeof(Level));
@@ -870,7 +872,7 @@ void setup(int argc, char** argv)
         }
       }
 
-      if(dnest_thistask == root)
+      if(dnest_thistask == dnest_root)
       {
         copies_of_limits = malloc( dnest_totaltask * options.max_num_levels * particle_offset_double * 2 * sizeof(double));
       }
@@ -879,7 +881,7 @@ void setup(int argc, char** argv)
   else
   {
     levels = (Level *)malloc(LEVEL_NUM_MAX * sizeof(Level));
-    if(dnest_thistask == root)
+    if(dnest_thistask == dnest_root)
     {
       levels_combine = (Level *)malloc(LEVEL_NUM_MAX * sizeof(Level));
       copies_of_levels = (Level *)malloc(dnest_totaltask * LEVEL_NUM_MAX * sizeof(Level));
@@ -897,7 +899,7 @@ void setup(int argc, char** argv)
         }
       }
 
-      if(dnest_thistask == root)
+      if(dnest_thistask == dnest_root)
       {
         copies_of_limits = malloc(dnest_totaltask * LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
       }
@@ -924,7 +926,7 @@ void setup(int argc, char** argv)
   levels[size_levels] = level_tmp;
   size_levels++;
 
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     size_levels_combine = 0;
     levels_combine[size_levels_combine] = level_tmp;
@@ -959,7 +961,7 @@ void finalise()
     free(limits);
 
 
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     free(all_above);
     free(copies_of_levels);
@@ -970,7 +972,7 @@ void finalise()
 
   free(dnest_perturb_accept);
 
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
     printf("# Finalizing dnest.\n");
 }
 
@@ -1163,7 +1165,7 @@ void dnest_save_restart()
   unsigned int *level_assignments_all;
   char str[200];
 
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     sprintf(str, "%s_%d", file_save_restart, count_saves);
     fp = fopen(str, "wb");
@@ -1181,16 +1183,16 @@ void dnest_save_restart()
   }
 
   MPI_Gather(particles, options.num_particles * size_of_modeltype, MPI_BYTE, 
-    particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, root, MPI_COMM_WORLD);
+    particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   MPI_Gather(level_assignments, options.num_particles * sizeof(unsigned int), MPI_BYTE, 
-    level_assignments_all, options.num_particles * sizeof(unsigned int), MPI_BYTE, root, MPI_COMM_WORLD);
+    level_assignments_all, options.num_particles * sizeof(unsigned int), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   MPI_Gather(log_likelihoods, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, 
-    log_likelihoods_all, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, root, MPI_COMM_WORLD);
+    log_likelihoods_all, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
 
-  if(dnest_thistask == root )
+  if(dnest_thistask == dnest_root )
   {
     printf("# Save restart data to file %s.\n", str);
 
@@ -1263,7 +1265,7 @@ void dnest_restart()
   void *particle;
   char  buf[200];
 
-  if(dnest_thistask == root)
+  if(dnest_thistask == dnest_root)
   {
     fp = fopen(file_restart, "rb");
     if(fp == NULL)
@@ -1352,22 +1354,22 @@ void dnest_restart()
     fclose(fp);
   }
 
-  MPI_Bcast(&count_saves, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&count_mcmc_steps, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(&size_levels, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, root,  MPI_COMM_WORLD); 
+  MPI_Bcast(&count_saves, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(&count_mcmc_steps, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(&size_levels, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, dnest_root,  MPI_COMM_WORLD); 
 
   if(dnest_flag_limits == 1)
-    MPI_Bcast(limits, size_levels * particle_offset_double * 2, MPI_DOUBLE, root, MPI_COMM_WORLD);
+    MPI_Bcast(limits, size_levels * particle_offset_double * 2, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
 
   MPI_Scatter(level_assignments_all, options.num_particles * sizeof(unsigned int), MPI_BYTE,
-      level_assignments, options.num_particles * sizeof(unsigned int), MPI_BYTE, root, MPI_COMM_WORLD);
+      level_assignments, options.num_particles * sizeof(unsigned int), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   MPI_Scatter(log_likelihoods_all, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, 
-      log_likelihoods, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, root, MPI_COMM_WORLD);
+      log_likelihoods, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   MPI_Scatter(particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, 
-    particles, options.num_particles * size_of_modeltype, MPI_BYTE, root, MPI_COMM_WORLD);
+    particles, options.num_particles * size_of_modeltype, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   
   restart_action(1);

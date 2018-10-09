@@ -26,9 +26,6 @@ typedef struct
 /* number of model parameters */
 extern int num_params;
 
-/* szie of modeltype, which is used for dnest */
-extern int size_of_modeltype;
-
 /* data storage */
 extern int num_data_points;
 extern DataType *data;

@@ -22,7 +22,6 @@ int num_params;
 int num_particles;
 
 DataType *data;
-void *best_model_thismodel, *best_model_std_thismodel;
 
 void model1()
 { 
@@ -41,9 +40,6 @@ void model1()
 
   /* setup szie of modeltype, which is used for dnest */
   num_params = 20;
-  size_of_modeltype = num_params * sizeof(double);
-  best_model_thismodel = malloc(size_of_modeltype);
-  best_model_std_thismodel = malloc(size_of_modeltype);
   
   /* setup number of data points and allocate memory */
   num_data_points = 0;
@@ -74,7 +70,7 @@ void model1()
   }
   MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  dnest(argc, argv);
+  dnest(argc, argv, num_params);
     
   /* free memory */
   free(data);

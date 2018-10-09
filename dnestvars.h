@@ -97,7 +97,7 @@ extern int dnest_which_particle_update; // which particle to be updated
 extern int dnest_which_level_update;    // which level to be updated;
 extern int dnest_thistask, dnest_totaltask;
 extern int *dnest_perturb_accept;
-extern int root;
+extern int dnest_root;
 //***********************************************
 /*                  functions                  */
 double mod(double y, double x);
@@ -107,10 +107,10 @@ int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);
 
 void options_load();
-void setup(int argc, char** argv);
+void setup(int argc, char** argv, int num_params);
 void finalise();
 
-double dnest(int argc, char **argv);
+double dnest(int argc, char **argv, int num_params);
 void dnest_run();
 void dnest_mcmc_run();
 void update_particle(unsigned int which);
@@ -146,7 +146,6 @@ extern double (*log_likelihoods_cal)(const void *model);
 extern double (*log_likelihoods_cal_initial)(const void *model);
 extern double (*log_likelihoods_cal_restart)(const void *model);
 extern double (*perturb)(void *model);
-extern int (*get_num_params)();
 extern void (*restart_action)(int iflag);
 /*=====================================================*/
 

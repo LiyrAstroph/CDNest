@@ -41,7 +41,6 @@ void model2()
 
   /* setup szie of modeltype, which is used for dnest */
   num_params = 3;
-  size_of_modeltype = num_params * sizeof(double);
   
   /* setup number of data points and allocate memory */
   num_data_points = 30;
@@ -74,7 +73,7 @@ void model2()
   }
   MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  dnest(argc, argv);
+  dnest(argc, argv, num_params);
     
   /* free memory */
   free(data);

@@ -96,7 +96,7 @@ void postprocess(double temperature)
   }
   
   // allocate memory for samples
-  num_params = get_num_params();
+  num_params = size_of_modeltype/sizeof(double);
   logl = (void *)malloc(num_samples * sizeof(double));
   sandwhich = malloc(num_samples * sizeof(int));
   psample = (double *)malloc(size_of_modeltype);

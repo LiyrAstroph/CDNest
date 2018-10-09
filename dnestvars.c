@@ -54,7 +54,7 @@ double *limits, *copies_of_limits;
 
 int dnest_thistask, dnest_totaltask;
 int *dnest_perturb_accept;
-int root;
+int dnest_root;
 
 int dnest_flag_restart=0, dnest_flag_postprc=0, dnest_flag_sample_info=0, dnest_flag_limits=0;
 double dnest_post_temp=1.0;
