@@ -517,8 +517,6 @@ void save_limits()
 void save_particle()
 {
   count_saves++;
-  
-  which_mcmc_steps = count_saves;
 
   if(!save_to_disk)
     return;
@@ -928,7 +926,6 @@ void setup(int argc, char** argv)
     size_levels_combine++;
   }
   
-  which_mcmc_steps = 0;
   for(i=0; i<options.num_particles; i++)
   {
     dnest_which_particle_update = i;
@@ -1136,6 +1133,16 @@ int dnest_get_which_level_update()
 int dnest_get_which_particle_update()
 {
   return dnest_which_particle_update;
+}
+
+unsigned int dnest_get_which_num_saves()
+{
+  return num_saves;
+}
+
+unsigned long long int dnest_get_count_mcmc_steps()
+{
+  return count_mcmc_steps;
 }
 /*!
  *  Save sampler state for later restart. 
