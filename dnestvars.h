@@ -61,6 +61,17 @@ typedef struct
 extern Options options;
 extern char options_file[STR_MAX_LENGTH];
 
+typedef struct
+{
+  void (*from_prior)(void *model);
+  double (*log_likelihoods_cal)(const void *model);
+  double (*log_likelihoods_cal_initial)(const void *model);
+  double (*log_likelihoods_cal_restart)(const void *model);
+  double (*perturb)(void *model);
+  void (*print_particle)(FILE *fp, const void *model);
+  void (*restart_action)(int iflag);
+}DNestFptrSet;
+
 extern void *particles;
 extern int size_of_modeltype;
 extern int particle_offset_size, particle_offset_double;
@@ -107,10 +118,10 @@ int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);
 
 void options_load();
-void setup(int argc, char** argv, int num_params);
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params);
 void finalise();
 
-double dnest(int argc, char **argv, int num_params);
+double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params);
 void dnest_run();
 void dnest_mcmc_run();
 void update_particle(unsigned int which);
@@ -138,15 +149,18 @@ int dnest_get_which_level_update();
 int dnest_get_which_particle_update();
 unsigned int dnest_get_which_num_saves();
 unsigned long long int dnest_get_count_mcmc_steps();
+void dnest_check_fptrset(DNestFptrSet *fptrset);
+DNestFptrSet * dnest_malloc_fptrset();
+void dnest_free_fptrset(DNestFptrSet * fptrset);
 /*=====================================================*/
 // users responsible for following functions
-extern void (*print_particle)(FILE *fp, const void *model);
-extern void (*from_prior)(void *model);
-extern double (*log_likelihoods_cal)(const void *model);
-extern double (*log_likelihoods_cal_initial)(const void *model);
-extern double (*log_likelihoods_cal_restart)(const void *model);
-extern double (*perturb)(void *model);
-extern void (*restart_action)(int iflag);
+void (*print_particle)(FILE *fp, const void *model);
+void (*from_prior)(void *model);
+double (*log_likelihoods_cal)(const void *model);
+double (*log_likelihoods_cal_initial)(const void *model);
+double (*log_likelihoods_cal_restart)(const void *model);
+double (*perturb)(void *model);
+void (*restart_action)(int iflag);
 /*=====================================================*/
 
 #endif

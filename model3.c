@@ -19,9 +19,7 @@
 int which_level_update;
 int num_data_points;
 int num_params;
-int num_particles;
-
-DataType *data;
+DNestFptrSet *fptrset_thismodel3;
 
 void model3()
 { 
@@ -40,53 +38,29 @@ void model3()
 
   /* setup szie of modeltype, which is used for dnest */
   num_params = 2;
-  
+  fptrset_thismodel3 = dnest_malloc_fptrset();
+
   /* setup functions used for dnest*/
-  from_prior = from_prior_thismodel3;
-  data_load = data_load_thismodel3;
-  log_likelihoods_cal = log_likelihoods_cal_thismodel3;
-  log_likelihoods_cal_initial = log_likelihoods_cal_thismodel3;
-  perturb = perturb_thismodel3;
-  print_particle = print_particle_thismodel3;
-  get_num_params = get_num_params_thismodel3;
-  restart_action = restart_action_model3;
-  
+  fptrset_thismodel3->from_prior = from_prior_thismodel3;
+  fptrset_thismodel3->log_likelihoods_cal = log_likelihoods_cal_thismodel3;
+  fptrset_thismodel3->log_likelihoods_cal_initial = log_likelihoods_cal_thismodel3;
+  fptrset_thismodel3->log_likelihoods_cal_restart = log_likelihoods_cal_thismodel3;
+  fptrset_thismodel3->perturb = perturb_thismodel3;
+  fptrset_thismodel3->print_particle = print_particle_thismodel3;
+  fptrset_thismodel3->restart_action = restart_action_model3;
   
   /* run dnest */
   strcpy(options_file, "OPTIONS3");
-  
-  if(thistask == 0)
-  {
-    get_num_particles3(options_file);
-  }
-  MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-  dnest(argc, argv, num_params);
+  dnest(argc, argv, fptrset_thismodel3, num_params);
   
   /* free memory */
+  dnest_free_fptrset(fptrset_thismodel3);
+
   for(i=0; i<narg; i++)
     free(argv[i]);
   free(argv);
-}
 
-void get_num_particles3(char *fname)
-{
-  FILE *fp;
-  char buf[BUF_MAX_LENGTH];
-  fp = fopen(fname, "r");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "# Error: Cannot open file %s\n", fname);
-    exit(-1);
-  }
-
-  buf[0]='#';
-  while(buf[0]=='#')
-  {
-    fgets(buf, BUF_MAX_LENGTH, fp);
-  }
-  sscanf(buf, "%d", &num_particles);
-  fclose(fp);
 }
 
 /*====================================================*/
@@ -159,17 +133,7 @@ void print_particle_thismodel3(FILE *fp, const void *model)
   fprintf(fp, "\n");
 }
 
-void data_load_thismodel3()
-{
-  
-}
 /*========================================================*/
-
-
-int get_num_params_thismodel3()
-{
-  return num_params;
-}
 
 void restart_action_model3(int iflag)
 {

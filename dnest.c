@@ -19,12 +19,14 @@
 
 #include "dnestvars.h"
 
-double dnest(int argc, char** argv, int num_params)
+double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
 {
   int opt;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &dnest_thistask);
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
+  
+  dnest_check_fptrset(fptrset);
 
   // cope with argv
   if(dnest_thistask == dnest_root )
@@ -101,7 +103,7 @@ double dnest(int argc, char** argv, int num_params)
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
-  setup(argc, argv, num_params);
+  setup(argc, argv, fptrset, num_params);
 
   if(dnest_flag_postprc == 1)
   {
@@ -808,12 +810,21 @@ void close_output_file()
   fclose(fsample_info);
 }
 
-void setup(int argc, char** argv, int num_params)
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
 {
   int i, j;
 
   // root task.
   dnest_root = 0;
+
+  // setup function pointers
+  from_prior = fptrset->from_prior;
+  log_likelihoods_cal = fptrset->log_likelihoods_cal;
+  log_likelihoods_cal_initial = fptrset->log_likelihoods_cal;
+  log_likelihoods_cal_restart = fptrset->log_likelihoods_cal;
+  perturb = fptrset->perturb;
+  print_particle = fptrset->print_particle;
+  restart_action = fptrset->restart_action;
 
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
@@ -1153,6 +1164,77 @@ unsigned long long int dnest_get_count_mcmc_steps()
 {
   return count_mcmc_steps;
 }
+
+void dnest_check_fptrset(DNestFptrSet *fptrset)
+{
+  if(fptrset->from_prior == NULL)
+  {
+    printf("\"from_prior\" function is not defined at task %d.\n", dnest_thistask);
+    exit(0);
+  }
+
+  if(fptrset->print_particle == NULL)
+  {
+    printf("\"print_particle\" function is not defined at task %d.\n", dnest_thistask);
+    exit(0);
+  }
+
+  if(fptrset->log_likelihoods_cal == NULL)
+  {
+    printf("\"log_likelihoods_cal\" function is not defined at task %d.\n", dnest_thistask);
+    exit(0);
+  }
+
+  if(fptrset->log_likelihoods_cal_initial == NULL)
+  {
+    printf("\"log_likelihoods_cal_initial\" function is not defined at task %d.\n", dnest_thistask);
+    exit(0);
+  }
+
+  if(fptrset->log_likelihoods_cal_restart == NULL)
+  {
+    printf("\"log_likelihoods_cal_restart\" function is not defined at task %d.\n", dnest_thistask);
+    exit(0);
+  }
+
+  if(fptrset->perturb == NULL)
+  {
+    printf("\"perturb\" function is not defined at task %d.\n", dnest_thistask);
+    exit(0);
+  }
+
+  if(fptrset->restart_action == NULL)
+  {
+    printf("\"restart_action\" function is not defined at task %d.\n", dnest_thistask);
+    exit(0);
+  }
+
+  return;
+}
+
+DNestFptrSet * dnest_malloc_fptrset()
+{
+  DNestFptrSet * fptrset;
+  fptrset = (DNestFptrSet *)malloc(sizeof(DNestFptrSet));
+
+  fptrset->from_prior = NULL;
+  fptrset->log_likelihoods_cal = NULL;
+  fptrset->log_likelihoods_cal_initial = NULL;
+  fptrset->log_likelihoods_cal_restart = NULL;
+  fptrset->perturb = NULL;
+  fptrset->print_particle = NULL;
+  fptrset->restart_action = NULL;
+
+  return fptrset;
+}
+
+void dnest_free_fptrset(DNestFptrSet * fptrset)
+{
+  free(fptrset);
+  return;
+}
+
+
 /*!
  *  Save sampler state for later restart. 
  */

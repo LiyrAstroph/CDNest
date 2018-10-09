@@ -19,9 +19,8 @@
 int which_level_update;
 int num_data_points;
 int num_params;
-int num_particles;
 
-DataType *data;
+DNestFptrSet *fptrset_thismodel;
 
 void model1()
 { 
@@ -41,63 +40,28 @@ void model1()
   /* setup szie of modeltype, which is used for dnest */
   num_params = 20;
   
-  /* setup number of data points and allocate memory */
-  num_data_points = 0;
-  data = (DataType *)malloc(num_data_points * sizeof(DataType));
-  
+  /* allocate memory */
+  fptrset_thismodel = dnest_malloc_fptrset();
+
   /* setup functions used for dnest*/
-  from_prior = from_prior_thismodel;
-  data_load = data_load_thismodel;
-  log_likelihoods_cal = log_likelihoods_cal_thismodel;
-  log_likelihoods_cal_initial = log_likelihoods_cal_thismodel;
-  log_likelihoods_cal_restart = log_likelihoods_cal_thismodel;
-  perturb = perturb_thismodel;
-  print_particle = print_particle_thismodel;
-  get_num_params = get_num_params_thismodel;
-  restart_action = restart_action_model1;
-  
-  /* load data */
-  if(thistask == 0)
-  {
-    data_load();
-  }
+  fptrset_thismodel->from_prior = from_prior_thismodel;
+  fptrset_thismodel->log_likelihoods_cal = log_likelihoods_cal_thismodel;
+  fptrset_thismodel->log_likelihoods_cal_initial = log_likelihoods_cal_thismodel;
+  fptrset_thismodel->log_likelihoods_cal_restart = log_likelihoods_cal_thismodel;
+  fptrset_thismodel->perturb = perturb_thismodel;
+  fptrset_thismodel->print_particle = print_particle_thismodel;
+  fptrset_thismodel->restart_action = restart_action_model1;
   
   /* run dnest */
   strcpy(options_file, "OPTIONS1");
-  if(thistask == 0)
-  {
-    get_num_particles1(options_file);
-  }
-  MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-  dnest(argc, argv, num_params);
+  dnest(argc, argv, fptrset_thismodel, num_params);
     
   /* free memory */
-  free(data);
+  dnest_free_fptrset(fptrset_thismodel);
 
   for(i=0; i<narg; i++)
     free(argv[i]);
   free(argv);
-}
-
-void get_num_particles1(char *fname)
-{
-  FILE *fp;
-  char buf[BUF_MAX_LENGTH];
-  fp = fopen(fname, "r");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "# Error: Cannot open file %s\n", fname);
-    exit(-1);
-  }
-
-  buf[0]='#';
-  while(buf[0]=='#')
-  {
-    fgets(buf, BUF_MAX_LENGTH, fp);
-  }
-  sscanf(buf, "%d", &num_particles);
-  fclose(fp);
 }
 
 /*====================================================*/
@@ -175,18 +139,7 @@ void print_particle_thismodel(FILE *fp, const void *model)
   fprintf(fp, "\n");
 }
 
-void data_load_thismodel()
-{
-  // no data for this model
-  return;
-}
-
 /*========================================================*/
-
-int get_num_params_thismodel()
-{
-  return num_params;
-}
 
 void restart_action_model1(int iflag)
 {

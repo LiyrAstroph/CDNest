@@ -19,7 +19,7 @@
 int which_level_update;
 int num_data_points;
 int num_params;
-int num_particles;
+DNestFptrSet *fptrset_thismodel2;
 
 DataType *data;
 void *best_model_thismodel, *best_model_std_thismodel;
@@ -45,62 +45,36 @@ void model2()
   /* setup number of data points and allocate memory */
   num_data_points = 30;
   data = (DataType *)malloc(num_data_points * sizeof(DataType));
-  
+  fptrset_thismodel2 = dnest_malloc_fptrset();
+
   /* setup functions used for dnest*/
-  from_prior = from_prior_thismodel2;
-  data_load = data_load_thismodel2;
-  log_likelihoods_cal = log_likelihoods_cal_thismodel2;
-  log_likelihoods_cal_initial = log_likelihoods_cal_thismodel2;
-  log_likelihoods_cal_restart = log_likelihoods_cal_thismodel2;
-  perturb = perturb_thismodel2;
-  print_particle = print_particle_thismodel2;
-  get_num_params = get_num_params_thismodel2;
-  restart_action = restart_action_model2;
+  fptrset_thismodel2->from_prior = from_prior_thismodel2;
+  fptrset_thismodel2->log_likelihoods_cal = log_likelihoods_cal_thismodel2;
+  fptrset_thismodel2->log_likelihoods_cal_initial = log_likelihoods_cal_thismodel2;
+  fptrset_thismodel2->log_likelihoods_cal_restart = log_likelihoods_cal_thismodel2;
+  fptrset_thismodel2->perturb = perturb_thismodel2;
+  fptrset_thismodel2->print_particle = print_particle_thismodel2;
+  fptrset_thismodel2->restart_action = restart_action_model2;
   
   /* load data */
   if(thistask == 0)
   {
-    data_load();
+    data_load_thismodel2();
   }
   MPI_Bcast(data, num_data_points*sizeof(DataType), MPI_BYTE, 0, MPI_COMM_WORLD);
   
   /* run dnest */
   strcpy(options_file, "OPTIONS2");
   
-  if(thistask == 0)
-  {
-    get_num_particles2(options_file);
-  }
-  MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-  dnest(argc, argv, num_params);
+  dnest(argc, argv, fptrset_thismodel2, num_params);
     
   /* free memory */
   free(data);
+  dnest_free_fptrset(fptrset_thismodel2);
 
   for(i=0; i<narg; i++)
     free(argv[i]);
   free(argv);
-}
-
-void get_num_particles2(char *fname)
-{
-  FILE *fp;
-  char buf[BUF_MAX_LENGTH];
-  fp = fopen(fname, "r");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "# Error: Cannot open file %s\n", fname);
-    exit(-1);
-  }
-
-  buf[0]='#';
-  while(buf[0]=='#')
-  {
-    fgets(buf, BUF_MAX_LENGTH, fp);
-  }
-  sscanf(buf, "%d", &num_particles);
-  fclose(fp);
 }
 
 /*====================================================*/
@@ -231,11 +205,6 @@ void data_load_thismodel2()
 }
 
 /*========================================================*/
-
-int get_num_params_thismodel2()
-{
-  return num_params;
-}
 
 void restart_action_model2(int iflag)
 {
