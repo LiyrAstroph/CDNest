@@ -29,11 +29,11 @@ int main(int argc, char **argv)
   MPI_Barrier(MPI_COMM_WORLD);
   model1();
   
-  //MPI_Barrier(MPI_COMM_WORLD);
-  //model2();
+  MPI_Barrier(MPI_COMM_WORLD);
+  model2();
 
-  //MPI_Barrier(MPI_COMM_WORLD);
-  //model3();
+  MPI_Barrier(MPI_COMM_WORLD);
+  model3();
 
   MPI_Finalize();
   return 0;

@@ -35,7 +35,6 @@ extern DataType *data;
 
 extern int which_particle_update; // which particule to be updated
 extern int which_level_update;
-extern int *perturb_accept;
 extern double *limits;
 extern int thistask, totaltask;
 

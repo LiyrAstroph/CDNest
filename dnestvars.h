@@ -96,7 +96,7 @@ extern double *limits, *copies_of_limits;
 extern int dnest_which_particle_update; // which particle to be updated
 extern int dnest_which_level_update;    // which level to be updated;
 extern int dnest_thistask, dnest_totaltask;
-extern int *perturb_accept;
+extern int *dnest_perturb_accept;
 extern int root;
 //***********************************************
 /*                  functions                  */
@@ -140,13 +140,13 @@ unsigned int dnest_get_which_num_saves();
 unsigned long long int dnest_get_count_mcmc_steps();
 /*=====================================================*/
 // users responsible for following functions
-void (*print_particle)(FILE *fp, const void *model);
+extern void (*print_particle)(FILE *fp, const void *model);
 extern void (*from_prior)(void *model);
 extern double (*log_likelihoods_cal)(const void *model);
 extern double (*log_likelihoods_cal_initial)(const void *model);
 extern double (*log_likelihoods_cal_restart)(const void *model);
 extern double (*perturb)(void *model);
-int (*get_num_params)();
+extern int (*get_num_params)();
 extern void (*restart_action)(int iflag);
 /*=====================================================*/
 

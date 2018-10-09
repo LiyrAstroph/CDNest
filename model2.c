@@ -16,10 +16,7 @@
 #include "dnestvars.h"
 #include "model2.h"
 
-int which_particle_update;
 int which_level_update;
-unsigned long long int which_mcmc_steps;//mcmc steps 
-int *perturb_accept;
 int num_data_points;
 int num_params;
 int num_particles;
@@ -76,13 +73,11 @@ void model2()
     get_num_particles2(options_file);
   }
   MPI_Bcast(&num_particles, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  perturb_accept = malloc(num_particles * sizeof(int));
 
   dnest(argc, argv);
     
   /* free memory */
   free(data);
-  free(perturb_accept);
 
   for(i=0; i<narg; i++)
     free(argv[i]);

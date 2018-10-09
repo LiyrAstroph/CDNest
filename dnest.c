@@ -657,14 +657,14 @@ void update_particle(unsigned int which)
   if(log_H > 0.0)
     log_H = 0.0;
 
-  perturb_accept[which] = 0;
+  dnest_perturb_accept[which] = 0;
   if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value < logl_proposal.value)
   {
     memcpy(particle, proposal, size_of_modeltype);
     memcpy(logl, &logl_proposal, sizeof(LikelihoodType));
     level->accepts++;
 
-    perturb_accept[which] = 1;
+    dnest_perturb_accept[which] = 1;
   }
   level->tries++;
   
@@ -904,6 +904,11 @@ void setup(int argc, char** argv)
     }
   }
   
+  dnest_perturb_accept = malloc(options.num_particles * sizeof(int));
+  for(i=0; i<options.num_particles; i++)
+  {
+    dnest_perturb_accept[i] = 0;
+  }
 
   count_mcmc_steps = 0;
   count_saves = 0;
@@ -962,6 +967,8 @@ void finalise()
       free(copies_of_limits);
   }
   gsl_rng_free(dnest_gsl_r);
+
+  free(dnest_perturb_accept);
 
   if(dnest_thistask == root)
     printf("# Finalizing dnest.\n");
