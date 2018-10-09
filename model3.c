@@ -134,6 +134,7 @@ double perturb_thismodel3(void *model)
   double logH = 0.0, width, limit1, limit2;
   int which = dnest_rand_int(num_params), which_level;
 
+  which_level_update = dnest_get_which_level_update();
   which_level = which_level_update > (size_levels - 20)?(size_levels-20):which_level_update;
   which_level = 0;
   if(which_level > 0 )

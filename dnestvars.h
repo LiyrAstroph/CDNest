@@ -93,10 +93,10 @@ extern double post_logz;
 //the limits of parameters for each level;
 extern double *limits, *copies_of_limits;
 
-extern int which_particle_update; // which particle to be updated
-extern int which_level_update;    // which level to be updated;
+extern int dnest_which_particle_update; // which particle to be updated
+extern int dnest_which_level_update;    // which level to be updated;
 extern unsigned long long int which_mcmc_steps;//mcmc steps 
-extern int thistask, totaltask;
+extern int dnest_thistask, dnest_totaltask;
 extern int *perturb_accept;
 extern int root;
 //***********************************************
@@ -135,6 +135,8 @@ void initialize_output_file();
 void close_output_file();
 void dnest_save_restart();
 void dnest_restart();
+int dnest_get_which_level_update();
+int dnest_get_which_particle_update();
 /*=====================================================*/
 // users responsible for following functions
 extern void (*print_particle)(FILE *fp, const void *model);

@@ -37,7 +37,7 @@ extern int which_particle_update; // which particule to be updated
 extern int which_level_update;
 extern int *perturb_accept;
 extern double *limits;
-extern int thisktask, totaltask;
+extern int thistask, totaltask;
 
 /* functions */
 void get_num_particles2(char *fname);
