@@ -462,7 +462,7 @@ void kill_lagging_particles()
           i_copy = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
         }while(!good[i_copy] || gsl_rng_uniform(dnest_gsl_r) >= exp(log_push(level_assignments[i_copy])));
 
-        memcpy(particles+i*particle_offset_size, particles + i_copy*particle_offset_size, size_of_modeltype);
+        memcpy(particles+i*particle_offset_size, particles + i_copy*particle_offset_size, dnest_size_of_modeltype);
         log_likelihoods[i] = log_likelihoods[i_copy];
         level_assignments[i] = level_assignments[i_copy];
         deletions++;
@@ -540,13 +540,13 @@ void save_particle()
   {
     if(dnest_thistask == whichtask)
     {
-      int size_message = size_of_modeltype + 2*sizeof(int) + 2*sizeof(double);
+      int size_message = dnest_size_of_modeltype + 2*sizeof(int) + 2*sizeof(double);
       particle_message = (void *)malloc(size_message);
       whichparticle = gsl_rng_uniform_int(dnest_gsl_r,options.num_particles);
-      memcpy(particle_message, particles + whichparticle * particle_offset_size, size_of_modeltype);
-      memcpy(particle_message + size_of_modeltype, &log_likelihoods[whichparticle].value, 2*sizeof(double));
-      memcpy(particle_message + size_of_modeltype + 2*sizeof(double), &level_assignments[whichparticle], sizeof(int));
-      memcpy(particle_message + size_of_modeltype + 2*sizeof(double) + sizeof(int), &whichparticle, sizeof(int));
+      memcpy(particle_message, particles + whichparticle * particle_offset_size, dnest_size_of_modeltype);
+      memcpy(particle_message + dnest_size_of_modeltype, &log_likelihoods[whichparticle].value, 2*sizeof(double));
+      memcpy(particle_message + dnest_size_of_modeltype + 2*sizeof(double), &level_assignments[whichparticle], sizeof(int));
+      memcpy(particle_message + dnest_size_of_modeltype + 2*sizeof(double) + sizeof(int), &whichparticle, sizeof(int));
 
       MPI_Send(particle_message, size_message, MPI_BYTE, dnest_root, 1, MPI_COMM_WORLD);
 
@@ -557,7 +557,7 @@ void save_particle()
     if(dnest_thistask == dnest_root)
     {
       MPI_Status status;
-      int size_message = size_of_modeltype + 2*sizeof(int) + 2*sizeof(double);
+      int size_message = dnest_size_of_modeltype + 2*sizeof(int) + 2*sizeof(double);
       int whichlevel;
       LikelihoodType logl;
 
@@ -565,9 +565,9 @@ void save_particle()
 
       MPI_Recv(particle_message, size_message, MPI_BYTE, whichtask, 1, MPI_COMM_WORLD, &status);
 
-      memcpy(&logl, particle_message + size_of_modeltype, 2*sizeof(double) );
-      memcpy(&whichlevel, particle_message + size_of_modeltype + 2*sizeof(double), sizeof(int) );
-      memcpy(&whichparticle, particle_message + size_of_modeltype + 2*sizeof(double) + sizeof(int), sizeof(int) );
+      memcpy(&logl, particle_message + dnest_size_of_modeltype, 2*sizeof(double) );
+      memcpy(&whichlevel, particle_message + dnest_size_of_modeltype + 2*sizeof(double), sizeof(int) );
+      memcpy(&whichparticle, particle_message + dnest_size_of_modeltype + 2*sizeof(double) + sizeof(int), sizeof(int) );
       
       //printf("%f %f\n", logl.value, logl.tiebreaker);
 
@@ -642,11 +642,11 @@ void update_particle(unsigned int which)
   
   Level *level = &(levels[level_assignments[which]]);
 
-  void *proposal = (void *)malloc(size_of_modeltype);
+  void *proposal = (void *)malloc(dnest_size_of_modeltype);
   LikelihoodType logl_proposal;
   double log_H;
 
-  memcpy(proposal, particle, size_of_modeltype);
+  memcpy(proposal, particle, dnest_size_of_modeltype);
   
   dnest_which_level_update = level_assignments[which];
   
@@ -662,7 +662,7 @@ void update_particle(unsigned int which)
   dnest_perturb_accept[which] = 0;
   if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value < logl_proposal.value)
   {
-    memcpy(particle, proposal, size_of_modeltype);
+    memcpy(particle, proposal, dnest_size_of_modeltype);
     memcpy(logl, &logl_proposal, sizeof(LikelihoodType));
     level->accepts++;
 
@@ -836,7 +836,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
   printf("# debugging, task %d dnest random seed %d\n", dnest_thistask, 9999 + dnest_thistask);
 #endif  
 
-  size_of_modeltype = num_params * sizeof(double);
+  dnest_size_of_modeltype = num_params * sizeof(double);
 
   // read options
   if(dnest_thistask == dnest_root)
@@ -849,9 +849,9 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
   save_to_disk = true;
 
   // particles
-  particle_offset_size = size_of_modeltype/sizeof(void);
-  particle_offset_double = size_of_modeltype/sizeof(double);
-  particles = (void *)malloc(options.num_particles*size_of_modeltype);
+  particle_offset_size = dnest_size_of_modeltype/sizeof(void);
+  particle_offset_double = dnest_size_of_modeltype/sizeof(double);
+  particles = (void *)malloc(options.num_particles*dnest_size_of_modeltype);
   
   // initialise sampler
   if(dnest_thistask == dnest_root)
@@ -1257,15 +1257,15 @@ void dnest_save_restart()
       exit(0);
     }
 
-    particles_all = (void *)malloc( options.num_particles *  dnest_totaltask * size_of_modeltype );
+    particles_all = (void *)malloc( options.num_particles *  dnest_totaltask * dnest_size_of_modeltype );
 
 
     log_likelihoods_all = (LikelihoodType *)malloc(dnest_totaltask * options.num_particles * sizeof(LikelihoodType));
     level_assignments_all = (unsigned int*)malloc(dnest_totaltask * options.num_particles * sizeof(unsigned int));
   }
 
-  MPI_Gather(particles, options.num_particles * size_of_modeltype, MPI_BYTE, 
-    particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
+  MPI_Gather(particles, options.num_particles * dnest_size_of_modeltype, MPI_BYTE, 
+    particles_all, options.num_particles * dnest_size_of_modeltype, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   MPI_Gather(level_assignments, options.num_particles * sizeof(unsigned int), MPI_BYTE, 
     level_assignments_all, options.num_particles * sizeof(unsigned int), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
@@ -1327,7 +1327,7 @@ void dnest_save_restart()
       for(i=0; i<options.num_particles; i++)
       {
         //print_particle(fp, particles_all + (j * options.num_particles + i) * particle_offset_size);
-        fwrite(particles_all + (j * options.num_particles + i) * particle_offset_size, size_of_modeltype, 1, fp);
+        fwrite(particles_all + (j * options.num_particles + i) * particle_offset_size, dnest_size_of_modeltype, 1, fp);
       } 
     }
     
@@ -1358,7 +1358,7 @@ void dnest_restart()
 
     printf("# Reading %s\n", file_restart);
 
-    particles_all = (void *)malloc( options.num_particles *  dnest_totaltask * size_of_modeltype );
+    particles_all = (void *)malloc( options.num_particles *  dnest_totaltask * dnest_size_of_modeltype );
     log_likelihoods_all = (LikelihoodType *)malloc(dnest_totaltask * options.num_particles * sizeof(LikelihoodType));
     level_assignments_all = (unsigned int*)malloc(dnest_totaltask * options.num_particles * sizeof(unsigned int));
 
@@ -1422,14 +1422,14 @@ void dnest_restart()
     {
       for(i=0; i<options.num_particles; i++)
       {
-        particle = (particles_all + (j * options.num_particles + i) * size_of_modeltype);
+        particle = (particles_all + (j * options.num_particles + i) * dnest_size_of_modeltype);
 
         //for(k=0; k < particle_offset_double; k++)
         //{
         //  fscanf(fp, "%lf", &particle[k]);
         //}
         //fscanf(fp, "\n");
-        fread(particle, size_of_modeltype, 1, fp);
+        fread(particle, dnest_size_of_modeltype, 1, fp);
       }
     }
 
@@ -1450,8 +1450,8 @@ void dnest_restart()
   MPI_Scatter(log_likelihoods_all, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, 
       log_likelihoods, options.num_particles * sizeof(LikelihoodType), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
-  MPI_Scatter(particles_all, options.num_particles * size_of_modeltype, MPI_BYTE, 
-    particles, options.num_particles * size_of_modeltype, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
+  MPI_Scatter(particles_all, options.num_particles * dnest_size_of_modeltype, MPI_BYTE, 
+    particles, options.num_particles * dnest_size_of_modeltype, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   
   restart_action(1);

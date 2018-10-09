@@ -31,7 +31,7 @@ double compression;
 unsigned int regularisation;
 
 void *particles;
-int size_of_modeltype;
+int dnest_size_of_modeltype;
 int particle_offset_size, particle_offset_double;
 
 LikelihoodType *log_likelihoods;

@@ -73,7 +73,7 @@ typedef struct
 }DNestFptrSet;
 
 extern void *particles;
-extern int size_of_modeltype;
+extern int dnest_size_of_modeltype;
 extern int particle_offset_size, particle_offset_double;
 
 // sampler

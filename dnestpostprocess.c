@@ -96,10 +96,10 @@ void postprocess(double temperature)
   }
   
   // allocate memory for samples
-  num_params = size_of_modeltype/sizeof(double);
+  num_params = dnest_size_of_modeltype/sizeof(double);
   logl = (void *)malloc(num_samples * sizeof(double));
   sandwhich = malloc(num_samples * sizeof(int));
-  psample = (double *)malloc(size_of_modeltype);
+  psample = (double *)malloc(dnest_size_of_modeltype);
   
   // read levels
   fp = fopen(options.levels_file, "r");
@@ -349,7 +349,7 @@ void postprocess(double temperature)
   printf("# debugging, random seed %d\n", 8888 + dnest_thistask);
 #endif  
 
-  posterior_sample = malloc(num_ps * size_of_modeltype);
+  posterior_sample = malloc(num_ps * dnest_size_of_modeltype);
   posterior_sample_info = malloc(num_ps * sizeof(double));
   posterior_sample_idx = malloc(num_ps * sizeof(int)); // flag for which particle to save
 
@@ -397,7 +397,7 @@ void postprocess(double temperature)
     {
       if(posterior_sample_idx[j] == i)
       {
-        memcpy(posterior_sample+j*size_of_modeltype, (void *)psample, size_of_modeltype);
+        memcpy(posterior_sample+j*dnest_size_of_modeltype, (void *)psample, dnest_size_of_modeltype);
       }
     }
     //printf("%f %f %f\n", sample[i].params[0], sample[i].params[1], sample[i].params[2]);
@@ -415,7 +415,7 @@ void postprocess(double temperature)
 
   for(i=0; i<num_ps; i++)
   {
-    print_particle(fp, posterior_sample + i*size_of_modeltype);
+    print_particle(fp, posterior_sample + i*dnest_size_of_modeltype);
   }
   fclose(fp);
 
