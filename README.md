@@ -5,6 +5,7 @@
 C version of diffusive nested sampling proposed by Brendon Brewer ( https://github.com/eggplantbren/DNest3 ).
 
 It proivdes a library libdnest.so. Examples for using this library are shown in model1.c, model2., and model3.c.
+It also provides a python callable module "cydnest.so" using Cython. Examples for using cydnest in Python is shown in example.py.
 
 # Test 1
 The likelihood function is (Brewer et al. 2009, arXiv:0912.2380):
