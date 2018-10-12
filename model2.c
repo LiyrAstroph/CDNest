@@ -64,9 +64,7 @@ void model2()
   MPI_Bcast(data, num_data_points*sizeof(DataType), MPI_BYTE, 0, MPI_COMM_WORLD);
   
   /* run dnest */
-  strcpy(options_file, "OPTIONS2");
-  
-  dnest(argc, argv, fptrset_thismodel2, num_params);
+  dnest(argc, argv, fptrset_thismodel2, num_params, "OPTIONS2");
     
   /* free memory */
   free(data);

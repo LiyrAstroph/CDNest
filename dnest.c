@@ -19,7 +19,7 @@
 
 #include "dnestvars.h"
 
-double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
+double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *optfile)
 {
   int opt;
 
@@ -103,7 +103,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
-  setup(argc, argv, fptrset, num_params);
+  setup(argc, argv, fptrset, num_params, optfile);
 
   if(dnest_flag_postprc == 1)
   {
@@ -130,7 +130,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
   dnest_postprocess(dnest_post_temp);
 
   finalise();
-
+  
   return post_logz;
 }
 
@@ -810,7 +810,7 @@ void close_output_file()
   fclose(fsample_info);
 }
 
-void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *optfile)
 {
   int i, j;
 
@@ -825,6 +825,8 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params)
   perturb = fptrset->perturb;
   print_particle = fptrset->print_particle;
   restart_action = fptrset->restart_action;
+
+  strcpy(options_file, optfile);
 
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
@@ -997,7 +999,7 @@ void options_load()
 
   if(fp == NULL)
   {
-    fprintf(stderr, "# ERROR: Cannot open file %s.\n", options_file);
+    fprintf(stderr, "# ERROR: Cannot open options file %s.\n", options_file);
     exit(0);
   }
 

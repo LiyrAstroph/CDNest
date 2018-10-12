@@ -118,10 +118,10 @@ int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);
 
 void options_load();
-void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params);
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *optfile);
 void finalise();
 
-double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params);
+double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *optfile);
 void dnest_run();
 void dnest_mcmc_run();
 void update_particle(unsigned int which);

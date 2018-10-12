@@ -53,8 +53,7 @@ void model1()
   fptrset_thismodel->restart_action = restart_action_model1;
   
   /* run dnest */
-  strcpy(options_file, "OPTIONS1");
-  dnest(argc, argv, fptrset_thismodel, num_params);
+  dnest(argc, argv, fptrset_thismodel, num_params, "OPTIONS1");
     
   /* free memory */
   dnest_free_fptrset(fptrset_thismodel);
