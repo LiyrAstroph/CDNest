@@ -1,3 +1,13 @@
+#
+# C version of Diffusive Nested Sampling (DNest4) by Brendon J. Brewer
+#
+# Wrapped to Python
+#
+# Yan-Rong Li, liyanrong@mail.ihep.ac.cn
+# Jun 30, 2016
+#
+#
+
 #!/usr/bin/python
 #cython: initializedcheck=False, boundscheck=False, wraparound=False, cdivision=True, profile=False
 
@@ -12,7 +22,6 @@ cdef extern from "PyFuncs.h":
   double py_log_likelihood(void *pm) 
   void py_print_particle(FILE *fp, void *pm)
   void py_restart_action(int iflag)
-
 
 # typedef functions for dnest
 ctypedef void (*from_prior_type)(void *)

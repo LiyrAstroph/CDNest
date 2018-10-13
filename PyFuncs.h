@@ -1,3 +1,11 @@
+/*
+ * C version of Diffusive Nested Sampling (DNest4) by Brendon J. Brewer
+ *
+ * Yan-Rong Li, liyanrong@mail.ihep.ac.cn
+ * Jun 30, 2016
+ *
+ */
+
 #ifndef _PyFuncs
 #define _PyFuncs
 

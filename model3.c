@@ -71,7 +71,7 @@ void from_prior_thismodel3(void *model)
   for(i=0; i<num_params; i++)
   {
     params[i] = -6.0 + 12.0 * dnest_rand();
-    wrap(&params[i], -6.0, 6.0);
+    dnest_wrap(&params[i], -6.0, 6.0);
   }
 }
 
@@ -115,7 +115,7 @@ double perturb_thismodel3(void *model)
   }
   width = (limit2 - limit1);
   params[which] += width * dnest_randh();
-  wrap(&params[which], -6.0, 6.0);
+  dnest_wrap(&params[which], -6.0, 6.0);
   return logH;
 }
 /*=======================================================*/

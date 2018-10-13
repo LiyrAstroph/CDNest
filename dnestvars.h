@@ -112,7 +112,7 @@ extern int dnest_root;
 //***********************************************
 /*                  functions                  */
 double mod(double y, double x);
-void wrap(double *x, double min, double max);
+void dnest_wrap(double *x, double min, double max);
 void wrap_limit(double *x, double min, double max);
 int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);

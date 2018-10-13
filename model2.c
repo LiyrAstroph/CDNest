@@ -163,7 +163,7 @@ double perturb_thismodel2(void *model)
 		// Usual log-uniform prior trick
 		params[2] = log(params[2]);
 		params[2] += width*dnest_randh();
-		wrap(&(params[2]), -10.0, 10.0);
+		dnest_wrap(&(params[2]), -10.0, 10.0);
 		params[2] = exp(params[2]);
 	}
   

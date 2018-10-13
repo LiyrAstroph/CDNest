@@ -1,3 +1,8 @@
+#
+# an example from the DNest4 package by Brendon J. Brewer, with minor modifications
+# 
+#
+
 from mpi4py import MPI
 import numpy as np
 import scipy.special as sp
@@ -8,7 +13,7 @@ rank = comm.Get_rank()
 
 def randh(N=1):
     """
-    Generate from the heavy-tailed distribution.
+    generate from the heavy-tailed distribution.
     """
     if N==1:
 	    return 10.0**(1.5 - 3*np.abs(np.random.randn()/np.sqrt(-np.log(np.random.rand()))))*np.random.randn()
@@ -25,7 +30,7 @@ class Model(object):
     def __init__(self, num_params=5, width=10.0):
         self.num_params = num_params
         self.width = width
-        self.options_file = "OPTIONS4"
+        self.options_file = "OPTIONS4"  # options file for dnest
 
     def analytic_log_Z(self):
         return (
@@ -48,10 +53,16 @@ class Model(object):
     def log_likelihood(self, coords, const=-0.5*np.log(2*np.pi)):
         return -0.5*np.sum(coords**2) + self.num_params * const
 
-
+# create a model
 model = Model()
+
+# create a dnest sampler
 sample = cydnest.sampler(model)
+
+# run sampler
 logz = sample.run()
 comm.Barrier()
+
+# ouput evidence
 if rank == 0:
   print logz, model.analytic_log_Z()

@@ -654,7 +654,7 @@ void update_particle(unsigned int which)
   
   logl_proposal.value = log_likelihoods_cal(proposal);
   logl_proposal.tiebreaker =  (*logl).tiebreaker + gsl_rng_uniform(dnest_gsl_r);
-  wrap(&logl_proposal.tiebreaker, 0.0, 1.0);
+  dnest_wrap(&logl_proposal.tiebreaker, 0.0, 1.0);
   
   if(log_H > 0.0)
     log_H = 0.0;
@@ -1093,7 +1093,7 @@ double mod(double y, double x)
   
 }
 
-void wrap(double *x, double min, double max)
+void dnest_wrap(double *x, double min, double max)
 {
   *x = mod(*x - min, max - min) + min;
 }

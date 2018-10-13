@@ -123,7 +123,7 @@ double perturb_thismodel(void *model)
 
   width = (limit2 - limit1);
 	params[which] += width * dnest_randh();
-	wrap(&params[which], limit1, limit2);
+	dnest_wrap(&params[which], limit1, limit2);
   return logH;
 }
 
