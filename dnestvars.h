@@ -145,6 +145,7 @@ void initialize_output_file();
 void close_output_file();
 void dnest_save_restart();
 void dnest_restart();
+void dnest_restart_action(int iflag);
 int dnest_get_which_level_update();
 int dnest_get_which_particle_update();
 unsigned int dnest_get_which_num_saves();

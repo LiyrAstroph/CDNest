@@ -67,7 +67,7 @@ cdef class sampler:
     self.argc += 1
     
     # setup function set
-    self.fptrset = <DNestFptrSet *>PyMem_Malloc(sizeof(DNestFptrSet))  
+    self.fptrset = dnest_malloc_fptrset(); 
     self.fptrset.from_prior = py_from_prior
     self.fptrset.log_likelihoods_cal = py_log_likelihood
     self.fptrset.log_likelihoods_cal_initial = py_log_likelihood
@@ -82,10 +82,9 @@ cdef class sampler:
     cdef int i
     for i in range(4):
       PyMem_Free(self.argv[i])
-    
     PyMem_Free(self.argv)
-    PyMem_Free(self.fptrset)
 
+    dnest_free_fptrset(self.fptrset);
     return
   
   def run(self):

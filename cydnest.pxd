@@ -48,4 +48,6 @@ cdef extern from "dnestvars.h":
     print_particle_type print_particle
     restart_action_type restart_action
   
+  DNestFptrSet * dnest_malloc_fptrset()
+  void dnest_free_fptrset(DNestFptrSet *fptrset)
   double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *optfile)

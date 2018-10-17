@@ -1189,14 +1189,16 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
 
   if(fptrset->log_likelihoods_cal_initial == NULL)
   {
-    printf("\"log_likelihoods_cal_initial\" function is not defined at task %d.\n", dnest_thistask);
-    exit(0);
+    printf("\"log_likelihoods_cal_initial\" function is not defined at task %d. \
+      \nSet to the same as \"log_likelihoods_cal\" function.\n", dnest_thistask);
+    fptrset->log_likelihoods_cal_initial = fptrset->log_likelihoods_cal;
   }
 
   if(fptrset->log_likelihoods_cal_restart == NULL)
   {
-    printf("\"log_likelihoods_cal_restart\" function is not defined at task %d.\n", dnest_thistask);
-    exit(0);
+    printf("\"log_likelihoods_cal_restart\" function is not defined at task %d. \
+      \nSet to the same as \"log_likelihoods_cal\" function.\n", dnest_thistask);
+    fptrset->log_likelihoods_cal_restart = fptrset->log_likelihoods_cal;
   }
 
   if(fptrset->perturb == NULL)
@@ -1207,8 +1209,9 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
 
   if(fptrset->restart_action == NULL)
   {
-    printf("\"restart_action\" function is not defined at task %d.\n", dnest_thistask);
-    exit(0);
+    printf("\"restart_action\" function is not defined at task %d.\
+      \nSet to the default function in dnest.\n", dnest_thistask);
+    fptrset->restart_action = dnest_restart_action;
   }
 
   return;
@@ -1476,5 +1479,11 @@ void dnest_restart()
   }
   return;
 }
+
+void dnest_restart_action(int iflag)
+{
+  return;
+}
+
 
 
