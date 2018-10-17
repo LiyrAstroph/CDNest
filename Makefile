@@ -1,8 +1,3 @@
-EXEC     = dnest
-CYEXEC   = cydnest
-.PHONY: default
-default: $(EXEC) $(CYEXEC)
-
 SHELL=/bin/bash
 CC       = mpicc 
 OPTIMIZE = -O2 -Wall -finline-functions
@@ -74,6 +69,7 @@ OPTIONS  = $(OPTIMIZE)
 CFLAGS   = $(OPTIONS) $(GSL_INCL) $(LAPACK_INCL) $(CBLAS_INCL) $(MPIINCL)
 LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB)
 
+EXEC     = dnest
 SRC      = ./
 INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h $(SRC)/model3.h
  
@@ -87,27 +83,6 @@ $(EXEC): $(OBJS)
 	#ar rcs libdnest.a dnest.o dnestvars.o
 
 $(OBJS): $(INCL)
-
-
-
-PYTHON = python
-PYTHON_CONFIG = ${PYTHON} ./python-config
-
-
-CYTHON = cython
-.PHONY: src
-src: cydnest.c 
-cydnest.c: cydnest.pyx
-	${CYTHON} $<
-
-MPICC = mpicc
-CFLAGS = -fPIC ${shell ${PYTHON_CONFIG} --includes} 
-LDFLAGS = -shared ${shell ${PYTHON_CONFIG} --libs} -I/home/liyropt/Projects/GIT/DNest -L/home/liyropt/Projects/GIT/DNest -ldnest -lmpich
-SO = ${shell ${PYTHON_CONFIG} --extension-suffix}
-.PHONY: $(CYEXEC)
-$(CYEXEC): $(CYEXEC)${SO}
-$(CYEXEC)${SO}: cydnest.c PyFuncs.h
-	${MPICC} ${CFLAGS} -o $@ $< ${LDFLAGS}
 
 clean:
 	rm $(SRC)/*.o $(EXEC)
