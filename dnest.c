@@ -824,6 +824,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   log_likelihoods_cal_restart = fptrset->log_likelihoods_cal;
   perturb = fptrset->perturb;
   print_particle = fptrset->print_particle;
+  read_particle = fptrset->read_particle;
   restart_action = fptrset->restart_action;
 
   strcpy(options_file, optfile);
@@ -837,8 +838,9 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   gsl_rng_set(dnest_gsl_r, 9999 + dnest_thistask);
   printf("# debugging, task %d dnest random seed %d\n", dnest_thistask, 9999 + dnest_thistask);
 #endif  
-
-  dnest_size_of_modeltype = num_params * sizeof(double);
+  
+  dnest_num_params = num_params;
+  dnest_size_of_modeltype = dnest_num_params * sizeof(double);
 
   // read options
   if(dnest_thistask == dnest_root)
@@ -1177,8 +1179,16 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
 
   if(fptrset->print_particle == NULL)
   {
-    printf("\"print_particle\" function is not defined at task %d.\n", dnest_thistask);
-    exit(0);
+    printf("\"print_particle\" function is not defined at task %d. \
+      \nSet to be default function in dnest.\n", dnest_thistask);
+    fptrset->print_particle = dnest_print_particle;
+  }
+
+  if(fptrset->read_particle == NULL)
+  {
+    printf("\"read_particle\" function is not defined at task %d. \
+      \nSet to be default function in dnest.\n", dnest_thistask);
+    fptrset->read_particle = dnest_read_particle;
   }
 
   if(fptrset->log_likelihoods_cal == NULL)
@@ -1228,6 +1238,7 @@ DNestFptrSet * dnest_malloc_fptrset()
   fptrset->log_likelihoods_cal_restart = NULL;
   fptrset->perturb = NULL;
   fptrset->print_particle = NULL;
+  fptrset->read_particle = NULL;
   fptrset->restart_action = NULL;
 
   return fptrset;
@@ -1476,6 +1487,36 @@ void dnest_restart()
       level_assignments[i]--;
     }
     
+  }
+  return;
+}
+
+void dnest_print_particle(FILE *fp, const void *model)
+{
+  int i;
+  double *pm = (double *)model;
+
+  for(i=0; i<dnest_num_params; i++)
+  {
+    fprintf(fp, "%e ", pm[i] );
+  }
+  fprintf(fp, "\n");
+  return;
+}
+
+void dnest_read_particle(FILE *fp, void *model)
+{
+  int j;
+  double *psample = (double *)model;
+
+  for(j=0; j < dnest_num_params; j++)
+  {
+    if(fscanf(fp, "%lf", psample+j) < 1)
+    {
+      printf("%f\n", *psample);
+      fprintf(stderr, "#Error: Cannot read file %s.\n", options.sample_file);
+      exit(0);
+    }
   }
   return;
 }

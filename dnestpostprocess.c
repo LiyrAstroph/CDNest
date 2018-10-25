@@ -67,7 +67,7 @@ void postprocess(double temperature)
   int *sandwhich;
   double *psample;
   int i, j;
-  int num_levels, num_samples, num_params;
+  int num_levels, num_samples;
   char buf[BUF_MAX_LENGTH];
   int moreSample = 1;
   
@@ -96,7 +96,6 @@ void postprocess(double temperature)
   }
   
   // allocate memory for samples
-  num_params = dnest_size_of_modeltype/sizeof(double);
   logl = (void *)malloc(num_samples * sizeof(double));
   sandwhich = malloc(num_samples * sizeof(int));
   psample = (double *)malloc(dnest_size_of_modeltype);
@@ -177,15 +176,7 @@ void postprocess(double temperature)
 
     for(i=0; i < num_samples; i++)
     {
-      for(j=0; j < num_params; j++)
-      {
-        if(fscanf(fp_sample, "%lf", psample+j) < 1)
-        {
-          printf("%f\n", *psample);
-          fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_file);
-          exit(0);
-        }
-      }
+      read_particle(fp_sample, (void *)psample);
 
       sample_info[i][1] = log_likelihoods_cal_initial((void *)psample);
       sample_info[i][2] = dnest_rand();
@@ -384,15 +375,9 @@ void postprocess(double temperature)
   fgets(buf, BUF_MAX_LENGTH, fp_sample);
   for(i=0; i < num_samples; i++)
   {
-    for(j=0; j < num_params; j++)
-    {
-      if(fscanf(fp_sample, "%lf", psample+j) < 1)
-      {
-        printf("%f\n", *psample);
-        fprintf(stderr, "# Error: Cannot read file %s.\n", options.sample_file);
-        exit(0);
-      }
-    }
+    
+    read_particle(fp_sample, (void *)psample);
+
     for(j=0; j < num_ps; j++)
     {
       if(posterior_sample_idx[j] == i)

@@ -69,6 +69,7 @@ typedef struct
   double (*log_likelihoods_cal_restart)(const void *model);
   double (*perturb)(void *model);
   void (*print_particle)(FILE *fp, const void *model);
+  void (*read_particle)(FILE *fp, void *model);
   void (*restart_action)(int iflag);
 }DNestFptrSet;
 
@@ -100,6 +101,7 @@ extern double dnest_post_temp;
 extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
 extern double post_logz;
+extern int dnest_num_params;
 
 //the limits of parameters for each level;
 extern double *limits, *copies_of_limits;
@@ -146,6 +148,8 @@ void close_output_file();
 void dnest_save_restart();
 void dnest_restart();
 void dnest_restart_action(int iflag);
+void dnest_print_particle(FILE *fp, const void *model);
+void dnest_read_particle(FILE *fp, void *model);
 int dnest_get_which_level_update();
 int dnest_get_which_particle_update();
 unsigned int dnest_get_which_num_saves();
@@ -156,6 +160,7 @@ void dnest_free_fptrset(DNestFptrSet * fptrset);
 /*=====================================================*/
 // users responsible for following functions
 void (*print_particle)(FILE *fp, const void *model);
+void (*read_particle)(FILE *fp, void *model);
 void (*from_prior)(void *model);
 double (*log_likelihoods_cal)(const void *model);
 double (*log_likelihoods_cal_initial)(const void *model);

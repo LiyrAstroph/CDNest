@@ -49,6 +49,7 @@ LikelihoodType *above;
 unsigned int size_above, size_all_above;
 
 double post_logz;
+int dnest_num_params;
 
 double *limits, *copies_of_limits;
 
