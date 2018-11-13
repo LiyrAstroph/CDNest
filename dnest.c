@@ -820,8 +820,8 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   // setup function pointers
   from_prior = fptrset->from_prior;
   log_likelihoods_cal = fptrset->log_likelihoods_cal;
-  log_likelihoods_cal_initial = fptrset->log_likelihoods_cal;
-  log_likelihoods_cal_restart = fptrset->log_likelihoods_cal;
+  log_likelihoods_cal_initial = fptrset->log_likelihoods_cal_initial;
+  log_likelihoods_cal_restart = fptrset->log_likelihoods_cal_restart;
   perturb = fptrset->perturb;
   print_particle = fptrset->print_particle;
   read_particle = fptrset->read_particle;
