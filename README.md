@@ -8,12 +8,14 @@ C version of diffusive nested sampling proposed by Brendon Brewer ( https://gith
 * It also provides a python callable module ```cydnest.so``` wrapped using Cython. Examples for using ```cydnest``` in Python is shown in ```example.py```.
 
 ## Installation
-* To create the C library ```libnest.so```, use terminal command
+The GNU Scientific Library (GSL; http://www.gnu.org/software/gsl) is required. One needs to install GSL in advance.
+
+* To create the C library ```libnest.so```, edit the paths for library and header files in ```Makefile``` and then compile using the following terminal command
 ```bash
 make
 ```
 
-* To create the Python module ```cydnest.so```, use terminal command
+* After creating ```libnest.so```, to create the Python module ```cydnest.so```, use terminal command
 ```bash
 python setup.py buid_ext
 ```
