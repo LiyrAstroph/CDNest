@@ -150,6 +150,7 @@ void dnest_restart();
 void dnest_restart_action(int iflag);
 void dnest_print_particle(FILE *fp, const void *model);
 void dnest_read_particle(FILE *fp, void *model);
+int dnest_get_size_levels();
 int dnest_get_which_level_update();
 int dnest_get_which_particle_update();
 unsigned int dnest_get_which_num_saves();

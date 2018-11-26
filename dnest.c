@@ -1149,6 +1149,11 @@ int dnest_cmp(const void *pa, const void *pb)
 }
 
 
+int dnest_get_size_levels()
+{
+  return size_levels;
+}
+
 int dnest_get_which_level_update()
 {
   return dnest_which_level_update;
