@@ -433,6 +433,7 @@ void kill_lagging_particles()
 
   double max_log_push = -DBL_MAX;
 
+  double kill_probability = 0.0;
   unsigned int num_bad = 0;
   size_t i;
 
@@ -443,7 +444,8 @@ void kill_lagging_particles()
     if( log_push(level_assignments[i]) > max_log_push)
       max_log_push = log_push(level_assignments[i]);
 
-    if( log_push(level_assignments[i]) < -6.0)
+    kill_probability = pow(1.0 - 1.0/(1.0 + exp(-log_push(level_assignments[i]) - 4.0)), 3);
+    if(gsl_rng_uniform(dnest_gsl_r) <= kill_probability)
     {
       good[i] = false;
       ++num_bad;
@@ -460,7 +462,7 @@ void kill_lagging_particles()
         do
         {
           i_copy = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
-        }while(!good[i_copy] || gsl_rng_uniform(dnest_gsl_r) >= exp(log_push(level_assignments[i_copy])));
+        }while(!good[i_copy] || gsl_rng_uniform(dnest_gsl_r) >= exp(log_push(level_assignments[i_copy]) - max_log_push));
 
         memcpy(particles+i*particle_offset_size, particles + i_copy*particle_offset_size, dnest_size_of_modeltype);
         log_likelihoods[i] = log_likelihoods[i_copy];
@@ -849,7 +851,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   
   //dnest_post_temp = 1.0;
   compression = exp(1.0);
-  regularisation = options.new_level_interval*0.1;
+  regularisation = options.new_level_interval*sqrt(options.lambda);
   save_to_disk = true;
 
   // particles
