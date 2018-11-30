@@ -649,7 +649,6 @@ void update_particle(unsigned int which)
   double log_H;
 
   memcpy(proposal, particle, dnest_size_of_modeltype);
-  
   dnest_which_level_update = level_assignments[which];
   
   log_H = perturb(proposal);
@@ -669,6 +668,7 @@ void update_particle(unsigned int which)
     level->accepts++;
 
     dnest_perturb_accept[which] = 1;
+    accept_action();
   }
   level->tries++;
   
@@ -828,7 +828,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   print_particle = fptrset->print_particle;
   read_particle = fptrset->read_particle;
   restart_action = fptrset->restart_action;
-
+  accept_action = fptrset->accept_action;
   strcpy(options_file, optfile);
 
   // random number generator
@@ -848,7 +848,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   if(dnest_thistask == dnest_root)
     options_load();
   MPI_Bcast(&options, sizeof(Options), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
-  
+
   //dnest_post_temp = 1.0;
   compression = exp(1.0);
   regularisation = options.new_level_interval*sqrt(options.lambda);
@@ -1231,6 +1231,13 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
     fptrset->restart_action = dnest_restart_action;
   }
 
+  if(fptrset->accept_action == NULL)
+  {
+    printf("\"accept_action\" function is not defined at task %d.\
+      \nSet to the default function in dnest.\n", dnest_thistask);
+    fptrset->accept_action = dnest_accept_action;
+  }
+
   return;
 }
 
@@ -1247,7 +1254,7 @@ DNestFptrSet * dnest_malloc_fptrset()
   fptrset->print_particle = NULL;
   fptrset->read_particle = NULL;
   fptrset->restart_action = NULL;
-
+  fptrset->accept_action = NULL;
   return fptrset;
 }
 
@@ -1529,6 +1536,11 @@ void dnest_read_particle(FILE *fp, void *model)
 }
 
 void dnest_restart_action(int iflag)
+{
+  return;
+}
+
+void dnest_accept_action()
 {
   return;
 }

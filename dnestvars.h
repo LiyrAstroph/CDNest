@@ -71,6 +71,7 @@ typedef struct
   void (*print_particle)(FILE *fp, const void *model);
   void (*read_particle)(FILE *fp, void *model);
   void (*restart_action)(int iflag);
+  void (*accept_action)();
 }DNestFptrSet;
 
 extern void *particles;
@@ -148,6 +149,7 @@ void close_output_file();
 void dnest_save_restart();
 void dnest_restart();
 void dnest_restart_action(int iflag);
+void dnest_accept_action();
 void dnest_print_particle(FILE *fp, const void *model);
 void dnest_read_particle(FILE *fp, void *model);
 int dnest_get_size_levels();
@@ -168,6 +170,7 @@ double (*log_likelihoods_cal_initial)(const void *model);
 double (*log_likelihoods_cal_restart)(const void *model);
 double (*perturb)(void *model);
 void (*restart_action)(int iflag);
+void (*accept_action)();
 /*=====================================================*/
 
 #endif
