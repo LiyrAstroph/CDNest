@@ -203,8 +203,15 @@ void dnest_run()
       
       //update size_all_above
       size_all_above += size_all_above_incr; 
+
+      if(size_all_above > options.new_level_interval*2)
+      {
+        printf("# Error, all above overflow.\n");
+        exit(0);
+      }
     }
     
+
     // gather above into all_above, stored in task 0, note that its size is different among tasks
     MPI_Gatherv(above, size_above * sizeof(LikelihoodType), MPI_BYTE, 
                 all_above, buf_size_above, buf_displs, MPI_BYTE, dnest_root, MPI_COMM_WORLD);
@@ -981,6 +988,7 @@ void finalise()
   if(dnest_thistask == dnest_root)
   {
     free(all_above);
+    free(levels_combine);
     free(copies_of_levels);
     if(dnest_flag_limits == 1)
       free(copies_of_limits);
@@ -1362,6 +1370,9 @@ void dnest_save_restart()
     }
     
     fclose(fp);
+    free(particles_all);
+    free(log_likelihoods_all);
+    free(level_assignments_all);
   }
 
   restart_action(0);
@@ -1501,6 +1512,13 @@ void dnest_restart()
       level_assignments[i]--;
     }
     
+  }
+
+  if(dnest_thistask == dnest_root)
+  {
+    free(particles_all);
+    free(log_likelihoods_all);
+    free(level_assignments_all);
   }
   return;
 }
