@@ -474,6 +474,9 @@ void kill_lagging_particles()
         memcpy(particles+i*particle_offset_size, particles + i_copy*particle_offset_size, dnest_size_of_modeltype);
         log_likelihoods[i] = log_likelihoods[i_copy];
         level_assignments[i] = level_assignments[i_copy];
+         
+        kill_action(i, i_copy);
+
         deletions++;
 
         printf("# Replacing lagging particle.\n");
@@ -618,6 +621,7 @@ void dnest_mcmc_run()
     which = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
 
     dnest_which_particle_update = which;
+
     //if(count_mcmc_steps >= 10000)printf("FFFF\n");
     //printf("%d\n", which);
     //printf("%f %f %f\n", particles[which].param[0], particles[which].param[1], particles[which].param[2]);
@@ -704,7 +708,7 @@ void update_level_assignment(unsigned int which)
   proposal=mod_int(proposal, size_levels);
 
   double log_A = -levels[proposal].log_X + levels[level_assignments[which]].log_X;
-  
+
   log_A += log_push(proposal) - log_push(level_assignments[which]);
 
   if(size_levels == options.max_num_levels)
@@ -738,7 +742,7 @@ double log_push(unsigned int which_level)
 {
   if(which_level > size_levels)
   {
-    printf("level overflow.\n");
+    printf("level overflow %d %d.\n", which_level, size_levels);
     exit(0);
   }
   if(enough_levels(levels, size_levels))
@@ -836,6 +840,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   read_particle = fptrset->read_particle;
   restart_action = fptrset->restart_action;
   accept_action = fptrset->accept_action;
+  kill_action = fptrset->kill_action;
   strcpy(options_file, optfile);
 
   // random number generator
@@ -1246,6 +1251,13 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
     fptrset->accept_action = dnest_accept_action;
   }
 
+  if(fptrset->kill_action == NULL)
+  {
+    printf("\"kill_action\" function is not defined at task %d.\
+      \nSet to the default function in dnest.\n", dnest_thistask);
+    fptrset->kill_action = dnest_kill_action;
+  }
+
   return;
 }
 
@@ -1263,6 +1275,7 @@ DNestFptrSet * dnest_malloc_fptrset()
   fptrset->read_particle = NULL;
   fptrset->restart_action = NULL;
   fptrset->accept_action = NULL;
+  fptrset->kill_action = NULL;
   return fptrset;
 }
 
@@ -1559,6 +1572,11 @@ void dnest_restart_action(int iflag)
 }
 
 void dnest_accept_action()
+{
+  return;
+}
+
+void dnest_kill_action(int i, int i_copy)
 {
   return;
 }
