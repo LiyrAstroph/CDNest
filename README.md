@@ -1,6 +1,6 @@
 (**To read this papge better, please use google chrome with the extension "GitHub with MathJax" **)
 
-# DNest_C
+# CDNest
 
 C version of diffusive nested sampling proposed by Brendon Brewer ( https://github.com/eggplantbren/DNest3 ).
 
