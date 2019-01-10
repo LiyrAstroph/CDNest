@@ -106,6 +106,7 @@ extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
 extern double post_logz;
 extern int dnest_num_params;
+extern char dnest_sample_postfix[STR_MAX_LENGTH];
 
 //the limits of parameters for each level;
 extern double *limits, *copies_of_limits;

@@ -38,6 +38,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char 
     dnest_flag_limits = 0;
 
     strcpy(file_save_restart, "restart_dnest.txt");
+    strcpy(dnest_sample_postfix, "\0");
     
     //int i;
     //for(i=0; i<argc; i++)
@@ -47,7 +48,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char 
 
     opterr = 0;
     optind = 0;
-    while( (opt = getopt(argc, argv, "r:s:pt:cl")) != -1)
+    while( (opt = getopt(argc, argv, "r:s:pt:clx:")) != -1)
     {
       switch(opt)
       {
@@ -86,6 +87,10 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char 
         case 'l':
           dnest_flag_limits = 1;
           printf("# Dnest level-dependent sampling.\n");
+          break;
+        case 'x':
+          strcpy(dnest_sample_postfix, optarg);
+          printf("# Dnest sets sample postfix %s.\n", dnest_sample_postfix);
           break;
         case '?':
           printf("# Dnest incorrect option -%c %s.\n", optopt, optarg);
@@ -1054,24 +1059,31 @@ void options_load()
 
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.sample_file);
+  strcat(options.sample_file, dnest_sample_postfix);
   
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.sample_info_file);
+  strcat(options.sample_info_file, dnest_sample_postfix);
   
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.levels_file);
+  strcat(options.levels_file, dnest_sample_postfix);
   
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.sampler_state_file);
+  strcat(options.sampler_state_file, dnest_sample_postfix);
   
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.posterior_sample_file);
+  strcat(options.posterior_sample_file, dnest_sample_postfix);
 
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.posterior_sample_info_file);
+  strcat(options.posterior_sample_info_file, dnest_sample_postfix);
 
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%s", options.limits_file);
+  strcat(options.limits_file, dnest_sample_postfix);
   
   fclose(fp);
 
