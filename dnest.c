@@ -513,6 +513,11 @@ void save_levels()
       levels_combine[i].tries, levels[i].exceeds, levels_combine[i].visits);
   }
   fclose(fp);
+
+  /* update state of sampler */
+  fp = fopen(options.sampler_state_file, "w");
+  fprintf(fp, "%d %d\n", size_levels, count_saves);
+  fclose(fp);
 }
 
 void save_limits()
