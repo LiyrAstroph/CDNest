@@ -14,7 +14,9 @@
 #include <stdbool.h>
 #include <gsl/gsl_rng.h>
 
-#define DNEST_VERSION "0.1.0"  // Dec 2, 2018
+#define DNEST_MAJOR_VERSION 0  // Dec 2, 2018
+#define DNEST_MINOR_VERSION 1
+#define DNEST_PATCH_VERSION 0
 
 #define STR_MAX_LENGTH (100)
 #define BUF_MAX_LENGTH (200)
@@ -160,7 +162,7 @@ void dnest_read_particle(FILE *fp, void *model);
 int dnest_get_size_levels();
 int dnest_get_which_level_update();
 int dnest_get_which_particle_update();
-void dnest_check_version(char *verion_str);
+int dnest_check_version(char *verion_str);
 unsigned int dnest_get_which_num_saves();
 unsigned long long int dnest_get_count_mcmc_steps();
 void dnest_check_fptrset(DNestFptrSet *fptrset);

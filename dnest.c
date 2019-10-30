@@ -1206,28 +1206,35 @@ unsigned long long int dnest_get_count_mcmc_steps()
   return count_mcmc_steps;
 }
 
-void dnest_check_version(char *version_str)
+/* 
+ * version check
+ * 
+ *  1: greater
+ *  0: equal
+ * -1: lower
+ */
+int dnest_check_version(char *version_str)
 {
-  int major, minor, revision;
-  int dnest_major, dnest_minor, dnest_revision;
-  int version, dnest_version;
+  int major, minor, patch;
 
-  sscanf(DNEST_VERSION, "%d.%d.%d", &dnest_major, &dnest_minor, &dnest_revision);
-  sscanf(version_str, "%d.%d.%d", &major, &minor, &revision);
+  sscanf(version_str, "%d.%d.%d", &major, &minor, &patch);
   
-  version = revision + minor * 1000 + major * 1000000;
-  dnest_version = dnest_revision + dnest_minor * 1000 + dnest_major * 1000000;
+  if(major > DNEST_MAJOR_VERSION)
+    return 1;
+  if(major < DNEST_MAJOR_VERSION)
+    return -1;
 
-  if(version >= dnest_version)
-  {
-    printf("version check: yes.\n");
-    return;
-  }
-  else
-  {
-    printf("version check: no.\n");
-    exit(0);
-  }
+  if(minor > DNEST_MINOR_VERSION)
+    return 1;
+  if(minor < DNEST_MINOR_VERSION)
+    return -1;
+
+  if(patch > DNEST_PATCH_VERSION)
+    return 1;
+  if(patch > DNEST_PATCH_VERSION)
+    return -1;
+
+  return 0;
 }
 
 void dnest_check_fptrset(DNestFptrSet *fptrset)
