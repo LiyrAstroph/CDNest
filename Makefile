@@ -85,4 +85,4 @@ $(EXEC): $(OBJS)
 $(OBJS): $(INCL)
 
 clean:
-	rm $(SRC)/*.o $(EXEC)
+	rm $(SRC)/*.o $(EXEC) libdnest.so

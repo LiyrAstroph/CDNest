@@ -1442,12 +1442,11 @@ void dnest_save_restart()
 void dnest_restart()
 {
   FILE *fp;
-  int i, j, k, itmp;
+  int i, j;
   void *particles_all;
   unsigned int *level_assignments_all;
   LikelihoodType *log_likelihoods_all;
   void *particle;
-  char  buf[200];
 
   if(dnest_thistask == dnest_root)
   {

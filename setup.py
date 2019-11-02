@@ -1,6 +1,9 @@
 import os
 from setuptools import setup
 from setuptools.extension import Extension
+from distutils.command.build import build
+from setuptools.command.build_ext import build_ext
+import subprocess
 
 os.environ["CC"] = "mpicc"
 
@@ -20,6 +23,22 @@ try:
 except ImportError:
   raise RuntimeError('Cython not found.')
 
+class Build(build):
+  def run(self):
+    command = "cd ./"
+    command += " && make"
+    process = subprocess.Popen(command, shell=True)
+    process.wait()
+    build.run(self)
+
+class BuildExt(build_ext):
+  def run(self):
+    command = "cd ./"
+    command += " && make"
+    process = subprocess.Popen(command, shell=True)
+    process.wait()
+    build_ext.run(self)
+
 extensions = cythonize([
   Extension("cydnest", 
 	  sources=["cydnest.pyx",],
@@ -37,4 +56,7 @@ setup(
   description = 'C version of Diffusive Nested Sampling (DNest4) by Brendon J. Brewer',
   author = 'Yan-Rong Li',
   author_email = 'liyanrong@mail.ihep.ac.cn',
+  cmdclass={'build_ext': BuildExt, 'build':Build},
+  setup_requires=['numpy'],
+  install_requires=['numpy']
 	)
