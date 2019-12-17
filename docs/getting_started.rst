@@ -10,6 +10,14 @@ To create the C library ``libnest.so``, edit the paths for library and header fi
 
   make
 
+Then add the path of ``libnest.so`` to the system environment variable "LD_LIBRARY_PATH". Edit "bashrc" file in home directory 
+and add a line as 
+
+.. code-block:: bash
+
+  export LD_LIBRARY_PATH=/path/to/libnest.so/:$LD_LIBRARY_PATH
+
+
 After creating ``libnest.so``, to create the Python module ``cydnest.so``, use terminal command
 
 .. code-block:: python 
