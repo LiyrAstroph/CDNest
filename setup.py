@@ -7,14 +7,14 @@ import subprocess
 
 os.environ["CC"] = "mpicc"
 
-include_dirs = ["/home/liyropt/Projects/GIT/DNest",]
-library_dirs = ["/home/liyropt/Projects/GIT/DNest",]
+include_dirs = ["./", ]
+library_dirs = ["./", ]
 
 if os.name == 'nt':  # Windows, assumming MSVC compiler
   libraries = ['dnest']
   compiler_args = ['/Ox', '/fp:fast']
 elif os.name == 'posix':  # UNIX, assumming GCC compiler
-  libraries = ['m', 'dnest']
+  libraries = ['m', 'c', 'dnest', 'gsl', 'gslcblas']
   compiler_args = ['-O3', '-ffast-math']
 
 
