@@ -2,7 +2,8 @@
 Installation
 ************
 
-The GNU Scientific Library (GSL; http://www.gnu.org/software/gsl) is required. One needs to install GSL in advance.
+The **MPI libaray** (e.g., MPICH) and **GNU Scientific Library** (GSL; http://www.gnu.org/software/gsl) are required. One needs to install these libraries in advance.
+If one wants to use python wrapper, python module **mpi4py** is also required.
 
 To create the C library ``libnest.so``, edit the paths for library and header files in Makefile and then compile using the following terminal command
 
