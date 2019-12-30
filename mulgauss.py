@@ -1,5 +1,5 @@
 #
-# an example from the DNest4 package by Brendon J. Brewer, with minor modifications
+# an example borrowed from the DNest4 package by Brendon J. Brewer, with minor modifications
 # 
 #
 
@@ -30,7 +30,7 @@ class Model(object):
     def __init__(self, num_params=5, width=10.0):
         self.num_params = num_params
         self.width = width
-        self.options_file = "OPTIONS4"  # options file for dnest
+        self.options_file = "OPTIONS5"  # options file for dnest
 
     def analytic_log_Z(self):
         return (

@@ -128,7 +128,6 @@ for z in range(0, numResampleLogX):
 
   logl = sample_info[:,1]/temperature
   
-  print(logl[100])
   
   logp_samples[:,z] = logp_samples[:,z] - logsumexp(logp_samples[:,z]) # make sure that Sum(p) = 1.0
   logP_samples[:,z] = logp_samples[:,z] + logl
