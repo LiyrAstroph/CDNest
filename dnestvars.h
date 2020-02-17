@@ -164,6 +164,7 @@ int dnest_get_which_level_update();
 int dnest_get_which_particle_update();
 int dnest_check_version(char *verion_str);
 unsigned int dnest_get_which_num_saves();
+unsigned int dnest_get_count_saves();
 unsigned long long int dnest_get_count_mcmc_steps();
 void dnest_check_fptrset(DNestFptrSet *fptrset);
 DNestFptrSet * dnest_malloc_fptrset();

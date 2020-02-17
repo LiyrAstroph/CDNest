@@ -1200,6 +1200,10 @@ unsigned int dnest_get_which_num_saves()
 {
   return num_saves;
 }
+unsigned int dnest_get_count_saves()
+{
+  return count_saves;
+}
 
 unsigned long long int dnest_get_count_mcmc_steps()
 {
