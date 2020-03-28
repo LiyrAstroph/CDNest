@@ -32,7 +32,7 @@ class Model(object):
     self.options_file = "OPTIONS4" # option file for cydnest  
 
   def from_prior(self):
-    return np.random.uniform(-0.5*self.width, self.width,
+    return np.random.uniform(-0.5*self.width, 0.5*self.width,
                                   size=(self.num_params,))  
   def perturb(self, coords):
     i = np.random.randint(self.num_params)

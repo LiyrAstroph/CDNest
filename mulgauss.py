@@ -39,7 +39,7 @@ class Model(object):
         )
 
     def from_prior(self):
-        return np.random.uniform(-0.5*self.width, self.width,
+        return np.random.uniform(-0.5*self.width, 0.5*self.width,
                                     size=(self.num_params,))
 
     def perturb(self, coords):
