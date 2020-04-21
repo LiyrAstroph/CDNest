@@ -23,13 +23,13 @@ After creating ``libnest.so``, to create the Python module ``cydnest.so``, use t
 
 .. code-block:: python 
   
-  python2 setup.py buid_ext --inplace
+  python setup.py buid_ext --inplace
 
 or 
 
 .. code-block:: python 
 
-  python2 setup.py install
+  python setup.py install
 
 .. note::
-  Only **python2** is supported at present.
+  Both **python2** and **python3** are supported.

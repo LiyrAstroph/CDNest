@@ -14,6 +14,7 @@ from libc.string cimport *
 from cpython.mem cimport PyMem_Malloc, PyMem_Free, PyMem_Realloc
 from cython.operator cimport dereference
 
+cimport python_unicode
 cimport mpi4py.MPI as MPI
 from mpi4py.libmpi cimport *
 
@@ -46,7 +47,8 @@ cdef class sampler:
     
     # setup options
     self.num_params = model.num_params
-    strcpy(self.options_file, model.options_file)
+    py_byte_string = model.options_file.encode('UTF-8')
+    strcpy(self.options_file, py_byte_string)
 
     # setup functions from model
     set_py_self(model)
