@@ -93,6 +93,9 @@ extern void *particles;
 extern LikelihoodType *log_likelihoods;
 extern unsigned int *level_assignments;
 
+// number account of unaccepted times
+extern unsigned int *account_unaccepts;
+
 extern int size_levels, size_levels_combine;  
 extern Level *levels;
 extern Level *copies_of_levels, *levels_combine;

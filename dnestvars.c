@@ -37,6 +37,9 @@ int particle_offset_size, particle_offset_double;
 LikelihoodType *log_likelihoods;
 unsigned int *level_assignments;
 
+// number account of unaccepted times
+unsigned int *account_unaccepts;
+
 int size_levels, size_levels_combine;  
 Level *levels;
 Level *copies_of_levels, *levels_combine;

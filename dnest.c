@@ -490,7 +490,7 @@ void kill_lagging_particles()
     }
   }
   else
-    printf("# Warning: all particles lagging! Very rare.\n");
+    printf("# Warning: all particles lagging!.\n");
 
   free(good);
 }
@@ -690,6 +690,11 @@ void update_particle(unsigned int which)
 
     dnest_perturb_accept[which] = 1;
     accept_action();
+    account_unaccepts[which] = 0; /* reset the number of unaccepted perturb */
+  }
+  else 
+  {
+    account_unaccepts[which] += 1; /* number of unaccepted perturb */
   }
   level->tries++;
   
@@ -890,6 +895,12 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   log_likelihoods = (LikelihoodType *)malloc(2*options.num_particles * sizeof(LikelihoodType));
   level_assignments = (unsigned int*)malloc(options.num_particles * sizeof(unsigned int));
 
+  account_unaccepts = (unsigned int *)malloc(options.num_particles * sizeof(unsigned int));
+  for(i=0; i<options.num_particles; i++)
+  {
+    account_unaccepts[i] = 0;
+  }
+
   if(options.max_num_levels != 0)
   {
     levels = (Level *)malloc(options.max_num_levels * sizeof(Level));
@@ -995,6 +1006,8 @@ void finalise()
   free(log_likelihoods);
   free(level_assignments);
   free(levels);
+
+  free(account_unaccepts);
 
   if(dnest_flag_limits == 1)
     free(limits);
