@@ -65,4 +65,4 @@ comm.Barrier()
 
 # ouput evidence
 if rank == 0:
-  print logz, model.analytic_log_Z()
+  print(logz, model.analytic_log_Z())

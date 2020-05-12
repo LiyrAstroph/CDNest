@@ -55,7 +55,7 @@ comm.Barrier()
 
 # ouput evidence
 if rank == 0:
-  print logz
+  print(logz)
 
   sample = np.loadtxt("posterior_sample4.txt")
   fig = plt.figure()
