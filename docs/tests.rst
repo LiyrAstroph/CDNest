@@ -45,9 +45,21 @@ Generate samples form a Gaussian distribution.
   :scale: 100%
   :align: center
 
+To run this test, using the following command:
+
+.. code-block:: bash
+  
+  mpiexec -n np python gauss.py
+
 Test V in Python --- mulgauss.py
 ================================
 
 Multidimensional Gaussian.
 
 The true value of evidence is -11.51, and the obtained value by CDNest is -11.52.
+
+To run this test, using the following command:
+
+.. code-block:: bash
+  
+  mpiexec -n np python mulgauss.py
