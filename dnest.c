@@ -1480,58 +1480,66 @@ void dnest_restart()
     log_likelihoods_all = (LikelihoodType *)malloc(dnest_totaltask * options.num_particles * sizeof(LikelihoodType));
     level_assignments_all = (unsigned int*)malloc(dnest_totaltask * options.num_particles * sizeof(unsigned int));
 
-    //fscanf(fp, "%d %lld\n", &count_saves, &count_mcmc_steps);
-    // number of levels
-    //fscanf(fp, "%d\n", &size_levels_combine);
-
     fread(&count_saves, sizeof(int), 1, fp);
     fread(&count_mcmc_steps, sizeof(int), 1, fp);
     fread(&size_levels_combine, sizeof(int), 1, fp);
-
-    //printf("%d %d %d\n", count_saves, count_mcmc_steps, size_levels_combine);
-
+    
+    /* consider that the newly input max_num_levels may be different from the save one */
+    if(options.max_num_levels != 0)
+    {
+      if(size_levels_combine > options.max_num_levels)
+      {
+        printf("# input max_num_levels %d smaller than the one in restart data %d.\n", options.max_num_levels, size_levels_combine);
+        size_levels = options.max_num_levels;
+      }
+      else
+      {
+        size_levels = size_levels_combine;
+      }
+        
+    }
     // read levels
     for(i=0; i<size_levels_combine; i++)
-    {
-      //fscanf(fp, "%lf %lf %lf %lld %lld %lld %lld\n", &(levels_combine[i].log_X), &(levels_combine[i].log_likelihood.value), 
-      //  &(levels_combine[i].log_likelihood.tiebreaker), &(levels_combine[i].accepts),
-      //  &(levels_combine[i].tries), &(levels_combine[i].exceeds), &(levels_combine[i].visits) );
-
-      fread(&levels_combine[i], sizeof(Level), 1, fp);
-
-      //printf("%d %d %d %d\n", levels_combine[i].accepts, levels_combine[i].tries, levels_combine[i].exceeds, levels_combine[i].visits);
+    {     
+      if(i<size_levels) // not read all the levels
+        fread(&levels_combine[i], sizeof(Level), 1, fp);
+      else
+        fseek(fp, sizeof(Level), SEEK_CUR); /* offset the file point */
     }
-    size_levels = size_levels_combine;
     memcpy(levels, levels_combine, size_levels * sizeof(Level));
 
     // read level assignment
-
     for(j=0; j<dnest_totaltask; j++)
     {
       for(i=0; i<options.num_particles; i++)
       {
-        //fscanf(fp, "%d %lf %lf\n", &(level_assignments_all[j*options.num_particles + i]), 
-        //  &(log_likelihoods_all[j*options.num_particles + i].value), 
-        //  &(log_likelihoods_all[j*options.num_particles + i].tiebreaker));
-
         fread(&level_assignments_all[j*options.num_particles + i], sizeof(int), 1, fp);
         fread(&log_likelihoods_all[j*options.num_particles + i], sizeof(LikelihoodType), 1, fp); 
+        
+        /* reset the level assignment that exceeds the present maximum level */
+        if(level_assignments_all[j*options.num_particles + i] > size_levels -1)
+        {
+          level_assignments_all[j*options.num_particles + i] = size_levels - 1;
+        }
       }
     }
 
     // read limits
     if(dnest_flag_limits == 1)
     {
-      for(i=0; i<size_levels; i++)
+      for(i=0; i<size_levels_combine; i++)
       {
-        //fscanf(fp, "%d", &itmp);
-        for(j=0; j<particle_offset_double; j++)
+        if(i < size_levels)
         {
-          //fscanf(fp, "%lf  %lf", &limits[i*2*particle_offset_double+j*2], &limits[i*2*particle_offset_double+j*2+1]);
-          fread(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);      
+          for(j=0; j<particle_offset_double; j++)
+          {
+            fread(&limits[i*2*particle_offset_double+j*2], sizeof(double), 2, fp);      
+          }
         }
-  
-          //fscanf(fp, "\n");
+        else 
+        {
+          fseek(fp, sizeof(double) * 2 * particle_offset_double, SEEK_CUR); /* offset the file point */
+        }
       }
     }
 
@@ -1541,12 +1549,6 @@ void dnest_restart()
       for(i=0; i<options.num_particles; i++)
       {
         particle = (particles_all + (j * options.num_particles + i) * dnest_size_of_modeltype);
-
-        //for(k=0; k < particle_offset_double; k++)
-        //{
-        //  fscanf(fp, "%lf", &particle[k]);
-        //}
-        //fscanf(fp, "\n");
         fread(particle, dnest_size_of_modeltype, 1, fp);
       }
     }
@@ -1558,6 +1560,8 @@ void dnest_restart()
   MPI_Bcast(&count_mcmc_steps, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&size_levels, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, dnest_root,  MPI_COMM_WORLD); 
+
+  size_levels_combine = size_levels; /* reset szie_levels_combine */
 
   if(dnest_flag_limits == 1)
     MPI_Bcast(limits, size_levels * particle_offset_double * 2, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
@@ -1584,7 +1588,7 @@ void dnest_restart()
     //due to randomness, the original level assignment may be incorrect. re-asign the level
     while(log_likelihoods[i].value < levels[level_assignments[i]].log_likelihood.value)
     {
-      printf("level assignment decrease %d %f %f %d.\n", i, log_likelihoods[i].value, 
+      printf("# level assignment decrease %d %f %f %d.\n", i, log_likelihoods[i].value, 
         levels[level_assignments[i]].log_likelihood.value, level_assignments[i]);
       level_assignments[i]--;
     }

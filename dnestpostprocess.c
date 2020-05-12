@@ -151,6 +151,10 @@ void postprocess(double temperature)
         exit(0);
       }
       buf[0]='\0';  // clear buf
+
+      /* reset level assignment for levels larger than the maximum level numbers */
+      if(sample_info[i][0] > num_levels -1)
+        sample_info[i][0] = num_levels - 1;
     }
     fclose(fp);
   }
