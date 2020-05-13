@@ -9,6 +9,8 @@
 #ifndef _PyFuncs
 #define _PyFuncs
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <Python.h>
@@ -60,7 +62,7 @@ void py_from_prior(void *params)
   }
   
   // Parse that return value as a numpy array.
-  PyObject* rarray = PyArray_FROM_OTF(result, NPY_DOUBLE, NPY_IN_ARRAY);
+  PyObject* rarray = PyArray_FROM_OTF(result, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS);
   if (result == NULL || (int)PyArray_NDIM(rarray) != 1) 
   {
     Py_DECREF(result);
