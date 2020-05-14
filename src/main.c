@@ -25,15 +25,40 @@ int main(int argc, char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD, &thistask);
   MPI_Comm_size(MPI_COMM_WORLD, &totaltask);
   MPI_Get_processor_name(proc_name, &namelen);
-
-  MPI_Barrier(MPI_COMM_WORLD);
-  model1();
   
-  MPI_Barrier(MPI_COMM_WORLD);
-  model2();
+  if(argc < 2)
+  {
+    if(thistask == 0)
+      printf("# please speciy the model number to run, e.g., 1, 2, or 3.\n");
+    MPI_Finalize();
+    return 0;
+  }
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  model3();
+  if(atoi(argv[1]) > 3 || atoi(argv[1]) < 1)
+  {
+    if(thistask == 0)
+      printf("# incorrect model number, must be 1, 2, or 3.\n");
+    MPI_Finalize();
+    return 0;
+  }
+
+  if(atoi(argv[1])==1)
+  {
+    MPI_Barrier(MPI_COMM_WORLD);
+    model1();
+  }
+  
+  if(atoi(argv[1])==1)
+  {
+    MPI_Barrier(MPI_COMM_WORLD);
+    model2();
+  }
+
+  if(atoi(argv[1])==1)
+  {
+    MPI_Barrier(MPI_COMM_WORLD);
+    model3();
+  }
 
   MPI_Finalize();
   return 0;

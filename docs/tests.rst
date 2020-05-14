@@ -2,7 +2,7 @@
 Tests
 ******
 
-``CDNest`` provides several tests to guide its useage.
+**CDNest** provides several tests to guide its useage in the subdirectory **tests/**.
 
 Test I --- model1.c
 ===================
@@ -15,14 +15,25 @@ The likelihood function is (Brewer et al. 2009, arXiv:0912.2380):
 
 where :math:`v=0.1` and :math:`u=0.01`. The true value of evidence is :math:`\log(101)\approx4.6151`. The obtained value by CDNest for my running is about 4.5807. Note that CDNest is not easy to estimate the uncertainty. Different runnings may give slightly different values. A possible way for estimating the uncertainty of evidence is running CDNest many times.
 
+To run this test, using the following command:
+
+.. code-block:: bash
+  
+  mpiexec -n np ./dnest 1
+
 Test II --- model2.c
 ====================
 
 A linear regression (Figure 4 in Brewer et al. 2016, arXiv:1606.0375). The obtained evidence by CDNest is -175.45708.
 
+To run this test, using the following command:
+
+.. code-block:: bash
+  
+  mpiexec -n np ./dnest 2
+
 Test III --- model3.c
 =====================
-
 
 Gaussian shells likelihood (Feroz et al. 2008, arXiv:0809.3437):
 
@@ -35,6 +46,12 @@ where :math:`w_1=w_2=0.1, r_1=r_2=2, \boldsymbol{c_1}=(3, 0)` and :math:`\boldsy
 .. figure:: _static/fig_test3.jpg
   :scale: 100 %
   :align: center
+
+To run this test, using the following command:
+
+.. code-block:: bash
+  
+  mpiexec -n np ./dnest 3
 
 Test IV in Python --- gauss.py
 ================================
