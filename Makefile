@@ -64,12 +64,15 @@ MPIINCL  =
 #LAPACK_LIBS = -L/HOME/ihep_yrli_1/BIGDATA/soft/lapack/lib -llapacke -llapack -lblas -lgfortran
 endif
 
+EXEC     = tests/dnest
+LDN     = libdnest.so
+all: $(EXEC) $(LDN)
 
 OPTIONS  = $(OPTIMIZE)
 CFLAGS   = $(OPTIONS) $(GSL_INCL) $(LAPACK_INCL) $(CBLAS_INCL) $(MPIINCL)
 LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB)
 
-EXEC     = tests/dnest
+
 SRC      = src/
 INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h $(SRC)/model3.h
  
@@ -79,6 +82,8 @@ OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/dnestpostprocess.o $(SRC)/model1
 $(EXEC): $(OBJS)
 	cd $(SRC)
 	$(CC) $(OPTIMIZE) $(CFLAGS) $(OBJS) $(LIBS) -o $@
+	
+$(LDN): $(OBJS)
 	$(CC) $(OPTIMIZE) $(CFLAGS) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c $(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c
 	#ar rcs libdnest.a dnest.o dnestvars.o
 	cp $(SRC)/dnestvars.h .

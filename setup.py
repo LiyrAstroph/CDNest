@@ -2,10 +2,12 @@ import os
 from setuptools import setup
 from setuptools.extension import Extension
 from distutils.command.build import build
+from distutils.command.clean import clean
 from setuptools.command.build_ext import build_ext
 from setuptools.command.install import install
 import subprocess
 import numpy
+import shutil
 
 # if CC is not set, use the default value
 if not os.environ.get("CC"):
@@ -51,6 +53,18 @@ class BuildExt(build_ext):
     process.wait()
     build_ext.run(self)
 
+class Clean(clean):
+  '''
+  Subclass to remove any files created in an inplace build.
+  '''
+  def run(self):
+    clean.run(self)
+    # Clean any build or dist directory
+    if os.path.isdir("build"):
+      shutil.rmtree("build", ignore_errors=True)
+    if os.path.isdir("dist"):
+      shutil.rmtree("dist", ignore_errors=True)
+
 extensions = cythonize([
   Extension("cydnest", 
 	  sources=["cydnest/cydnest.pyx",],
@@ -68,7 +82,7 @@ setup(
   description = 'C version of Diffusive Nested Sampling (DNest4) by Brendon J. Brewer',
   author = 'Yan-Rong Li',
   author_email = 'liyanrong@mail.ihep.ac.cn',
-  cmdclass={'build_ext': BuildExt, 'build':Build, 'install':Install},
+  cmdclass={'build_ext': BuildExt, 'build':Build, 'install':Install, 'clean':Clean},
   setup_requires=['numpy'],
   install_requires=['numpy'],
   license="GSL"
