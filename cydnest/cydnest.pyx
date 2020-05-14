@@ -65,7 +65,7 @@ cdef class sampler:
     self.argc += 1
     self.argv[self.argc] = '-s'
     self.argc += 1
-    self.argv[self.argc] = 'resetart_dnest.txt'
+    self.argv[self.argc] = 'restart_dnest.txt'
     self.argc += 1
     
     # setup function set
