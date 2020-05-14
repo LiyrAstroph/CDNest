@@ -3,10 +3,13 @@ from setuptools import setup
 from setuptools.extension import Extension
 from distutils.command.build import build
 from setuptools.command.build_ext import build_ext
+from setuptools.command.install import install
 import subprocess
 import numpy
 
-os.environ["CC"] = "mpicc"
+# if CC is not set, use the default value
+if not os.environ.get("CC"):
+  os.environ["CC"] = "mpicc"
 
 include_dirs = ["./", numpy.get_include(),]
 library_dirs = ["./", ]
@@ -32,6 +35,14 @@ class Build(build):
     process.wait()
     build.run(self)
 
+class Install(install):
+  def run(self):
+    command = "cd ./"
+    command += " && make"
+    process = subprocess.Popen(command, shell=True)
+    process.wait()
+    install.run(self)
+
 class BuildExt(build_ext):
   def run(self):
     command = "cd ./"
@@ -42,7 +53,7 @@ class BuildExt(build_ext):
 
 extensions = cythonize([
   Extension("cydnest", 
-	  sources=["cydnest.pyx",],
+	  sources=["cydnest/cydnest.pyx",],
 	  extra_compile_args=compiler_args,
     include_dirs=include_dirs,
     libraries=libraries,
@@ -52,12 +63,13 @@ extensions = cythonize([
 
 setup(
 	name="cydnest",
-	packages="cydnest",
+	packages=["cydnest",],
 	ext_modules = extensions,
   description = 'C version of Diffusive Nested Sampling (DNest4) by Brendon J. Brewer',
   author = 'Yan-Rong Li',
   author_email = 'liyanrong@mail.ihep.ac.cn',
-  cmdclass={'build_ext': BuildExt, 'build':Build},
+  cmdclass={'build_ext': BuildExt, 'build':Build, 'install':Install},
   setup_requires=['numpy'],
-  install_requires=['numpy']
+  install_requires=['numpy'],
+  license="GSL"
 	)

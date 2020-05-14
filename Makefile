@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-CC       = mpicc 
+CC       ?= mpicc 
 OPTIMIZE = -O2 -Wall -finline-functions
 #OPTIMIZE += -DDebug
 
@@ -69,8 +69,8 @@ OPTIONS  = $(OPTIMIZE)
 CFLAGS   = $(OPTIONS) $(GSL_INCL) $(LAPACK_INCL) $(CBLAS_INCL) $(MPIINCL)
 LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB)
 
-EXEC     = dnest
-SRC      = ./
+EXEC     = tests/dnest
+SRC      = src/
 INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h $(SRC)/model3.h
  
 OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/dnestpostprocess.o $(SRC)/model1.o \
@@ -81,8 +81,9 @@ $(EXEC): $(OBJS)
 	$(CC) $(OPTIMIZE) $(CFLAGS) $(OBJS) $(LIBS) -o $@
 	$(CC) $(OPTIMIZE) $(CFLAGS) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c $(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c
 	#ar rcs libdnest.a dnest.o dnestvars.o
+	cp $(SRC)/dnestvars.h .
 
 $(OBJS): $(INCL)
 
 clean:
-	rm $(SRC)/*.o $(EXEC) libdnest.so
+	rm $(SRC)/*.o $(EXEC) libdnest.so *.h
