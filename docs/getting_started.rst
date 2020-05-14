@@ -30,7 +30,7 @@ and add a line as
   export LD_LIBRARY_PATH=/path/to/libnest.so/:$LD_LIBRARY_PATH
 
 
-After creating ``libnest.so``, to create the Python module ``cydnest.so``, use terminal command
+After creating ``libnest.so``, to create the Python module ``cydnest.so``, use the terminal command
 
 .. code-block:: python 
   
@@ -42,6 +42,17 @@ and add the path to ``libnest.so`` to your python environment settings,
 
   export PYTHONPATH=/path/to/CDNest:$PYTHONPATH
 
+If one want to install ``cydnest`` to the standard python path, use the command 
+
+.. code-block:: python 
+  
+  python setup.py install
+
+This command by default assume that ``mpicc`` is in the standard path, otherwise, use the command 
+
+.. code-block:: python 
+  
+  CC=/path/to/mpicc/ python setup.py install
 
 .. note::
   Both **python2** and **python3** are supported.
