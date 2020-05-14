@@ -27,20 +27,32 @@ def wrap(x, a, b):
 class Model(object):
 
   def __init__(self, num_params=1, width=10.0):
+    """
+    intialize the model
+    """
     self.num_params = num_params
     self.width = width
     self.options_file = "OPTIONS4" # option file for cydnest  
 
   def from_prior(self):
+    """
+    generate initial values of model parameters from priors
+    """
     return np.random.uniform(-0.5*self.width, 0.5*self.width,
                                   size=(self.num_params,))  
   def perturb(self, coords):
+    """
+    perturb the parameters
+    """
     i = np.random.randint(self.num_params)
     coords[i] += self.width*randh()
     coords[i] = wrap(coords[i], -0.5*self.width, 0.5*self.width)
     return 0.0  
 
   def log_likelihood(self, coords, const=-0.5*np.log(2*np.pi)):
+    """
+    calculate likelihood
+    """
     return -0.5*np.sum(coords**2) + self.num_params * const
 
 # create a model
@@ -55,7 +67,7 @@ comm.Barrier()
 
 # ouput evidence
 if rank == 0:
-  print(logz)
+  print("Evidence:", logz)
 
   sample = np.loadtxt("posterior_sample4.txt")
   fig = plt.figure()
