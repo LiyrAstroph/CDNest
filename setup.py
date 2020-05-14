@@ -4,10 +4,11 @@ from setuptools.extension import Extension
 from distutils.command.build import build
 from setuptools.command.build_ext import build_ext
 import subprocess
+import numpy
 
 os.environ["CC"] = "mpicc"
 
-include_dirs = ["./", ]
+include_dirs = ["./", numpy.get_include(),]
 library_dirs = ["./", ]
 
 if os.name == 'nt':  # Windows, assumming MSVC compiler

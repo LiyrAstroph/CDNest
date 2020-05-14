@@ -34,13 +34,14 @@ After creating ``libnest.so``, to create the Python module ``cydnest.so``, use t
 
 .. code-block:: python 
   
-  python setup.py buid_ext --inplace
+  python setup.py build_ext --inplace
 
-or 
+and add the path to ``libnest.so`` to your python environment settings,
 
-.. code-block:: python 
+.. code-block:: bash
 
-  python setup.py install
+  export PYTHONPATH=/path/to/CDNest:$PYTHONPATH
+
 
 .. note::
   Both **python2** and **python3** are supported.
