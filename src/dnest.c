@@ -320,7 +320,7 @@ void dnest_run()
         }
       }
 
-      if( count_saves % (int)(0.2 * options.max_num_saves) == 0 )
+      if( count_saves % num_saves_restart == 0 )
       {
         dnest_save_restart();
       }
@@ -965,7 +965,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   count_mcmc_steps = 0;
   count_saves = 0;
   num_saves = (int)fmax(0.02*options.max_num_saves, 1.0);
-
+  num_saves_restart = (int)fmax(0.2 * options.max_num_saves, 1.0);
 
 // first level
   size_levels = 0;
@@ -1560,8 +1560,20 @@ void dnest_restart()
   MPI_Bcast(&count_mcmc_steps, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&size_levels, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(levels, size_levels * sizeof(Level), MPI_BYTE, dnest_root,  MPI_COMM_WORLD); 
-
+  
+  if(count_saves > options.max_num_saves)
+  {
+    if(dnest_thistask == dnest_root)
+    {
+      printf("# Number of samples already larger than the input number, exit!\n");
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+    exit(0);
+  }
   size_levels_combine = size_levels; /* reset szie_levels_combine */
+  
+  num_saves = (int)fmax(0.02*(options.max_num_saves-count_saves), 1.0); /* reset num_saves */
+  num_saves_restart = (int)fmax(0.2 * (options.max_num_saves-count_saves), 1.0); /* reset num_saves_restart */
 
   if(dnest_flag_limits == 1)
     MPI_Bcast(limits, size_levels * particle_offset_double * 2, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
