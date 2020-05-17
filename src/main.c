@@ -48,13 +48,13 @@ int main(int argc, char **argv)
     model1();
   }
   
-  if(atoi(argv[1])==1)
+  if(atoi(argv[1])==2)
   {
     MPI_Barrier(MPI_COMM_WORLD);
     model2();
   }
 
-  if(atoi(argv[1])==1)
+  if(atoi(argv[1])==3)
   {
     MPI_Barrier(MPI_COMM_WORLD);
     model3();
