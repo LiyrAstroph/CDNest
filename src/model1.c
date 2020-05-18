@@ -24,7 +24,7 @@ DNestFptrSet *fptrset_thismodel;
 
 void model1()
 { 
-  int i, argc=0, narg=4;
+  int i, argc=0, narg=6;
   char **argv;
 
   argv = malloc(narg*sizeof(char *));
@@ -36,6 +36,8 @@ void model1()
   strcpy(argv[argc++], "-s");
   strcpy(argv[argc++], "restart_dnest1.txt");
   strcpy(argv[argc++], "-l"); //level-dependnet sampling
+  strcpy(argv[argc++], "-g");
+  strcpy(argv[argc++], "1");
 
   /* setup szie of modeltype, which is used for dnest */
   num_params = 20;
@@ -53,7 +55,7 @@ void model1()
   fptrset_thismodel->restart_action = restart_action_model1;
   
   /* run dnest */
-  dnest(argc, argv, fptrset_thismodel, num_params, "OPTIONS1");
+  dnest(argc, argv, fptrset_thismodel, num_params, "./", "OPTIONS1");
     
   /* free memory */
   dnest_free_fptrset(fptrset_thismodel);

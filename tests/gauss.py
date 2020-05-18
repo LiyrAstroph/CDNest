@@ -39,7 +39,8 @@ class Model(object):
     generate initial values of model parameters from priors
     """
     return np.random.uniform(-0.5*self.width, 0.5*self.width,
-                                  size=(self.num_params,))  
+                                  size=(self.num_params,))
+                                    
   def perturb(self, coords):
     """
     perturb the parameters
@@ -59,7 +60,7 @@ class Model(object):
 model = Model()
 
 # create a dnest sampler
-sample = cydnest.sampler(model)
+sample = cydnest.sampler(model, sample_dir="./", sample_tag="4")
 
 # run sampler
 logz = sample.run()
@@ -69,7 +70,7 @@ comm.Barrier()
 if rank == 0:
   print("Evidence:", logz)
 
-  sample = np.loadtxt("posterior_sample4.txt")
+  sample = np.loadtxt(sample.get_sample_dir() +"posterior_sample" + sample.get_sample_tag() + ".txt")
   fig = plt.figure()
   ax = fig.add_subplot(111)
   ax.hist(sample, bins=20, density=True, label='CDNest sample')

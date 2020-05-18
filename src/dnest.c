@@ -19,7 +19,8 @@
 
 #include "dnestvars.h"
 
-double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *optfile)
+double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
+             char *sample_dir, char *optfile)
 {
   int opt;
 
@@ -39,6 +40,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char 
 
     strcpy(file_save_restart, "restart_dnest.txt");
     strcpy(dnest_sample_postfix, "\0");
+    strcpy(dnest_sample_tag, "\0");
     
     //int i;
     //for(i=0; i<argc; i++)
@@ -48,7 +50,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char 
 
     opterr = 0;
     optind = 0;
-    while( (opt = getopt(argc, argv, "r:s:pt:clx:")) != -1)
+    while( (opt = getopt(argc, argv, "r:s:pt:clx:g:")) != -1)
     {
       switch(opt)
       {
@@ -92,6 +94,10 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char 
           strcpy(dnest_sample_postfix, optarg);
           printf("# Dnest sets sample postfix %s.\n", dnest_sample_postfix);
           break;
+        case 'g':
+          strcpy(dnest_sample_tag, optarg);
+          printf("# Dnest sets sample tag %s.\n", dnest_sample_tag);
+          break;
         case '?':
           printf("# Dnest incorrect option -%c %s.\n", optopt, optarg);
           exit(0);
@@ -108,7 +114,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char 
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
-  setup(argc, argv, fptrset, num_params, optfile);
+  setup(argc, argv, fptrset, num_params, sample_dir, optfile);
 
   if(dnest_flag_postprc == 1)
   {
@@ -822,7 +828,7 @@ void initialize_output_file()
 
   if(fsample_info==NULL)
   {
-    fprintf(stderr, "# Cannot open file sample_info.txt.\n");
+    fprintf(stderr, "# Cannot open file %s.\n", options.sample_info_file);
     exit(0);
   }
   if(dnest_flag_restart != 1)
@@ -838,7 +844,7 @@ void close_output_file()
   fclose(fsample_info);
 }
 
-void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *optfile)
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *sample_dir, char *optfile)
 {
   int i, j;
 
@@ -857,6 +863,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *o
   accept_action = fptrset->accept_action;
   kill_action = fptrset->kill_action;
   strcpy(options_file, optfile);
+  strcpy(dnest_sample_dir, sample_dir);
 
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
@@ -1075,32 +1082,60 @@ void options_load()
   fgets(buf, BUF_MAX_LENGTH, fp);
   sscanf(buf, "%d", &options.max_num_saves);
 
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%s", options.sample_file);
+  //fgets(buf, BUF_MAX_LENGTH, fp);
+  //sscanf(buf, "%s", options.sample_file);
+  strcpy(options.sample_file, dnest_sample_dir);
+  strcat(options.sample_file,"/sample");
+  strcat(options.sample_file, dnest_sample_tag);
+  strcat(options.sample_file, ".txt");
   strcat(options.sample_file, dnest_sample_postfix);
   
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%s", options.sample_info_file);
+  //fgets(buf, BUF_MAX_LENGTH, fp);
+  //sscanf(buf, "%s", options.sample_info_file);
+  strcpy(options.sample_info_file, dnest_sample_dir);
+  strcat(options.sample_info_file,"/sample_info");
+  strcat(options.sample_info_file, dnest_sample_tag);
+  strcat(options.sample_info_file, ".txt");
   strcat(options.sample_info_file, dnest_sample_postfix);
   
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%s", options.levels_file);
+  //fgets(buf, BUF_MAX_LENGTH, fp);
+  //sscanf(buf, "%s", options.levels_file);
+  strcpy(options.levels_file, dnest_sample_dir);
+  strcat(options.levels_file,"/levels");
+  strcat(options.levels_file, dnest_sample_tag);
+  strcat(options.levels_file, ".txt");
   strcat(options.levels_file, dnest_sample_postfix);
   
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%s", options.sampler_state_file);
+  //fgets(buf, BUF_MAX_LENGTH, fp);
+  //sscanf(buf, "%s", options.sampler_state_file);
+  strcpy(options.sampler_state_file, dnest_sample_dir);
+  strcat(options.sampler_state_file,"/sampler_state");
+  strcat(options.sampler_state_file, dnest_sample_tag);
+  strcat(options.sampler_state_file, ".txt");
   strcat(options.sampler_state_file, dnest_sample_postfix);
   
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%s", options.posterior_sample_file);
+  //fgets(buf, BUF_MAX_LENGTH, fp);
+  //sscanf(buf, "%s", options.posterior_sample_file);
+  strcpy(options.posterior_sample_file, dnest_sample_dir);
+  strcat(options.posterior_sample_file,"/posterior_sample");
+  strcat(options.posterior_sample_file, dnest_sample_tag);
+  strcat(options.posterior_sample_file, ".txt");
   strcat(options.posterior_sample_file, dnest_sample_postfix);
 
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%s", options.posterior_sample_info_file);
+  //fgets(buf, BUF_MAX_LENGTH, fp);
+  //sscanf(buf, "%s", options.posterior_sample_info_file);
+  strcpy(options.posterior_sample_info_file, dnest_sample_dir);
+  strcat(options.posterior_sample_info_file,"/posterior_sample_info");
+  strcat(options.posterior_sample_info_file, dnest_sample_tag);
+  strcat(options.posterior_sample_info_file, ".txt");
   strcat(options.posterior_sample_info_file, dnest_sample_postfix);
 
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%s", options.limits_file);
+  //fgets(buf, BUF_MAX_LENGTH, fp);
+  //sscanf(buf, "%s", options.limits_file);
+  strcpy(options.limits_file, dnest_sample_dir);
+  strcat(options.limits_file,"/limits");
+  strcat(options.limits_file, dnest_sample_tag);
+  strcat(options.limits_file, ".txt");
   strcat(options.limits_file, dnest_sample_postfix);
   
   fclose(fp);

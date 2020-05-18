@@ -111,7 +111,7 @@ extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
 extern double post_logz;
 extern int dnest_num_params;
-extern char dnest_sample_postfix[STR_MAX_LENGTH];
+extern char dnest_sample_postfix[STR_MAX_LENGTH], dnest_sample_tag[STR_MAX_LENGTH], dnest_sample_dir[STR_MAX_LENGTH];
 
 //the limits of parameters for each level;
 extern double *limits, *copies_of_limits;
@@ -130,10 +130,10 @@ int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);
 
 void options_load();
-void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *optfile);
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *sample_dir, char *optfile);
 void finalise();
 
-double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *optfile);
+double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *sample_dir, char *optfile);
 void dnest_run();
 void dnest_mcmc_run();
 void update_particle(unsigned int which);

@@ -14,7 +14,7 @@ from libc.string cimport *
 from cpython.mem cimport PyMem_Malloc, PyMem_Free, PyMem_Realloc
 from cython.operator cimport dereference
 
-cimport python_unicode
+#cimport python_unicode
 cimport mpi4py.MPI as MPI
 from mpi4py.libmpi cimport *
 
@@ -34,8 +34,11 @@ cdef class sampler:
   cdef DNestFptrSet *fptrset  # function set
   cdef char options_file[200] # options file
   cdef int num_params         # number of paramters
+  cdef char sample_tag[200]
+  cdef char sample_postfix[200]
+  cdef char sample_dir[200]
   
-  def __cinit__(self, model):
+  def __cinit__(self, model, sample_dir="./", sample_tag="", sample_postfix=""):
     
     # check model
     if not hasattr(model, "from_prior") or not callable(model.from_prior):
@@ -47,17 +50,28 @@ cdef class sampler:
     
     # setup options
     self.num_params = model.num_params
+    # sample tag
+    py_byte_string = sample_tag.encode('UTF-8')
+    strcpy(self.sample_tag, py_byte_string)
+    # sample postfix
+    py_byte_string = sample_postfix.encode('UTF-8')
+    strcpy(self.sample_postfix, py_byte_string)
+    # default directiory 
+    py_byte_string =sample_dir.encode('UTF-8')
+    strcpy(self.sample_dir, py_byte_string)
+    # options file
     py_byte_string = model.options_file.encode('UTF-8')
     strcpy(self.options_file, py_byte_string)
-
+    
     # setup functions from model
     set_py_self(model)
     set_size_(model.num_params)
     
     # setup argc and argv
     cdef int i
-    self.argv = <char **>PyMem_Malloc(4*sizeof(char *))
-    for i in range(4):
+    cdef int narg = 8
+    self.argv = <char **>PyMem_Malloc(narg*sizeof(char *))
+    for i in range(narg):
       self.argv[i] = <char *>PyMem_Malloc(200*sizeof(char))
     
     self.argc = 0
@@ -65,7 +79,16 @@ cdef class sampler:
     self.argc += 1
     self.argv[self.argc] = '-s'
     self.argc += 1
-    self.argv[self.argc] = 'restart_dnest.txt'
+    strcpy(self.argv[self.argc], self.sample_dir)
+    strcat(self.argv[self.argc], '/restart_dnest.txt')
+    self.argc += 1
+    self.argv[self.argc] = '-g'
+    self.argc += 1
+    strcpy(self.argv[self.argc], self.sample_tag)
+    self.argc += 1
+    self.argv[self.argc] = '-x'
+    self.argc += 1
+    strcpy(self.argv[self.argc], self.sample_postfix)
     self.argc += 1
     
     # setup function set
@@ -86,8 +109,17 @@ cdef class sampler:
       PyMem_Free(self.argv[i])
     PyMem_Free(self.argv)
 
-    dnest_free_fptrset(self.fptrset);
+    dnest_free_fptrset(self.fptrset)
     return
+  
+  def get_sample_tag(self):
+    return self.sample_tag.decode('UTF-8')
+  
+  def get_sample_postfix(self):
+    return self.sample_postfix.decode('UTF-8')
+
+  def get_sample_dir(self):
+    return self.sample_dir.decode('UTF-8')
   
   def run(self):
     """
@@ -95,5 +127,5 @@ cdef class sampler:
 
     the value of evidence is returned.
     """
-    logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, self.options_file)
+    logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, self.sample_dir, self.options_file)
     return logz

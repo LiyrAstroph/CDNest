@@ -23,7 +23,7 @@ DNestFptrSet *fptrset_thismodel3;
 
 void model3()
 { 
-  int i, argc=0, narg=4;
+  int i, argc=0, narg=6;
   char **argv;
 
   argv = malloc(narg*sizeof(char *));
@@ -35,6 +35,8 @@ void model3()
   strcpy(argv[argc++], "-s");
   strcpy(argv[argc++], "restart_dnest3.txt");
   strcpy(argv[argc++], "-l"); //level-dependnet sampling
+  strcpy(argv[argc++], "-g"); // tag
+  strcpy(argv[argc++], "3");   
 
   /* setup szie of modeltype, which is used for dnest */
   num_params = 2;
@@ -50,7 +52,7 @@ void model3()
   fptrset_thismodel3->restart_action = restart_action_model3;
   
   /* run dnest */
-  dnest(argc, argv, fptrset_thismodel3, num_params, "OPTIONS3");
+  dnest(argc, argv, fptrset_thismodel3, num_params, "./", "OPTIONS3");
   
   /* free memory */
   dnest_free_fptrset(fptrset_thismodel3);

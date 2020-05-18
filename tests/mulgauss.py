@@ -68,7 +68,7 @@ class Model(object):
 model = Model()
 
 # create a dnest sampler
-sample = cydnest.sampler(model)
+sample = cydnest.sampler(model, sample_dir="./", sample_tag="5")
 
 # run sampler
 logz = sample.run()

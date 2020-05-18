@@ -26,7 +26,7 @@ void *best_model_thismodel, *best_model_std_thismodel;
 
 void model2()
 { 
-  int i, argc=0, narg=4;
+  int i, argc=0, narg=6;
   char **argv;
 
   argv = malloc(narg*sizeof(char *));
@@ -38,6 +38,8 @@ void model2()
   strcpy(argv[argc++], "-s");
   strcpy(argv[argc++], "restart_dnest2.txt");
   strcpy(argv[argc++], "-l"); //level-dependnet sampling
+  strcpy(argv[argc++], "-g"); //tag
+  strcpy(argv[argc++], "2");
 
   /* setup szie of modeltype, which is used for dnest */
   num_params = 3;
@@ -64,7 +66,7 @@ void model2()
   MPI_Bcast(data, num_data_points*sizeof(DataType), MPI_BYTE, 0, MPI_COMM_WORLD);
   
   /* run dnest */
-  dnest(argc, argv, fptrset_thismodel2, num_params, "OPTIONS2");
+  dnest(argc, argv, fptrset_thismodel2, num_params, "./", "OPTIONS2");
     
   /* free memory */
   free(data);

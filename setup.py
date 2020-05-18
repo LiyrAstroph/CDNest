@@ -77,13 +77,14 @@ extensions = cythonize([
 
 setup(
 	name="cydnest",
+  version="0.2.0",
 	packages=["cydnest",],
 	ext_modules = extensions,
   description = 'C version of Diffusive Nested Sampling (DNest4) by Brendon J. Brewer',
   author = 'Yan-Rong Li',
   author_email = 'liyanrong@mail.ihep.ac.cn',
   cmdclass={'build_ext': BuildExt, 'build':Build, 'install':Install, 'clean':Clean},
-  setup_requires=['numpy'],
-  install_requires=['numpy'],
+  setup_requires=['numpy', 'mpi4py'],
+  install_requires=['numpy', 'mpi4py'],
   license="GSL"
 	)

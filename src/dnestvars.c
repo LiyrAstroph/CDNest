@@ -53,7 +53,7 @@ unsigned int size_above, size_all_above;
 
 double post_logz;
 int dnest_num_params;
-char dnest_sample_postfix[STR_MAX_LENGTH];
+char dnest_sample_postfix[STR_MAX_LENGTH], dnest_sample_tag[STR_MAX_LENGTH], dnest_sample_dir[STR_MAX_LENGTH];
 
 double *limits, *copies_of_limits;
 

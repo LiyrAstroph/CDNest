@@ -50,4 +50,4 @@ cdef extern from "../dnestvars.h":
   
   DNestFptrSet * dnest_malloc_fptrset()
   void dnest_free_fptrset(DNestFptrSet *fptrset)
-  double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *optfile)
+  double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *sample_dir, char *optfile)
