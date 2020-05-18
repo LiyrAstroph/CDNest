@@ -32,7 +32,6 @@ class Model(object):
     """
     self.num_params = num_params
     self.width = width
-    self.options_file = "OPTIONS4" # option file for cydnest  
 
   def from_prior(self):
     """
@@ -60,7 +59,7 @@ class Model(object):
 model = Model()
 
 # create a dnest sampler
-sample = cydnest.sampler(model, sample_dir="./", sample_tag="4")
+sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 5000, max_num_levels=10)
 
 # run sampler
 logz = sample.run()

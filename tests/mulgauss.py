@@ -32,7 +32,6 @@ class Model(object):
     """
     self.num_params = num_params
     self.width = width
-    self.options_file = "OPTIONS5"  # options file for dnest
 
   def analytic_log_Z(self):
     return (
@@ -68,7 +67,7 @@ class Model(object):
 model = Model()
 
 # create a dnest sampler
-sample = cydnest.sampler(model, sample_dir="./", sample_tag="5")
+sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, max_num_levels=20)
 
 # run sampler
 logz = sample.run()
