@@ -26,40 +26,40 @@ def wrap(x, a, b):
 
 class Model(object):
 
-  def __init__(self, num_params=1, width=10.0):
+  def __init__(self, num_params=1):
     """
     intialize the model
     """
-    self.num_params = num_params
-    self.width = width
+    self.num_params = num_params # number of parameters
 
   def from_prior(self):
     """
     generate initial values of model parameters from priors
     """
-    return np.random.uniform(-0.5*self.width, 0.5*self.width,
-                                  size=(self.num_params,))
+    return np.random.uniform(-5.0, 5.0,size=(self.num_params,))
                                     
   def perturb(self, coords):
     """
     perturb the parameters
     """
     i = np.random.randint(self.num_params)
-    coords[i] += self.width*randh()
-    coords[i] = wrap(coords[i], -0.5*self.width, 0.5*self.width)
+    coords[i] += 10.0*randh()
+    coords[i] = wrap(coords[i], -5.0, 5.0)
     return 0.0  
 
-  def log_likelihood(self, coords, const=-0.5*np.log(2*np.pi)):
+  def log_likelihood(self, coords):
     """
     calculate likelihood
     """
-    return -0.5*np.sum(coords**2) + self.num_params * const
+    return -0.5*np.sum(coords**2) + self.num_params * (-0.5*np.log(2*np.pi))
 
 # create a model
 model = Model()
 
 # create a dnest sampler
-sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 5000, max_num_levels=10)
+# max_num_save is the number of samples to generate
+# max_num_levels is the number of levels 
+sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, max_num_levels=10)
 
 # run sampler
 logz = sample.run()
