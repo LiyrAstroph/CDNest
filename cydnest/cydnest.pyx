@@ -49,6 +49,8 @@ cdef class sampler:
                 Lambda = 10, beta = 100):
     
     # check model
+    if not hasattr(model, "num_params"):
+      raise ValueError("model must has a member variable 'num_params' to specify number of parameters")
     if not hasattr(model, "from_prior") or not callable(model.from_prior):
       raise ValueError("models must have a callable 'from_prior' method")
     if not hasattr(model, "perturb") or not callable(model.perturb):
@@ -71,21 +73,26 @@ cdef class sampler:
     py_byte_string =sample_dir.encode('UTF-8')
     strcpy(self.sample_dir, py_byte_string)
     # options file
-    strcpy(self.options_file, self.sample_dir)
-    strcat(self.options_file, "/OPTIONS")
-    strcat(self.options_file, self.sample_tag)
-    
-    # options for CDNest
     cdef int num
-    num = np.max((self.num_params * 2 * self.num_particles, 10))
-    self.new_level_interval = np.max((new_level_interval, num * self.size))
-    self.save_interval = np.max((save_interval, num*self.size))
-    self.thread_steps = np.max((thread_steps, num))
-    self.num_particles = num_particles
-    self.max_num_saves = max_num_saves
-    self.max_num_levels = max_num_levels
-    self.Lambda = Lambda 
-    self.beta = beta
+    if hasattr(model, "options_file"):
+      py_byte_string = model.options_file.encode('UTF-8')
+      strcpy(self.options_file, py_byte_string)
+    else:
+      strcpy(self.options_file, self.sample_dir)
+      strcat(self.options_file, "/OPTIONS")
+      strcat(self.options_file, self.sample_tag)
+      # options for CDNest
+      num = np.max((self.num_params * 2 * self.num_particles, 10))
+      self.new_level_interval = np.max((new_level_interval, num * self.size))
+      self.save_interval = np.max((save_interval, num*self.size))
+      self.thread_steps = np.max((thread_steps, num))
+      self.num_particles = num_particles
+      self.max_num_saves = max_num_saves
+      self.max_num_levels = max_num_levels
+      self.Lambda = Lambda 
+      self.beta = beta
+      # save option file
+      self.save_options_file()
     
     # setup functions from model
     set_py_self(model)
@@ -125,7 +132,6 @@ cdef class sampler:
     self.fptrset.print_particle = py_print_particle
     self.fptrset.restart_action = py_restart_action
 
-    self.save_options_file()
     return
   
   def __cdealloc__(self):

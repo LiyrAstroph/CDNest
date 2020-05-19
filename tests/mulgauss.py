@@ -43,6 +43,7 @@ class Model(object):
     intialize the model.
     """
     self.num_params = num_params  # number of parameters
+    #self.options_file = "OPTIONS" # optional, if not set, use the default options
 
   def from_prior(self):
     """
