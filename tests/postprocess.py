@@ -142,9 +142,7 @@ for z in range(0, numResampleLogX):
 
   plt.figure(3)
   plt.subplot(2,1,1)
-  plt.hold(False)
   plt.plot(logx_samples[:,z], sample_info[:,1], 'b.', label='Samples')
-  plt.hold(True)
   plt.plot(levels[1:,0], levels[1:,1], 'r.', label='Levels')
   plt.legend(numpoints=1, loc='lower left')
   plt.ylabel('log(L)')
@@ -163,7 +161,6 @@ for z in range(0, numResampleLogX):
   xlim = plt.gca().get_xlim()
 
   plt.subplot(2,1,2)
-  plt.hold(False)
   plt.plot(logx_samples[:,z], P_samples[:,z], 'b.')
   plt.ylabel('Posterior Weights')
   plt.xlabel('log(X)')

@@ -80,3 +80,26 @@ To run this test, using the following command:
 .. code-block:: bash
   
   mpiexec -n np python mulgauss.py
+
+Test VI in Python --- rastrigin.py
+==================================
+
+The two-dimensional Rastrigin test function is defined by 
+
+.. math::
+  
+  f(\theta) = An + \sum_{i=1}^{2}[\theta_i^2 - A \cos(2\pi\theta_i)],
+
+  A = 10, \theta_i \sim [-5.12, 5.12]
+
+The likelihood is defined to be :math:`L = \exp[-f(\theta)]`.
+
+.. figure:: _static/fig_rastrigin.jpg
+  :scale: 100%
+  :align: center
+
+To run this test, using the following command:
+
+.. code-block:: bash
+  
+  mpiexec -n np python rastrigin.py
