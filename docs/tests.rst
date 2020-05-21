@@ -88,14 +88,14 @@ The two-dimensional Rastrigin test function is defined by
 
 .. math::
   
-  f(\theta) = An + \sum_{i=1}^{2}[\theta_i^2 - A \cos(2\pi\theta_i)],
+  f(\theta) = An + \sum_{i=1}^{n}[\theta_i^2 - A \cos(2\pi\theta_i)],
 
-  A = 10, \theta_i \sim [-5.12, 5.12]
+  A = 10, n=2, \theta_i \sim [-5.12, 5.12]
 
 The likelihood is defined to be :math:`L = \exp[-f(\theta)]`.
 
 .. figure:: _static/fig_rastrigin.jpg
-  :scale: 100%
+  :scale: 50%
   :align: center
 
 To run this test, using the following command:
