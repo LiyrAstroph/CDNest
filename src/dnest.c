@@ -1258,6 +1258,11 @@ unsigned long long int dnest_get_count_mcmc_steps()
   return count_mcmc_steps;
 }
 
+void dnest_get_posterior_sample_file(char *fname)
+{
+  strcpy(fname, options.posterior_sample_file);
+  return;
+}
 /* 
  * version check
  * 

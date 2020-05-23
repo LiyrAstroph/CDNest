@@ -165,6 +165,7 @@ void dnest_read_particle(FILE *fp, void *model);
 int dnest_get_size_levels();
 int dnest_get_which_level_update();
 int dnest_get_which_particle_update();
+void dnest_get_posterior_sample_file(char *fname);
 int dnest_check_version(char *verion_str);
 unsigned int dnest_get_which_num_saves();
 unsigned int dnest_get_count_saves();
