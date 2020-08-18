@@ -6,6 +6,11 @@
  *
  */
 #ifndef _DNESTVARS_H
+#define _DNESTVARS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -186,5 +191,9 @@ void (*restart_action)(int iflag);
 void (*accept_action)();
 void (*kill_action)(int i, int i_copy);
 /*=====================================================*/
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
