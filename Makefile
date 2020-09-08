@@ -66,6 +66,8 @@ endif
 
 EXEC     = tests/dnest
 LDN     = libdnest.so
+
+.PHONY: all
 all: $(EXEC) $(LDN)
 
 OPTIONS  = $(OPTIMIZE)
