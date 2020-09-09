@@ -779,6 +779,9 @@ bool enough_levels(Level *l, int size_l)
 
   if(options.max_num_levels == 0)
   {
+    if(size_l >= LEVEL_NUM_MAX)
+      return true;
+
     if(size_l < 10)
       return false;
 
