@@ -3,11 +3,12 @@
 # Do not change the order of lines.
 # Lines beginning with '#' are regarded as comments.
 
-2 # Number of particles
-20000 # new level interval
-20000  # save interval
-1000 # threadSteps - how many steps each thread should do independently before communication
-100 # maximum number of levels
-10  # Backtracking scale length (lambda in the paper Brewer et al. 2011)
-100 # Strength of effect to force histogram to equal push. (beta in the paper Brewer et al. 2011)
-10000 # Maximum number of saves
+NumberParticles    2 # Number of particles
+NewLevelInterval   20000 # new level interval
+SaveInterval       20000  # save interval
+ThreadSteps        1000 # threadSteps - how many steps each thread should do independently before communication
+MaxNumberLevels    100 # maximum number of levels
+BacktrackingLength 10  # Backtracking scale length (lambda in the paper Brewer et al. 2011)
+StrengthEqualPush  100 # Strength of effect to force histogram to equal push. (beta in the paper Brewer et al. 2011)
+MaxNumberSaves     10000 # Maximum number of saves
+PTol               0.1  # 

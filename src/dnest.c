@@ -1050,8 +1050,69 @@ void finalise()
 
 void options_load()
 {
+  typedef struct
+  {
+    int id;
+    void *addr;
+    char tag[50];
+    int isset;
+  }PARDICT;
+  PARDICT *pardict;
+  int num_pardict;
+  pardict = malloc(10 * sizeof(PARDICT));
+  enum TYPE {INT, DOUBLE, STRING};
+
   FILE *fp;
-  char buf[BUF_MAX_LENGTH], buf1[BUF_MAX_LENGTH];
+  char str[BUF_MAX_LENGTH], buf1[BUF_MAX_LENGTH], buf2[BUF_MAX_LENGTH], buf3[BUF_MAX_LENGTH];
+
+  int i, j, nt;
+  nt = 0;
+  strcpy(pardict[nt].tag, "NumberParticles");
+  pardict[nt].addr = &options.num_particles;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = INT;
+
+  strcpy(pardict[nt].tag, "NewLevelInterval");
+  pardict[nt].addr = &options.new_level_interval;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = INT;
+
+  strcpy(pardict[nt].tag, "SaveInterval");
+  pardict[nt].addr = &options.save_interval;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = INT;
+
+  strcpy(pardict[nt].tag, "ThreadSteps");
+  pardict[nt].addr = &options.thread_steps;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = INT;
+
+  strcpy(pardict[nt].tag, "MaxNumberLevels");
+  pardict[nt].addr = &options.max_num_levels;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = INT;
+
+  strcpy(pardict[nt].tag, "BacktrackingLength");
+  pardict[nt].addr = &options.lambda;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = DOUBLE;
+ 
+  strcpy(pardict[nt].tag, "StrengthEqualPush");
+  pardict[nt].addr = &options.beta;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = DOUBLE;
+
+  strcpy(pardict[nt].tag, "MaxNumberSaves");
+  pardict[nt].addr = &options.max_num_saves;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = INT;
+
+  strcpy(pardict[nt].tag, "PTol");
+  pardict[nt].addr = &options.max_ptol;
+  pardict[nt].isset = 0;
+  pardict[nt++].id = DOUBLE;
+  
+  num_pardict = nt;
 
   fp = fopen(options_file, "r");
 
@@ -1060,38 +1121,45 @@ void options_load()
     fprintf(stderr, "# ERROR: Cannot open options file %s.\n", options_file);
     exit(0);
   }
-
-  buf[0]='#';
-  while(buf[0]=='#')
+  
+  while(!feof(fp))
   {
-    fgets(buf, BUF_MAX_LENGTH, fp);
-    if(sscanf(buf, "%s", buf1) < 1) // a blank line
+    sprintf(str,"empty");
+    fgets(str, 200, fp);
+    if(sscanf(str, "%s%s%s", buf1, buf2, buf3)<2)
+      continue;
+    if(buf1[0]=='%' || buf1[0] == '#')
+      continue;
+    for(i=0, j=-1; i<nt; i++)
+      if(strcmp(buf1, pardict[i].tag) == 0 && pardict[i].isset == 0)
+      {
+        j = i;
+        pardict[i].isset = 1;
+        //printf("%s %s\n", buf1, buf2);
+        break;
+      }
+    if(j >=0)
     {
-      buf[0] = '#';
+      switch(pardict[j].id)
+      {
+        case DOUBLE:
+          *((double *) pardict[j].addr) = atof(buf2);
+          break;
+        case STRING:
+          strcpy(pardict[j].addr, buf2);
+          break;
+        case INT:
+          *((int *)pardict[j].addr) = (int) atof(buf2);
+          break;
+      }
+    }
+    else
+    {
+      fprintf(stderr, "# Error in file %s: Tag '%s' is not allowed or multiple defined.\n",
+                    options_file, buf1);
     }
   }
-  sscanf(buf, "%d", &options.num_particles);
-
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%d", &options.new_level_interval);
-
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%d", &options.save_interval);
-
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%d", &options.thread_steps);
-
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%d", &options.max_num_levels);
-
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%lf", &options.lambda);
-
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%lf", &options.beta);
-
-  fgets(buf, BUF_MAX_LENGTH, fp);
-  sscanf(buf, "%d", &options.max_num_saves);
+  fclose(fp);
 
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.sample_file);
@@ -1148,8 +1216,6 @@ void options_load()
   strcat(options.limits_file, dnest_sample_tag);
   strcat(options.limits_file, ".txt");
   strcat(options.limits_file, dnest_sample_postfix);
-  
-  fclose(fp);
 
   // check options.
   
@@ -1161,10 +1227,7 @@ void options_load()
     exit(0);
   }
 
-/*  strcpy(options.sample_file, "sample.txt");
-  strcpy(options.sample_info_file, "sample_info.txt");
-  strcpy(options.levels_file, "levels.txt");
-  strcpy(options.sampler_state_file, "sampler_state.txt");*/
+  free(pardict);
 }
 
 
@@ -1711,6 +1774,3 @@ void dnest_kill_action(int i, int i_copy)
 {
   return;
 }
-
-
-
