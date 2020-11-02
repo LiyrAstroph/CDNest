@@ -56,7 +56,7 @@ typedef struct
   unsigned int save_interval;
   unsigned int thread_steps;
   unsigned int max_num_levels;
-  double lambda, beta;
+  double lambda, beta, max_ptol;
   unsigned int max_num_saves;
 
   char sample_file[STR_MAX_LENGTH];

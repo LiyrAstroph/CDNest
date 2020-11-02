@@ -41,12 +41,12 @@ cdef class sampler:
   cdef int rank, size
   cdef int num_particles, max_num_saves, max_num_levels
   cdef int new_level_interval, save_interval, thread_steps
-  cdef double beta, Lambda
+  cdef double beta, Lambda, max_ptol
   
   def __cinit__(self, model, sample_dir="./", sample_tag="", sample_postfix="", 
                 new_level_interval = 10, save_interval = 10, thread_steps = 10, 
                 num_particles=1, max_num_saves = 10000, max_num_levels = 10,
-                Lambda = 10, beta = 100):
+                Lambda = 10, beta = 100, ptol = 0.1):
     
     # check model
     if not hasattr(model, "num_params"):
@@ -91,6 +91,7 @@ cdef class sampler:
       self.max_num_levels = max_num_levels
       self.Lambda = Lambda 
       self.beta = beta
+      self.max_ptol = ptol
       # save option file
       self.save_options_file()
     
@@ -166,9 +167,10 @@ cdef class sampler:
     fp.write("%d  # Save interval\n"%(self.save_interval))
     fp.write("%d  # ThreadSteps\n"%(self.thread_steps))
     fp.write("%d  # Maximum number of levels\n"%(self.max_num_levels))
-    fp.write("%d  # Backtracking scale length\n"%(self.Lambda))
-    fp.write("%d  # Strength of effect to force histogram to equal push\n"%(self.beta))
+    fp.write("%.1f  # Backtracking scale length\n"%(self.Lambda))
+    fp.write("%.1f  # Strength of effect to force histogram to equal push\n"%(self.beta))
     fp.write("%d  # Maximum number of saves\n"%(self.max_num_saves))
+    fp.write("%.1e  # Posterior tolerance \n"%(self.max_ptol))
     fp.close()
   
   def run(self):

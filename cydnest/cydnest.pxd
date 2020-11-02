@@ -36,7 +36,7 @@ cdef extern from "../dnestvars.h":
   double dnest_rand()
   double dnest_randn()
   double wrap(double *x, double xmin, double xmax)
-  int dnest_rand_int(int size);
+  int dnest_rand_int(int size)
 
   # function set
   ctypedef struct DNestFptrSet:
