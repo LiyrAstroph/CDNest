@@ -806,7 +806,7 @@ bool enough_levels(Level *l, int size_l)
       if( k < 1 )
         break;
     }
-    if(tot/kc < 0.8 && max < 1.0)
+    if(tot/kc < options.max_ptol && max < options.max_ptol*1.1)
       return true;
     else
       return false;
@@ -1047,16 +1047,23 @@ void finalise()
     printf("# Finalizing dnest.\n");
 }
 
+int search_pardict(PARDICT *pardict, int num_pardict, char *tag)
+{
+  int i;
+  for(i=0; i<num_pardict; i++)
+  {
+    if(strcmp(pardict[i].tag, tag) == 0)
+    {
+      return i;
+    }
+  }
+
+  fprintf(stderr, "# no match of tag %s.\n", tag);
+  return num_pardict+1;
+}
 
 void options_load()
 {
-  typedef struct
-  {
-    int id;
-    void *addr;
-    char tag[50];
-    int isset;
-  }PARDICT;
   PARDICT *pardict;
   int num_pardict;
   pardict = malloc(10 * sizeof(PARDICT));
@@ -1065,25 +1072,25 @@ void options_load()
   FILE *fp;
   char str[BUF_MAX_LENGTH], buf1[BUF_MAX_LENGTH], buf2[BUF_MAX_LENGTH], buf3[BUF_MAX_LENGTH];
 
-  int i, j, nt;
+  int i, j, nt, idx;
   nt = 0;
   strcpy(pardict[nt].tag, "NumberParticles");
   pardict[nt].addr = &options.num_particles;
   pardict[nt].isset = 0;
   pardict[nt++].id = INT;
 
-  strcpy(pardict[nt].tag, "NewLevelInterval");
-  pardict[nt].addr = &options.new_level_interval;
+  strcpy(pardict[nt].tag, "NewLevelIntervalFactor");
+  pardict[nt].addr = &options.new_level_interval_factor;
   pardict[nt].isset = 0;
   pardict[nt++].id = INT;
 
-  strcpy(pardict[nt].tag, "SaveInterval");
-  pardict[nt].addr = &options.save_interval;
+  strcpy(pardict[nt].tag, "SaveIntervalFactor");
+  pardict[nt].addr = &options.save_interval_factor;
   pardict[nt].isset = 0;
   pardict[nt++].id = INT;
 
-  strcpy(pardict[nt].tag, "ThreadSteps");
-  pardict[nt].addr = &options.thread_steps;
+  strcpy(pardict[nt].tag, "ThreadStepsFactor");
+  pardict[nt].addr = &options.thread_steps_factor;
   pardict[nt].isset = 0;
   pardict[nt++].id = INT;
 
@@ -1114,8 +1121,18 @@ void options_load()
   
   num_pardict = nt;
 
+  /* default values */
+  options.new_level_interval_factor = 2;
+  options.save_interval_factor = options.new_level_interval_factor;
+  options.thread_steps_factor = 10;
+  options.num_particles = 1;
+  options.max_num_levels = 0;
+  options.lambda = 10.0;
+  options.beta = 100.0;
+  options.max_ptol = 0.1;
+  options.max_num_saves = 10000;
+   
   fp = fopen(options_file, "r");
-
   if(fp == NULL)
   {
     fprintf(stderr, "# ERROR: Cannot open options file %s.\n", options_file);
@@ -1160,6 +1177,17 @@ void options_load()
     }
   }
   fclose(fp);
+
+  /* check options */
+  idx = search_pardict(pardict, num_pardict, "SaveIntervalFactor");
+  if(pardict[idx].isset == 0)  /* if not set */
+  {
+    options.save_interval_factor = options.new_level_interval_factor;
+  }
+
+  options.thread_steps = dnest_num_params * options.thread_steps_factor * options.num_particles;
+  options.new_level_interval =  dnest_totaltask * options.thread_steps * options.new_level_interval_factor;
+  options.save_interval =  dnest_totaltask * options.thread_steps * options.save_interval_factor;
 
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.sample_file);

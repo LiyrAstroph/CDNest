@@ -41,11 +41,13 @@ cdef class sampler:
   cdef int rank, size
   cdef int num_particles, max_num_saves, max_num_levels
   cdef int new_level_interval, save_interval, thread_steps
+  cdef int thread_steps_factor, new_level_interval_factor, save_interval_factor
   cdef double beta, Lambda, max_ptol
   
   def __cinit__(self, model, sample_dir="./", sample_tag="", sample_postfix="", 
-                new_level_interval = 10, save_interval = 10, thread_steps = 10, 
-                num_particles=1, max_num_saves = 10000, max_num_levels = 10,
+                num_particles=1, thread_steps_factor = 10, 
+                max_num_saves = 10000, max_num_levels = 0,
+                new_level_interval_factor = 2, save_interval_factor = 2,
                 Lambda = 10, beta = 100, ptol = 0.1):
     
     # check model
@@ -73,7 +75,6 @@ cdef class sampler:
     py_byte_string =sample_dir.encode('UTF-8')
     strcpy(self.sample_dir, py_byte_string)
     # options file
-    cdef int num
     if hasattr(model, "options_file"):
       py_byte_string = model.options_file.encode('UTF-8')
       strcpy(self.options_file, py_byte_string)
@@ -82,11 +83,13 @@ cdef class sampler:
       strcat(self.options_file, "/OPTIONS")
       strcat(self.options_file, self.sample_tag)
       # options for CDNest
-      num = np.max((self.num_params * 2 * self.num_particles, 10))
-      self.new_level_interval = np.max((new_level_interval, num * self.size))
-      self.save_interval = np.max((save_interval, num*self.size))
-      self.thread_steps = np.max((thread_steps, num))
       self.num_particles = num_particles
+      self.thread_steps_factor = thread_steps_factor
+      self.new_level_interval_factor = new_level_interval_factor
+      self.save_interval_factor = save_interval_factor
+      self.thread_steps = thread_steps_factor * num_particles * self.num_params
+      self.new_level_interval = self.thread_steps * self.size * new_level_interval_factor
+      self.save_interval = self.thread_steps * self.size * save_interval_factor
       self.max_num_saves = max_num_saves
       self.max_num_levels = max_num_levels
       self.Lambda = Lambda 
@@ -159,18 +162,16 @@ cdef class sampler:
     """
     fp = open(self.options_file.decode('UTF-8'), "w")
     fp.write("# File containing parameters for DNest\n")
-    fp.write("# Put comments at the top, or at the end of the line\n")
-    fp.write("# Do not change the order of lines\n")
     fp.write("# Lines beginning with '#' are regarded as comments\n\n\n")
-    fp.write("NumberParticles    %d  # Number of particles\n"%(self.num_particles))
-    fp.write("NewLevelInterval   %d  # New level interval\n"%(self.new_level_interval))
-    fp.write("SaveInterval       %d  # Save interval\n"%(self.save_interval))
-    fp.write("ThreadSteps        %d  # ThreadSteps\n"%(self.thread_steps))
-    fp.write("MaxNumberLevels    %d  # Maximum number of levels\n"%(self.max_num_levels))
-    fp.write("BacktrackingLength %.1f  # Backtracking scale length\n"%(self.Lambda))
-    fp.write("StrengthEqualPush  %.1f  # Strength of effect to force histogram to equal push\n"%(self.beta))
-    fp.write("MaxNumberSaves     %d    # Maximum number of saves\n"%(self.max_num_saves))
-    fp.write("PTol               %.1e  # Posterior tolerance \n"%(self.max_ptol))
+    fp.write("NumberParticles          %d  # Number of particles\n"%(self.num_particles))
+    fp.write("NewLevelIntervalFactor   %d  # New level interval factor\n"%(self.new_level_interval_factor))
+    fp.write("SaveIntervalFactor       %d  # Save interval factor\n"%(self.save_interval_factor))
+    fp.write("ThreadStepsFactor        %d  # ThreadSteps factor\n"%(self.thread_steps_factor))
+    fp.write("MaxNumberLevels          %d  # Maximum number of levels\n"%(self.max_num_levels))
+    fp.write("BacktrackingLength       %.1f  # Backtracking scale length\n"%(self.Lambda))
+    fp.write("StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n"%(self.beta))
+    fp.write("MaxNumberSaves           %d    # Maximum number of saves\n"%(self.max_num_saves))
+    fp.write("PTol                     %.1e  # Likelihood tolerance in loge"%(self.max_ptol))
     fp.close()
   
   def run(self):

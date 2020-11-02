@@ -1,14 +1,8 @@
 # File containing parameters for DNest
-# Put comments at the top, or at the end of the line.
-# Do not change the order of lines.
 # Lines beginning with '#' are regarded as comments.
 
-NumberParticles    2 # Number of particles
-NewLevelInterval   20000 # new level interval
-SaveInterval       20000  # save interval
-ThreadSteps        1000 # threadSteps - how many steps each thread should do independently before communication
-MaxNumberLevels    100 # maximum number of levels
-BacktrackingLength 10  # Backtracking scale length (lambda in the paper Brewer et al. 2011)
-StrengthEqualPush  100 # Strength of effect to force histogram to equal push. (beta in the paper Brewer et al. 2011)
-MaxNumberSaves     10000 # Maximum number of saves
-PTol               0.1  # 
+NumberParticles           2      # Number of particles
+NewLevelIntervalFactor    5  # new level interval
+ThreadStepsFactor         100   # threadSteps - how many steps each thread should do independently before communication
+MaxNumberSaves            10000  # Maximum number of saves
+PTol                      0.1    # Likelihood tolerance in loge

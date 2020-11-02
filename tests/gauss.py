@@ -60,7 +60,8 @@ model = Model()
 # create a dnest sampler
 # max_num_save is the number of samples to generate
 # max_num_levels is the number of levels 
-sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, max_num_levels=10)
+sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, thread_steps_factor=100, 
+                                new_level_interval_factor = 5, save_interval_factor = 5)
 
 # run sampler
 logz = sample.run()

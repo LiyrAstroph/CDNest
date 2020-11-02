@@ -58,6 +58,7 @@ typedef struct
   unsigned int max_num_levels;
   double lambda, beta, max_ptol;
   unsigned int max_num_saves;
+  unsigned int thread_steps_factor, new_level_interval_factor, save_interval_factor;
 
   char sample_file[STR_MAX_LENGTH];
   char sample_info_file[STR_MAX_LENGTH];
@@ -83,6 +84,14 @@ typedef struct
   void (*accept_action)();
   void (*kill_action)(int i, int i_copy);
 }DNestFptrSet;
+
+typedef struct
+{
+  int id;
+  void *addr;
+  char tag[50];
+  int isset;
+}PARDICT;
 
 extern void *particles;
 extern int dnest_size_of_modeltype;
