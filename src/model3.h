@@ -7,6 +7,7 @@
  */
 
 #ifndef _MODEL3_H
+#define _MODEL3_H
 
 #include <stdbool.h>
 #include <gsl/gsl_rng.h>
