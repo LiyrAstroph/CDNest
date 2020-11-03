@@ -11,23 +11,6 @@ import cydnest
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-def randh(N=1):
-  """
-  generate from the heavy-tailed distribution.
-  """
-  if N==1:
-      return 10.0**(1.5 - 3*np.abs(np.random.randn()/np.sqrt(-np.log(np.random.rand()))))*np.random.randn()
-  return 10.0**(1.5 - 3*np.abs(np.random.randn(N)/np.sqrt(-np.log(np.random.rand(N)))))*np.random.randn(N)
-
-
-def wrap(x, a, b):
-  """
-  wrap x into a range [a, b]
-  """
-  assert b > a
-  return (x - a)%(b - a) + a
-
-
 def analytic_log_Z(num_params):
   """
   return evidence for multi-dimensional Gaussian
@@ -38,28 +21,17 @@ def analytic_log_Z(num_params):
   )
 
 class Model(object):
+  """
+  model input to cdnest
+  """
   def __init__(self, num_params=5):
     """
     intialize the model.
     """
     self.num_params = num_params  # number of parameters
-    #self.options_file = "OPTIONS" # optional, if not set, use the default options
-
-  def from_prior(self):
-    """
-    generate initial values of model parameters from priors
-    """
-    return np.random.uniform(-5.0, 5.0, size=(self.num_params,))
-
-  def perturb(self, coords):
-    """
-    perturb the parameters
-    """
-    width = 10.0
-    i = np.random.randint(self.num_params)
-    coords[i] += width*randh()
-    coords[i] = wrap(coords[i], -0.5*width, 0.5*width)
-    return 0.0
+    self.param_range = [[-5.0, 5.0]]*num_params
+    self.prior_type = ["Uniform"]*num_params
+    self.prior_info = [[0.0, 1.0]]*num_params
 
   def log_likelihood(self, coords):
     """

@@ -54,6 +54,9 @@ unsigned int size_above, size_all_above;
 double post_logz;
 int dnest_num_params;
 char dnest_sample_postfix[STR_MAX_LENGTH], dnest_sample_tag[STR_MAX_LENGTH], dnest_sample_dir[STR_MAX_LENGTH];
+double *dnest_param_range, *dnest_prior_info;
+int *dnest_prior_type;
+void *dnest_args;
 
 double *limits, *copies_of_limits;
 

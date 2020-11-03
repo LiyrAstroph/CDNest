@@ -12,18 +12,6 @@ import matplotlib.pyplot as plt
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-def randh(N=1):
-  """
-  generate from the heavy-tailed distribution.
-  """
-  if N==1:
-    return 10.0**(1.5 - 3*np.abs(np.random.randn()/np.sqrt(-np.log(np.random.rand()))))*np.random.randn()
-  return 10.0**(1.5 - 3*np.abs(np.random.randn(N)/np.sqrt(-np.log(np.random.rand(N)))))*np.random.randn(N)
-
-def wrap(x, a, b):
-  assert b > a
-  return (x - a)%(b - a) + a
-
 class Model(object):
 
   def __init__(self, num_params=1):
@@ -31,26 +19,9 @@ class Model(object):
     intialize the model
     """
     self.num_params = num_params # number of parameters
-    #self.options_file = "OPTIONS" # optional, if not set, use the default options
-
     self.param_range = [[-5.0, 5.0]]
-    self.prior_type = ["Gaussian"]
+    self.prior_type = ["Uniform"]
     self.prior_info = [[0.0, 1.0]]
-
-  def from_prior(self):
-    """
-    generate initial values of model parameters from priors
-    """
-    return np.random.uniform(-5.0, 5.0,size=(self.num_params,))
-                                    
-  def perturb(self, coords):
-    """
-    perturb the parameters
-    """
-    i = np.random.randint(self.num_params)
-    coords[i] += 10.0*randh()
-    coords[i] = wrap(coords[i], self.param_range[0][0], self.param_range[0][1])
-    return 0.0  
 
   def log_likelihood(self, coords):
     """

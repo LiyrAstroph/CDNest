@@ -55,7 +55,7 @@ void model1()
   fptrset_thismodel->restart_action = restart_action_model1;
   
   /* run dnest */
-  dnest(argc, argv, fptrset_thismodel, num_params, "./", "OPTIONS1");
+  dnest(argc, argv, fptrset_thismodel, num_params, NULL, NULL, NULL, "./", "OPTIONS1", NULL);
     
   /* free memory */
   dnest_free_fptrset(fptrset_thismodel);

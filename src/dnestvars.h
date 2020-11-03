@@ -27,6 +27,8 @@ extern "C" {
 #define BUF_MAX_LENGTH (200)
 #define LEVEL_NUM_MAX (1000)
 
+enum PRIOR_TYPE {UNIFORM=0, GAUSSIAN=1, LOG=2};
+
 /* output files */
 extern FILE *fsample, *fsample_info;
 
@@ -126,6 +128,9 @@ extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 extern double post_logz;
 extern int dnest_num_params;
 extern char dnest_sample_postfix[STR_MAX_LENGTH], dnest_sample_tag[STR_MAX_LENGTH], dnest_sample_dir[STR_MAX_LENGTH];
+extern double *dnest_param_range, *dnest_prior_info;
+extern int *dnest_prior_type;
+extern void *dnest_args;
 
 //the limits of parameters for each level;
 extern double *limits, *copies_of_limits;
@@ -144,10 +149,14 @@ int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);
 
 void options_load();
-void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *sample_dir, char *optfile);
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
+           double *param_range, int *prior_type, double *prior_info, 
+           char *sample_dir, char *optfile, void *args);
 void finalise();
 
-double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *sample_dir, char *optfile);
+double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params,  
+             double *param_range, int *prior_type, double *prior_info, 
+             char *sample_dir, char *optfile, void *args);
 void dnest_run();
 void dnest_mcmc_run();
 void update_particle(unsigned int which);
@@ -174,6 +183,8 @@ void dnest_restart();
 void dnest_restart_action(int iflag);
 void dnest_accept_action();
 void dnest_kill_action(int i, int i_copy);
+void dnest_from_prior(void *model);
+double dnest_perturb(void *model);
 void dnest_print_particle(FILE *fp, const void *model);
 void dnest_read_particle(FILE *fp, void *model);
 int dnest_get_size_levels();

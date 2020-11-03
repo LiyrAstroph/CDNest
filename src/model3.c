@@ -52,7 +52,7 @@ void model3()
   fptrset_thismodel3->restart_action = restart_action_model3;
   
   /* run dnest */
-  dnest(argc, argv, fptrset_thismodel3, num_params, "./", "OPTIONS3");
+  dnest(argc, argv, fptrset_thismodel3, num_params, NULL, NULL, NULL, "./", "OPTIONS3", NULL);
   
   /* free memory */
   dnest_free_fptrset(fptrset_thismodel3);

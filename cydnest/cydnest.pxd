@@ -13,6 +13,11 @@
 
 from libc.stdio cimport *                                                                
 
+cdef enum PRIOR_TYPE:
+  UNIFORM=0
+  GAUSSIAN=1
+  LOG=2
+
 # include declarations in PyFuncs.h
 cdef extern from "PyFuncs.h":
   void set_py_self (object py_self) 
@@ -53,4 +58,6 @@ cdef extern from "../dnestvars.h":
   
   DNestFptrSet * dnest_malloc_fptrset()
   void dnest_free_fptrset(DNestFptrSet *fptrset)
-  double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, char *sample_dir, char *optfile)
+  double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, 
+               double *param_range, int *prior_type, double *prior_info, 
+               char *sample_dir, char *optfile, void *args)

@@ -37,6 +37,7 @@ cdef class sampler:
   cdef int num_params         # number of paramters
   cdef double *param_range, *prior_info
   cdef int *prior_type
+  cdef void *args
   cdef char sample_tag[200]
   cdef char sample_postfix[200]
   cdef char sample_dir[200]
@@ -52,6 +53,8 @@ cdef class sampler:
                 new_level_interval_factor = 2, save_interval_factor = 2,
                 Lambda = 10, beta = 100, ptol = 0.1):
     
+    cdef int i
+
     # check model
     if not hasattr(model, "num_params"):
       raise ValueError("model must has a member variable 'num_params' to specify number of parameters")
@@ -63,13 +66,25 @@ cdef class sampler:
 
     # setup options
     self.num_params = model.num_params
+
     # prior 
     self.param_range = <double *>PyMem_Malloc(self.num_params*2*sizeof(double))
     self.prior_info = <double *>PyMem_Malloc(self.num_params*2*sizeof(double))
     self.prior_type = <int *>PyMem_Malloc(self.num_params*sizeof(int))
-    py_get_param_range(model.param_range, self.param_range)
-    py_get_prior_info(model.prior_info, self.prior_info)
-    py_get_prior_type(model.prior_type, self.prior_type)
+    for i in range(self.num_params):
+      self.param_range[i*2+0] = model.param_range[i][0]
+      self.param_range[i*2+1] = model.param_range[i][1]
+      self.prior_info[i*2+0] = model.prior_info[i][0]
+      self.prior_info[i*2+1] = model.prior_info[i][1]
+      if model.prior_type[i] == 'Uniform' or model.prior_type[i] == 'uniform':
+        self.prior_type[i] = UNIFORM
+      elif model.prior_type[i] == 'Gaussian' or model.prior_type[i] == 'gaussian':
+        self.prior_type[i] = GAUSSIAN
+      elif model.prior_type[i] == 'Log' or model.prior_type[i] == 'log':
+        self.prior_type[i] = LOG
+      else:
+        raise ValueError("Unable to identify prior type.")
+
     # sample tag
     py_byte_string = sample_tag.encode('UTF-8')
     strcpy(self.sample_tag, py_byte_string)
@@ -108,7 +123,6 @@ cdef class sampler:
     set_size_(model.num_params)
     
     # setup argc and argv
-    cdef int i
     cdef int narg = 8
     self.argv = <char **>PyMem_Malloc(narg*sizeof(char *))
     for i in range(narg):
@@ -139,17 +153,11 @@ cdef class sampler:
     self.fptrset.log_likelihoods_cal_restart = py_log_likelihood
     self.fptrset.print_particle = py_print_particle
     self.fptrset.restart_action = py_restart_action
-    
-    if not hasattr(model, "from_prior") or not callable(model.from_prior):
-      raise ValueError("models must have a callable 'from_prior' method")
-    else:
+    if hasattr(model, "from_prior") and callable(model.from_prior):
       self.fptrset.from_prior = py_from_prior
-      
-    if not hasattr(model, "perturb") or not callable(model.perturb):
-      raise ValueError("models must have a callable 'perturb' method")
-    else:
+    if hasattr(model, "perturb") and callable(model.perturb):
       self.fptrset.perturb = py_perturb
-
+    
     return
   
   def __cdealloc__(self):
@@ -198,5 +206,7 @@ cdef class sampler:
 
     the value of evidence is returned.
     """
-    logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, self.sample_dir, self.options_file)
+    logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, 
+                 self.param_range, self.prior_type, self.prior_info, 
+                 self.sample_dir, self.options_file, self.args)
     return logz

@@ -20,7 +20,8 @@
 #include "dnestvars.h"
 
 double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
-             char *sample_dir, char *optfile)
+             double *param_range, int *prior_type, double *prior_info,
+             char *sample_dir, char *optfile, void *args)
 {
   int opt;
 
@@ -28,7 +29,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
   
   dnest_check_fptrset(fptrset);
-
+  
   // cope with argv
   if(dnest_thistask == dnest_root )
   {
@@ -41,12 +42,6 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
     strcpy(file_save_restart, "restart_dnest.txt");
     strcpy(dnest_sample_postfix, "\0");
     strcpy(dnest_sample_tag, "\0");
-    
-    //int i;
-    //for(i=0; i<argc; i++)
-    //{
-    //  printf("%s\n", argv[i]);
-    //}
 
     opterr = 0;
     optind = 0;
@@ -114,7 +109,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
-  setup(argc, argv, fptrset, num_params, sample_dir, optfile);
+  setup(argc, argv, fptrset, num_params, param_range, prior_type, prior_info, sample_dir, optfile, args);
 
   if(dnest_flag_postprc == 1)
   {
@@ -855,7 +850,9 @@ void close_output_file()
   fclose(fsample_info);
 }
 
-void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *sample_dir, char *optfile)
+void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
+           double *param_range, int *prior_type, double *prior_info,
+           char *sample_dir, char *optfile, void *args)
 {
   int i, j;
 
@@ -888,6 +885,26 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, char *s
   
   dnest_num_params = num_params;
   dnest_size_of_modeltype = dnest_num_params * sizeof(double);
+
+  if(param_range != NULL)
+  {
+    dnest_param_range = malloc(num_params*2*sizeof(double));
+    memcpy(dnest_param_range, param_range, num_params*2*sizeof(double));
+  }
+  if(prior_type != NULL)
+  {
+    dnest_prior_type = malloc(num_params*sizeof(int));
+    memcpy(dnest_prior_type, prior_type, num_params*sizeof(int));
+  }
+  if(prior_info != NULL)
+  {
+    dnest_prior_info = malloc(num_params*2*sizeof(double));
+    memcpy(dnest_prior_info, prior_info, num_params*2*sizeof(double));
+  }
+  if(args != NULL)
+  {
+    dnest_args = args;
+  }
 
   // read options
   if(dnest_thistask == dnest_root)
@@ -1042,6 +1059,19 @@ void finalise()
   gsl_rng_free(dnest_gsl_r);
 
   free(dnest_perturb_accept);
+
+  if(dnest_param_range != NULL)
+  {
+    free(dnest_param_range);
+  }
+  if(dnest_prior_type != NULL)
+  {
+    free(dnest_prior_type);
+  }
+  if(dnest_prior_info != NULL)
+  {
+    free(dnest_prior_info);
+  }
 
   if(dnest_thistask == dnest_root)
     printf("# Finalizing dnest.\n");
@@ -1400,8 +1430,9 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
 {
   if(fptrset->from_prior == NULL)
   {
-    printf("\"from_prior\" function is not defined at task %d.\n", dnest_thistask);
-    exit(0);
+    printf("\"from_prior\" function is not defined at task %d.\
+      \nSet to the default function in dnest.\n", dnest_thistask);
+    fptrset->from_prior = dnest_from_prior;
   }
 
   if(fptrset->print_particle == NULL)
@@ -1440,8 +1471,9 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
 
   if(fptrset->perturb == NULL)
   {
-    printf("\"perturb\" function is not defined at task %d.\n", dnest_thistask);
-    exit(0);
+    printf("\"perturb\" function is not defined at task %d.\
+      \nSet to the default function in dnest.\n", dnest_thistask);
+    fptrset->perturb = dnest_perturb;
   }
 
   if(fptrset->restart_action == NULL)
@@ -1756,6 +1788,63 @@ void dnest_restart()
     free(level_assignments_all);
   }
   return;
+}
+
+void dnest_from_prior(void *model)
+{
+  int i;
+  double *pm = (double *)model;
+
+  for(i=0; i<dnest_num_params; i++)
+  {
+    if(dnest_prior_type[i] == GAUSSIAN )
+    {
+      pm[i] = dnest_randn() * dnest_prior_info[i*2+1] + dnest_prior_info[i*2+0];
+      dnest_wrap(&pm[i], dnest_param_range[i*2+0], dnest_param_range[i*2+1]);
+    }
+    else if(dnest_prior_type[i] == LOG)
+    {
+      pm[i] = log(dnest_param_range[i*2+0]) + dnest_rand()*(log(dnest_param_range[i*2+1]) - log(dnest_param_range[i*2+0]));
+      pm[i] = exp(pm[i]);
+    }
+    else 
+    {
+      pm[i] = dnest_param_range[i*2+0] + dnest_rand()*(dnest_param_range[i*2+1] - dnest_param_range[i*2+0]);
+    }
+  }
+}
+
+double dnest_perturb(void *model)
+{
+  double *pm = (double *)model;
+  double logH = 0.0, width;
+  int which;
+
+  which = dnest_rand_int(dnest_num_params);
+
+  width = ( dnest_param_range[which*2+1] - dnest_param_range[which*2+0] );
+
+  if(dnest_prior_type[which] == UNIFORM)
+  {
+    pm[which] += dnest_randh() * width;
+    dnest_wrap(&(pm[which]), dnest_param_range[which*2+0], dnest_param_range[which*2+1]);
+  }
+  else if(dnest_prior_type[which] == LOG)
+  {
+    logH -= (-log(pm[which]));
+    pm[which] += dnest_randh() * width;
+    dnest_wrap(&(pm[which]), dnest_param_range[which*2+0], dnest_param_range[which*2+1]);
+    logH += (-log(pm[which]));
+  }
+  else
+  {
+    logH -= (-0.5*pow((pm[which] - dnest_prior_info[which*2+0])/dnest_prior_info[which*2+1], 2.0) );
+    pm[which] += dnest_randh() * width;
+    dnest_wrap(&pm[which], dnest_param_range[which*2+0], dnest_param_range[which*2+1]);
+    logH += (-0.5*pow((pm[which] - dnest_prior_info[which*2+0])/dnest_prior_info[which*2+1], 2.0) );
+  }
+  
+  return logH;
 }
 
 void dnest_print_particle(FILE *fp, const void *model)
