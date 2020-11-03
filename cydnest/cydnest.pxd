@@ -39,7 +39,7 @@ ctypedef void (*print_particle_type)(FILE *, void*)
 ctypedef void (*restart_action_type)(int)
 
 # include declarations from dnestvars.h
-cdef extern from "../dnestvars.h":
+cdef extern from "../dnest.h":
   double dnest_randh()
   double dnest_rand()
   double dnest_randn()

@@ -13,7 +13,7 @@
 #include <mpi.h>
 #include <gsl/gsl_rng.h>
 
-#include "dnestvars.h"
+#include "dnest.h"
 #include "model1.h"
 
 int which_level_update;
@@ -108,8 +108,10 @@ double perturb_thismodel(void *model)
   double *params = (double *)model;
   double logH = 0.0, width, limit1, limit2;
   int which = dnest_rand_int(num_params), which_level;
+  int size_levels;
   
   which_level_update = dnest_get_which_level_update();
+  size_levels = dnest_get_size_levels();
   which_level = which_level_update > (size_levels - 20)?(size_levels-20):which_level_update;
   if(which_level > 0)
   {

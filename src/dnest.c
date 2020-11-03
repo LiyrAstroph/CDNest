@@ -17,6 +17,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+#include "dnest.h"
 #include "dnestvars.h"
 
 double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
@@ -1077,7 +1078,7 @@ void finalise()
     printf("# Finalizing dnest.\n");
 }
 
-int search_pardict(PARDICT *pardict, int num_pardict, char *tag)
+int search_pardict(DNestPARDICT *pardict, int num_pardict, char *tag)
 {
   int i;
   for(i=0; i<num_pardict; i++)
@@ -1094,9 +1095,9 @@ int search_pardict(PARDICT *pardict, int num_pardict, char *tag)
 
 void options_load()
 {
-  PARDICT *pardict;
+  DNestPARDICT *pardict;
   int num_pardict;
-  pardict = malloc(10 * sizeof(PARDICT));
+  pardict = malloc(10 * sizeof(DNestPARDICT));
   enum TYPE {INT, DOUBLE, STRING};
 
   FILE *fp;

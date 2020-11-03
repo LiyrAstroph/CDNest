@@ -19,9 +19,7 @@ extern "C" {
 #include <stdbool.h>
 #include <gsl/gsl_rng.h>
 
-#define DNEST_MAJOR_VERSION 0  // Dec 2, 2018
-#define DNEST_MINOR_VERSION 1
-#define DNEST_PATCH_VERSION 0
+#include "dnest.h"
 
 #define STR_MAX_LENGTH (100)
 #define BUF_MAX_LENGTH (200)
@@ -75,25 +73,11 @@ extern char options_file[STR_MAX_LENGTH];
 
 typedef struct
 {
-  void (*from_prior)(void *model);
-  double (*log_likelihoods_cal)(const void *model);
-  double (*log_likelihoods_cal_initial)(const void *model);
-  double (*log_likelihoods_cal_restart)(const void *model);
-  double (*perturb)(void *model);
-  void (*print_particle)(FILE *fp, const void *model);
-  void (*read_particle)(FILE *fp, void *model);
-  void (*restart_action)(int iflag);
-  void (*accept_action)();
-  void (*kill_action)(int i, int i_copy);
-}DNestFptrSet;
-
-typedef struct
-{
   int id;
   void *addr;
   char tag[50];
   int isset;
-}PARDICT;
+}DNestPARDICT;
 
 extern void *particles;
 extern int dnest_size_of_modeltype;
@@ -143,7 +127,6 @@ extern int dnest_root;
 //***********************************************
 /*                  functions                  */
 double mod(double y, double x);
-void dnest_wrap(double *x, double min, double max);
 void wrap_limit(double *x, double min, double max);
 int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);
@@ -154,9 +137,6 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
            char *sample_dir, char *optfile, void *args);
 void finalise();
 
-double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params,  
-             double *param_range, int *prior_type, double *prior_info, 
-             char *sample_dir, char *optfile, void *args);
 void dnest_run();
 void dnest_mcmc_run();
 void update_particle(unsigned int which);
@@ -170,10 +150,6 @@ void save_limits();
 void kill_lagging_particles();
 void renormalise_visits();
 void recalculate_log_X();
-double dnest_randh();
-double dnest_rand();
-double dnest_randn();
-int dnest_rand_int(int size);
 void dnest_postprocess(double temperature);
 void postprocess(double temperature);
 void initialize_output_file();
@@ -187,17 +163,6 @@ void dnest_from_prior(void *model);
 double dnest_perturb(void *model);
 void dnest_print_particle(FILE *fp, const void *model);
 void dnest_read_particle(FILE *fp, void *model);
-int dnest_get_size_levels();
-int dnest_get_which_level_update();
-int dnest_get_which_particle_update();
-void dnest_get_posterior_sample_file(char *fname);
-int dnest_check_version(char *verion_str);
-unsigned int dnest_get_which_num_saves();
-unsigned int dnest_get_count_saves();
-unsigned long long int dnest_get_count_mcmc_steps();
-void dnest_check_fptrset(DNestFptrSet *fptrset);
-DNestFptrSet * dnest_malloc_fptrset();
-void dnest_free_fptrset(DNestFptrSet * fptrset);
 /*=====================================================*/
 // users responsible for following functions
 void (*print_particle)(FILE *fp, const void *model);

@@ -76,7 +76,8 @@ LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB)
 
 
 SRC      = src/
-INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h $(SRC)/model3.h
+INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h $(SRC)/model3.h \
+           $(SRC)/dnest.h
  
 OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/dnestpostprocess.o $(SRC)/model1.o \
        $(SRC)/main.o $(SRC)/model2.o $(SRC)/model3.o
@@ -88,7 +89,7 @@ $(EXEC): $(OBJS)
 $(LDN): $(OBJS)
 	$(CC) $(OPTIMIZE) $(CFLAGS) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c $(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c
 	#ar rcs libdnest.a dnest.o dnestvars.o
-	cp $(SRC)/dnestvars.h .
+	cp $(SRC)/dnest.h .
 
 $(OBJS): $(INCL)
 

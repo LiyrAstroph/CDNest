@@ -14,6 +14,7 @@
 #include <string.h>
 #include <gsl/gsl_rng.h>
 
+#include "dnest.h"
 #include "dnestvars.h"
 
 
