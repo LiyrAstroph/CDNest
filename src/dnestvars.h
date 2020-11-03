@@ -21,10 +21,6 @@ extern "C" {
 
 #include "dnest.h"
 
-#define STR_MAX_LENGTH (100)
-#define BUF_MAX_LENGTH (200)
-#define LEVEL_NUM_MAX (1000)
-
 enum PRIOR_TYPE {UNIFORM=0, GAUSSIAN=1, LOG=2};
 
 /* output files */
@@ -48,27 +44,6 @@ typedef struct
   unsigned long long int accepts, tries;
 }Level;
 
-// struct for options
-typedef struct
-{
-  unsigned int num_particles;
-  unsigned int new_level_interval;
-  unsigned int save_interval;
-  unsigned int thread_steps;
-  unsigned int max_num_levels;
-  double lambda, beta, max_ptol;
-  unsigned int max_num_saves;
-  unsigned int thread_steps_factor, new_level_interval_factor, save_interval_factor;
-
-  char sample_file[STR_MAX_LENGTH];
-  char sample_info_file[STR_MAX_LENGTH];
-  char levels_file[STR_MAX_LENGTH];
-  char sampler_state_file[STR_MAX_LENGTH];
-  char posterior_sample_file[STR_MAX_LENGTH];
-  char posterior_sample_info_file[STR_MAX_LENGTH];
-  char limits_file[STR_MAX_LENGTH];
-}Options;
-extern Options options;
 extern char options_file[STR_MAX_LENGTH];
 
 typedef struct
