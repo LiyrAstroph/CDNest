@@ -17,7 +17,6 @@
 #include "model3.h"
 
 int which_level_update;
-int num_data_points;
 int num_params;
 DNestFptrSet *fptrset_thismodel3;
 

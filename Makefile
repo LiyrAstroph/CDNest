@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 CC       ?= mpicc 
-OPTIMIZE = -O2 -Wall -finline-functions
+OPTIMIZE = -O2 -Wall -finline-functions -fcommon
 #OPTIMIZE += -DDebug
 
 #---------target system
