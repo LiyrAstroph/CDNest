@@ -13,15 +13,26 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
 class Model(object):
-
+  """
+  model passed to cdnest.
+  """
   def __init__(self, num_params=1):
     """
     intialize the model
     """
-    self.num_params = num_params # number of parameters
-    self.param_range = [[-5.0, 5.0]]
-    self.prior_type = ["Uniform"]
-    self.prior_info = [[0.0, 1.0]]
+    # number of parameters
+    self.num_params = num_params 
+
+    # parameter ranges, a list
+    self.param_range = [[-5.0, 5.0]]*num_params
+
+    # parameter prior type.
+    # three types: Uniform, Gaussian, Log 
+    self.prior_type = ["Uniform"]*num_params
+
+    # parameter prior information. used when the prior is Gaussian
+    # indicate the mean and standard deviation of the Gaussian prior
+    self.prior_info = [[0.0, 1.0]]*num_params
 
   def log_likelihood(self, coords):
     """
@@ -34,9 +45,15 @@ model = Model()
 
 # create a dnest sampler
 # max_num_save is the number of samples to generate
-# max_num_levels is the number of levels 
-sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, thread_steps_factor=100, 
-                                new_level_interval_factor = 5, save_interval_factor = 5)
+# ptol is the likelihood tolerance in loge()
+sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1)
+#
+# The full argument lists look like:
+# sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, 
+#               num_particles=1, thread_steps_factor = 10, 
+#               max_num_levels = 0, Lambda = 10, beta = 100
+#               new_level_interval_factor = 2, save_interval_factor = 2)
+#
 
 # run sampler
 logz = sample.run()
