@@ -33,6 +33,10 @@ class Model(object):
     self.num_params = num_params # number of parameters
     #self.options_file = "OPTIONS" # optional, if not set, use the default options
 
+    self.param_range = [[-5.0, 5.0]]
+    self.prior_type = ["Gaussian"]
+    self.prior_info = [[0.0, 1.0]]
+
   def from_prior(self):
     """
     generate initial values of model parameters from priors
@@ -45,7 +49,7 @@ class Model(object):
     """
     i = np.random.randint(self.num_params)
     coords[i] += 10.0*randh()
-    coords[i] = wrap(coords[i], -5.0, 5.0)
+    coords[i] = wrap(coords[i], self.param_range[0][0], self.param_range[0][1])
     return 0.0  
 
   def log_likelihood(self, coords):

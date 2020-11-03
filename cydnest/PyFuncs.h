@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Python.h>
+#include <string.h>
 #include <numpy/arrayobject.h>
 
 PyObject* py_self_;
@@ -165,4 +166,64 @@ void py_restart_action(int iflag)
   return;
 }
 
+void py_get_param_range(PyObject* py_param_range, double *param_range)
+{
+  PyListObject *plist = py_param_range;
+  PyListObject *pitem = NULL;
+
+  int i; 
+  for(i=0; i<PyList_Size(plist); i++)
+  {
+    pitem = PyList_GetItem(plist, i);
+    param_range[i*2+0] = PyFloat_AsDouble(PyList_GetItem(pitem, 0));
+    param_range[i*2+1] = PyFloat_AsDouble(PyList_GetItem(pitem, 1));
+  }
+  return;
+}
+
+void py_get_prior_info(PyObject* py_prior_info, double *prior_info)
+{
+  PyListObject *plist = py_prior_info;
+  PyListObject *pitem = NULL;
+
+  int i; 
+  for(i=0; i<PyList_Size(plist); i++)
+  {
+    pitem = PyList_GetItem(plist, i);
+    prior_info[i*2+0] = PyFloat_AsDouble(PyList_GetItem(pitem, 0));
+    prior_info[i*2+1] = PyFloat_AsDouble(PyList_GetItem(pitem, 1));
+  }
+  return;
+}
+
+void py_get_prior_type(PyObject* py_prior_type, int *prior_type)
+{
+  PyListObject *plist = py_prior_type;
+  PyListObject *pitem = NULL;
+  char pystr[100];
+  int i;
+  for(i=0; i<PyList_Size(plist); i++)
+  {
+    pitem = PyList_GetItem(plist, i);
+    strcpy(pystr, PyUnicode_DATA(pitem));
+    if(strcmp(pystr, "Gaussian") == 0 || strcmp(pystr, "gaussian") == 0)
+    {
+      prior_type[i]=0;
+    }
+    else if(strcmp(pystr, "Log") == 0 || strcmp(pystr, "log") == 0)
+    {
+      prior_type[i]=1;
+    }
+    else if(strcmp(pystr, "Uniform") == 0 || strcmp(pystr, "uniform") == 0)
+    {
+      prior_type[i]=2;
+    }
+    else 
+    {
+      printf("Unable to identify prior type: %s\n", pystr);
+      exit(0);
+    }
+  }
+  return;
+}
 #endif

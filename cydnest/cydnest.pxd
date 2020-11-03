@@ -22,6 +22,9 @@ cdef extern from "PyFuncs.h":
   double py_log_likelihood(void *pm) 
   void py_print_particle(FILE *fp, void *pm)
   void py_restart_action(int iflag)
+  void py_get_param_range(object py_param_range, double *param_range)
+  void py_get_prior_info(object py_prior_info, double *prior_info)
+  void py_get_prior_type(object py_prior_type, int *prior_type)
 
 # typedef functions for dnest
 ctypedef void (*from_prior_type)(void *)

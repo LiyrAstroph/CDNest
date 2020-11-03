@@ -35,6 +35,8 @@ cdef class sampler:
   cdef DNestFptrSet *fptrset  # function set
   cdef char options_file[200] # options file
   cdef int num_params         # number of paramters
+  cdef double *param_range, *prior_info
+  cdef int *prior_type
   cdef char sample_tag[200]
   cdef char sample_postfix[200]
   cdef char sample_dir[200]
@@ -53,10 +55,6 @@ cdef class sampler:
     # check model
     if not hasattr(model, "num_params"):
       raise ValueError("model must has a member variable 'num_params' to specify number of parameters")
-    if not hasattr(model, "from_prior") or not callable(model.from_prior):
-      raise ValueError("models must have a callable 'from_prior' method")
-    if not hasattr(model, "perturb") or not callable(model.perturb):
-      raise ValueError("models must have a callable 'perturb' method")
     if not hasattr(model, "log_likelihood") or not callable(model.log_likelihood):
       raise ValueError("models must have a callable 'log_likelihood' method")
     
@@ -65,6 +63,13 @@ cdef class sampler:
 
     # setup options
     self.num_params = model.num_params
+    # prior 
+    self.param_range = <double *>PyMem_Malloc(self.num_params*2*sizeof(double))
+    self.prior_info = <double *>PyMem_Malloc(self.num_params*2*sizeof(double))
+    self.prior_type = <int *>PyMem_Malloc(self.num_params*sizeof(int))
+    py_get_param_range(model.param_range, self.param_range)
+    py_get_prior_info(model.prior_info, self.prior_info)
+    py_get_prior_type(model.prior_type, self.prior_type)
     # sample tag
     py_byte_string = sample_tag.encode('UTF-8')
     strcpy(self.sample_tag, py_byte_string)
@@ -126,15 +131,24 @@ cdef class sampler:
     strcpy(self.argv[self.argc], self.sample_postfix)
     self.argc += 1
     
+    
     # setup function set
     self.fptrset = dnest_malloc_fptrset(); 
-    self.fptrset.from_prior = py_from_prior
     self.fptrset.log_likelihoods_cal = py_log_likelihood
     self.fptrset.log_likelihoods_cal_initial = py_log_likelihood
     self.fptrset.log_likelihoods_cal_restart = py_log_likelihood
-    self.fptrset.perturb = py_perturb
     self.fptrset.print_particle = py_print_particle
     self.fptrset.restart_action = py_restart_action
+    
+    if not hasattr(model, "from_prior") or not callable(model.from_prior):
+      raise ValueError("models must have a callable 'from_prior' method")
+    else:
+      self.fptrset.from_prior = py_from_prior
+      
+    if not hasattr(model, "perturb") or not callable(model.perturb):
+      raise ValueError("models must have a callable 'perturb' method")
+    else:
+      self.fptrset.perturb = py_perturb
 
     return
   
@@ -145,6 +159,10 @@ cdef class sampler:
     PyMem_Free(self.argv)
 
     dnest_free_fptrset(self.fptrset)
+
+    PyMem_Free(self.param_range)
+    PyMem_Free(self.prior_type)
+    PyMem_Free(self.prior_info)
     return
   
   def get_sample_tag(self):
