@@ -34,28 +34,6 @@ typedef struct
   void (*kill_action)(int i, int i_copy);
 }DNestFptrSet;
 
-// struct for options
-typedef struct
-{
-  unsigned int num_particles;
-  unsigned int new_level_interval;
-  unsigned int save_interval;
-  unsigned int thread_steps;
-  unsigned int max_num_levels;
-  double lambda, beta, max_ptol;
-  unsigned int max_num_saves;
-  unsigned int thread_steps_factor, new_level_interval_factor, save_interval_factor;
-
-  char sample_file[STR_MAX_LENGTH];
-  char sample_info_file[STR_MAX_LENGTH];
-  char levels_file[STR_MAX_LENGTH];
-  char sampler_state_file[STR_MAX_LENGTH];
-  char posterior_sample_file[STR_MAX_LENGTH];
-  char posterior_sample_info_file[STR_MAX_LENGTH];
-  char limits_file[STR_MAX_LENGTH];
-}Options;
-extern Options options;
-
 double dnest_randh();
 double dnest_rand();
 double dnest_randn();
