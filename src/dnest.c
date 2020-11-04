@@ -1078,7 +1078,7 @@ void finalise()
     printf("# Finalizing dnest.\n");
 }
 
-int search_pardict(DNestPARDICT *pardict, int num_pardict, char *tag)
+int dnest_search_pardict(DNestPARDICT *pardict, int num_pardict, char *tag)
 {
   int i;
   for(i=0; i<num_pardict; i++)
@@ -1089,7 +1089,7 @@ int search_pardict(DNestPARDICT *pardict, int num_pardict, char *tag)
     }
   }
 
-  fprintf(stderr, "# no match of tag %s.\n", tag);
+  fprintf(stderr, "# cdnest no match of tag %s.\n", tag);
   return num_pardict+1;
 }
 
@@ -1210,7 +1210,7 @@ void options_load()
   fclose(fp);
 
   /* check options */
-  idx = search_pardict(pardict, num_pardict, "SaveIntervalFactor");
+  idx = dnest_search_pardict(pardict, num_pardict, "SaveIntervalFactor");
   if(pardict[idx].isset == 0)  /* if not set */
   {
     options.save_interval_factor = options.new_level_interval_factor;

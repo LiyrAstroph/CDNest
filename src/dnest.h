@@ -16,10 +16,6 @@ extern "C" {
 #define DNEST_MINOR_VERSION 1
 #define DNEST_PATCH_VERSION 0
 
-#define STR_MAX_LENGTH (100)
-#define BUF_MAX_LENGTH (200)
-#define LEVEL_NUM_MAX (1000)
-
 typedef struct
 {
   void (*from_prior)(void *model);

@@ -21,6 +21,10 @@ extern "C" {
 
 #include "dnest.h"
 
+#define STR_MAX_LENGTH (100)
+#define BUF_MAX_LENGTH (200)
+#define LEVEL_NUM_MAX (1000)
+
 enum PRIOR_TYPE {UNIFORM=0, GAUSSIAN=1, LOG=2};
 
 /* output files */
