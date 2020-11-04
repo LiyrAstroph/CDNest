@@ -1197,7 +1197,7 @@ void options_load()
           strcpy(pardict[j].addr, buf2);
           break;
         case INT:
-          *((int *)pardict[j].addr) = (int) atof(buf2);
+          *((unsigned int *)pardict[j].addr) = (unsigned int) atof(buf2);
           break;
       }
     }
@@ -1205,6 +1205,7 @@ void options_load()
     {
       fprintf(stderr, "# Error in file %s: Tag '%s' is not allowed or multiple defined.\n",
                     options_file, buf1);
+      exit(0);
     }
   }
   fclose(fp);
