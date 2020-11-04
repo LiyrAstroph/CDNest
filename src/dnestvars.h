@@ -126,55 +126,55 @@ extern int *dnest_perturb_accept;
 extern int dnest_root;
 //***********************************************
 /*                  functions                  */
-double mod(double y, double x);
-void wrap_limit(double *x, double min, double max);
-int mod_int(int y, int x);
-int dnest_cmp(const void *pa, const void *pb);
+extern double mod(double y, double x);
+extern void wrap_limit(double *x, double min, double max);
+extern int mod_int(int y, int x);
+extern int dnest_cmp(const void *pa, const void *pb);
 
-void options_load();
-void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
+extern void options_load();
+extern void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
            double *param_range, int *prior_type, double *prior_info, 
            char *sample_dir, char *optfile, void *args);
-void finalise();
+extern void finalise();
 
-void dnest_run();
-void dnest_mcmc_run();
-void update_particle(unsigned int which);
-void update_level_assignment(unsigned int which);
-double log_push(unsigned int which_level);
-bool enough_levels(Level *l, int size_l);
-void do_bookkeeping();
-void save_levels();
-void save_particle();
-void save_limits();
-void kill_lagging_particles();
-void renormalise_visits();
-void recalculate_log_X();
-void dnest_postprocess(double temperature);
-void postprocess(double temperature);
-void initialize_output_file();
-void close_output_file();
-void dnest_save_restart();
-void dnest_restart();
-void dnest_restart_action(int iflag);
-void dnest_accept_action();
-void dnest_kill_action(int i, int i_copy);
-void dnest_from_prior(void *model);
-double dnest_perturb(void *model);
-void dnest_print_particle(FILE *fp, const void *model);
-void dnest_read_particle(FILE *fp, void *model);
+extern void dnest_run();
+extern void dnest_mcmc_run();
+extern void update_particle(unsigned int which);
+extern void update_level_assignment(unsigned int which);
+extern double log_push(unsigned int which_level);
+extern bool enough_levels(Level *l, int size_l);
+extern void do_bookkeeping();
+extern void save_levels();
+extern void save_particle();
+extern void save_limits();
+extern void kill_lagging_particles();
+extern void renormalise_visits();
+extern void recalculate_log_X();
+extern void dnest_postprocess(double temperature);
+extern void postprocess(double temperature);
+extern void initialize_output_file();
+extern void close_output_file();
+extern void dnest_save_restart();
+extern void dnest_restart();
+extern void dnest_restart_action(int iflag);
+extern void dnest_accept_action();
+extern void dnest_kill_action(int i, int i_copy);
+extern void dnest_from_prior(void *model);
+extern double dnest_perturb(void *model);
+extern void dnest_print_particle(FILE *fp, const void *model);
+extern void dnest_read_particle(FILE *fp, void *model);
 /*=====================================================*/
 // users responsible for following functions
-void (*print_particle)(FILE *fp, const void *model);
-void (*read_particle)(FILE *fp, void *model);
-void (*from_prior)(void *model);
-double (*log_likelihoods_cal)(const void *model);
-double (*log_likelihoods_cal_initial)(const void *model);
-double (*log_likelihoods_cal_restart)(const void *model);
-double (*perturb)(void *model);
-void (*restart_action)(int iflag);
-void (*accept_action)();
-void (*kill_action)(int i, int i_copy);
+extern void (*print_particle)(FILE *fp, const void *model);
+extern void (*read_particle)(FILE *fp, void *model);
+extern void (*from_prior)(void *model);
+extern double (*log_likelihoods_cal)(const void *model);
+extern double (*log_likelihoods_cal_initial)(const void *model);
+extern double (*log_likelihoods_cal_restart)(const void *model);
+extern double (*perturb)(void *model);
+extern void (*restart_action)(int iflag);
+extern void (*accept_action)();
+extern void (*kill_action)(int i, int i_copy);
 /*=====================================================*/
 
 #ifdef __cplusplus
