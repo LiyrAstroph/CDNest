@@ -46,24 +46,23 @@ model = Model()
 # create a dnest sampler
 # max_num_save is the number of samples to generate
 # ptol is the likelihood tolerance in loge()
-sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1)
+sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1)
 #
 # The full argument lists look like:
-# sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, 
+# sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, 
 #               num_particles=1, thread_steps_factor = 10, 
 #               max_num_levels = 0, Lambda = 10, beta = 100
 #               new_level_interval_factor = 2, save_interval_factor = 2)
 #
 
 # run sampler
-logz = sample.run()
+logz = sampler.run()
 comm.Barrier()
 
 # ouput evidence
 if rank == 0:
   print("Evidence:", logz)
-
-  sample = np.loadtxt(sample.get_sample_dir() +"posterior_sample" + sample.get_sample_tag() + ".txt")
+  sample = np.loadtxt(sampler.get_sample_dir() +"posterior_sample" + sampler.get_sample_tag() + ".txt")
   fig = plt.figure()
   ax = fig.add_subplot(111)
   ax.hist(sample, bins=20, density=True, label='CDNest sample')
@@ -76,4 +75,6 @@ if rank == 0:
   fig.savefig("fig_gau.jpg")
   plt.show()
 
+  # do postprocess, plot 
+  cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), doplot=True)
 

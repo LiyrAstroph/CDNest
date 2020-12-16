@@ -12,6 +12,7 @@ cydnest/*
 !python/cydnest/PyFuncs.h
 !python/cydnest/__init__.py
 !python/cydnest/test.py
+!python/cydnest/postprocess.py
 !tests/gauss.py
 !tests/mulgauss.py
 !tests/rastrigin.py
