@@ -29,8 +29,20 @@ class Model(object):
     """
     intialize the model
     """
-    self.num_params = num_params # number of parameters
-    #self.options_file = "OPTIONS" # optional, if not set, use the default options
+    # number of parameters
+    self.num_params = num_params 
+
+    # parameter ranges, a list
+    self.param_range = [[-5.12, 5.12]]*num_params
+
+    # parameter prior type.
+    # three types: Uniform, Gaussian, Log 
+    self.prior_type = ["Uniform"]*num_params
+
+    # parameter prior information. used when the prior is Gaussian
+    # indicate the mean and standard deviation of the Gaussian prior
+    self.prior_info = [[0.0, 1.0]]*num_params
+
 
   def from_prior(self):
     """
@@ -59,18 +71,18 @@ model = Model(num_params=2)
 # create a dnest sampler
 # max_num_save is the number of samples to generate
 # max_num_levels is the number of levels 
-sample = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, max_num_levels=20)
+sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1)
 
 # run sampler
-logz = sample.run()
+logz = sampler.run()
 comm.Barrier()
 
 # ouput evidence
 if rank == 0:
   print("Evidence:", logz)
 
-  psample = np.loadtxt(sample.get_sample_dir() +"posterior_sample" + sample.get_sample_tag() + ".txt")
-  psample_info = np.loadtxt(sample.get_sample_dir() +"posterior_sample_info" + sample.get_sample_tag() + ".txt")
+  psample = np.loadtxt(sampler.get_sample_dir() +"posterior_sample" + sampler.get_sample_tag() + ".txt")
+  psample_info = np.loadtxt(sampler.get_sample_dir() +"posterior_sample_info" + sampler.get_sample_tag() + ".txt")
 
   fig = plt.figure(figsize=(15, 12))
   ax = fig.add_subplot(111, projection='3d')
@@ -91,6 +103,9 @@ if rank == 0:
   ax.set_zlabel(r'$\log L$')
   fig.savefig("fig_rastrigin.jpg", bbox_inches='tight')
   plt.show()
+
+  # do postprocess, plot 
+  cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), doplot=True)
   
 
   

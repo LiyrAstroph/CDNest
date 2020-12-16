@@ -46,9 +46,18 @@ If one want to install **cydnest** to the standard python path, use the command
 
 .. code-block:: python 
   
-  python setup.py install
+  sudo python setup.py install
 
-This command by default assume that **mpicc** is located in the standard path, otherwise, use the command 
+or 
+
+.. code-block:: python 
+  
+  python setup.py install --user
+
+The former command generally installs cydnest to the path like "/usr/lib/python*/site-packages", 
+while the latter to the path like "~/.local/lib/python*/site-packages/".
+
+The above commands by default assume that **mpicc** is located in the standard path, otherwise, use the command 
 
 .. code-block:: python 
   
