@@ -306,19 +306,14 @@ void dnest_run()
         // save levels, limits, sync samples when running a number of steps
         if( count_saves % num_saves == 0 )
         {
-          if(size_levels_combine <= options.max_num_levels)
-          {
-            save_levels();
-
-            printf("# Save levels at N= %d.\n", count_saves);
-          }
+          save_levels();
           if(dnest_flag_limits == 1)
             save_limits();
           fflush(fsample_info);
           fsync(fileno(fsample_info));
           fflush(fsample);
           fsync(fileno(fsample));
-          printf("# Save limits, and sync samples at N= %d.\n", count_saves);
+          printf("# Save levels, limits, and sync samples at N= %d.\n", count_saves);
         }
       }
 
@@ -728,7 +723,8 @@ void update_level_assignment(unsigned int which)
 
   log_A += log_push(proposal) - log_push(level_assignments[which]);
 
-  if(size_levels == options.max_num_levels)
+  // enforce uniform exploration if levels are enough
+  if(enough_levels(levels, size_levels))
     log_A += options.beta*log( (double)(levels[level_assignments[which]].tries +1)/ (levels[proposal].tries +1) );
 
   if(log_A > 0.0)
