@@ -69,7 +69,7 @@ class Clean(clean):
       shutil.rmtree("dist", ignore_errors=True)
 
 extensions = cythonize([
-  Extension("cydnest.cydnest", 
+  Extension("cydnest", 
 	  sources=["cydnest/cydnest/cydnest.pyx",],
 	  extra_compile_args=compiler_args,
     include_dirs=include_dirs,
@@ -82,6 +82,7 @@ setup(
 	name="cydnest",
   version="0.2.0",
 	packages=["cydnest",],
+  package_dir={"":"cydnest"},
 	ext_modules = extensions,
   description = 'C version of Diffusive Nested Sampling (DNest4) by Brendon J. Brewer',
   author = 'Yan-Rong Li',
