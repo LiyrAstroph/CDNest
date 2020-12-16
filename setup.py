@@ -5,16 +5,20 @@ from distutils.command.build import build
 from distutils.command.clean import clean
 from setuptools.command.build_ext import build_ext
 from setuptools.command.install import install
+
 import subprocess
 import numpy
 import shutil
+
+basedir = os.path.dirname(os.path.abspath(__file__))
+homedir = os.environ['HOME']
 
 # if CC is not set, use the default value
 if not os.environ.get("CC"):
   os.environ["CC"] = "mpicc"
 
-include_dirs = ["./", numpy.get_include(),]
-library_dirs = ["./", ]
+include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),]
+library_dirs = [basedir,]
 
 if os.name == 'nt':  # Windows, assumming MSVC compiler
   libraries = ['dnest']
@@ -22,7 +26,6 @@ if os.name == 'nt':  # Windows, assumming MSVC compiler
 elif os.name == 'posix':  # UNIX, assumming GCC compiler
   libraries = ['m', 'c', 'dnest', 'gsl', 'gslcblas']
   compiler_args = ['-O3', '-ffast-math']
-
 
 try:
   from Cython.Build import cythonize
@@ -66,8 +69,8 @@ class Clean(clean):
       shutil.rmtree("dist", ignore_errors=True)
 
 extensions = cythonize([
-  Extension("cydnest", 
-	  sources=["cydnest/cydnest.pyx",],
+  Extension("cydnest.cydnest", 
+	  sources=["cydnest/cydnest/cydnest.pyx",],
 	  extra_compile_args=compiler_args,
     include_dirs=include_dirs,
     libraries=libraries,
@@ -86,5 +89,8 @@ setup(
   cmdclass={'build_ext': BuildExt, 'build':Build, 'install':Install, 'clean':Clean},
   setup_requires=['numpy', 'mpi4py'],
   install_requires=['numpy', 'mpi4py'],
-  license="GSL"
+  license="GSL",
+  # install header and library to ~/.local/lib
+  #data_files=[(os.path.join(homedir, ".local/lib/"), [basedir+"/libdnest.so"]),
+  #            (os.path.join(homedir, ".local/include/"), [basedir+"/dnest.h"]),]
 	)
