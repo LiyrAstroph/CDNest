@@ -72,5 +72,5 @@ if rank == 0:
   # print evidence
   print("Caclulated Evidence:", logz, ", Real Evidence:", analytic_log_Z(model.num_params))
   
-  # do postprocess, plot 
+  # do postprocess, plot, show the properties of sampling 
   cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), doplot=True)

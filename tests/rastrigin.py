@@ -43,13 +43,21 @@ class Model(object):
     # indicate the mean and standard deviation of the Gaussian prior
     self.prior_info = [[0.0, 1.0]]*num_params
 
-
+  
+  # users can define their own functions to generate 
+  # the initial parameter values 
+  # this is optinal. if not defined, cydnest will use the internal 
+  # function.  
   def from_prior(self):
     """
     generate initial values of model parameters from priors
     """
     return np.random.uniform(-5.12, 5.12,size=(self.num_params,))
-                                    
+
+  # users can define their own functions to perturb 
+  # parameter values for sampling 
+  # this is optinal. if not defined, cydnest will use the internal 
+  # function.                                  
   def perturb(self, coords):
     """
     perturb the parameters
@@ -58,7 +66,7 @@ class Model(object):
     coords[i] += 10.0*randh()
     coords[i] = wrap(coords[i], -5.12, 5.12)
     return 0.0  
-
+  
   def log_likelihood(self, coords):
     """
     calculate likelihood
@@ -71,7 +79,16 @@ model = Model(num_params=2)
 # create a dnest sampler
 # max_num_save is the number of samples to generate
 # max_num_levels is the number of levels 
+# ptol is the likelihood tolerance in loge()
 sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1)
+#
+# The full argument lists look like:
+# sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, 
+#               num_particles=1, thread_steps_factor = 10, 
+#               max_num_levels = 0, Lambda = 10, beta = 100
+#               new_level_interval_factor = 2, save_interval_factor = 2)
+#
+
 
 # run sampler
 logz = sampler.run()
@@ -104,9 +121,5 @@ if rank == 0:
   fig.savefig("fig_rastrigin.jpg", bbox_inches='tight')
   plt.show()
 
-  # do postprocess, plot 
+  # do postprocess, plot, show the properties of sampling 
   cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), doplot=True)
-  
-
-  
-

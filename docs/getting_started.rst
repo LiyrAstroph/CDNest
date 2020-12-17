@@ -16,46 +16,54 @@ For python interface, additional packages required:
 
   * Numpy
 
-To create the C library **libnest.so**, edit the paths for library and header files in Makefile and then compile using the following terminal command
+C/C++ library: libdnest.so
+==========================
+To create the C library **libnest.so**, edit the paths for library and header files in Makefile and 
+then compile using the following terminal command
 
 .. code-block:: bash
 
   make
 
-Then add the path of **libnest.so** to the system environment variable "LD_LIBRARY_PATH". Edit "bashrc" file in home directory 
-and add a line as 
+Then add the path of **libnest.so** to the system environment variable "LD_LIBRARY_PATH". 
+Edit "bashrc" file in home directory and add a line as 
 
 .. code-block:: bash
 
   export LD_LIBRARY_PATH=/path/to/libnest.so/:$LD_LIBRARY_PATH
 
 
-After creating ``libnest.so``, to create the Python module **cydnest.so**, use the terminal command
+Python package: cydnest
+========================
+After creating ``libnest.so``, to create the Python package **cydnest**, use the terminal command
 
-.. code-block:: python 
+.. code-block:: bash 
   
   python setup.py build_ext --inplace
 
-and add the path to **libnest.so** to your python environment settings,
+This will generate Python-callable package **cydnest** in the local path **./build/libXXX/cydnest**, where 
+**XXX** depend on the compiling system. (In my Fedora 33 laptop, the path name is lib.linux-x86_64-3.9)
+Add this path to your python environment settings,
 
 .. code-block:: bash
 
-  export PYTHONPATH=/path/to/CDNest:$PYTHONPATH
+  export PYTHONPATH=/path/to/CDNest/build/libXXX/cydnest:$PYTHONPATH
 
-If one want to install **cydnest** to the standard python path, use the command 
+If one wants to install **cydnest** to the standard python path, use the command 
 
-.. code-block:: python 
+.. code-block:: bash 
   
   sudo python setup.py install
 
 or 
 
-.. code-block:: python 
+.. code-block:: bash 
   
   python setup.py install --user
 
-The former command generally installs cydnest to the path like "/usr/lib/python*/site-packages", 
-while the latter to the path like "~/.local/lib/python*/site-packages/".
+The former command generally installs cydnest to the path like **/usr/libXX/pythonXX/site-packages**, 
+while the latter to the path like **~/.local/libXX/pythonXX/site-packages/**, where **XX** depends 
+on the system environment.
 
 The above commands by default assume that **mpicc** is located in the standard path, otherwise, use the command 
 
@@ -65,3 +73,11 @@ The above commands by default assume that **mpicc** is located in the standard p
 
 .. note::
   Both **python2** and **python3** are supported.
+
+To use the package **cydnest**,  import it in a Python scirpt as 
+
+.. code-block:: python 
+
+  import cydnest
+
+Several Python scripts are provided in the tests subdirectory to illustrate its usage. 

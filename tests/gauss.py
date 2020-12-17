@@ -75,6 +75,6 @@ if rank == 0:
   fig.savefig("fig_gau.jpg")
   plt.show()
 
-  # do postprocess, plot 
+  # do postprocess, plot, show the properties of sampling 
   cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), doplot=True)
 
