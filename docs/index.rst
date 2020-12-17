@@ -22,7 +22,7 @@ Documentation
    :maxdepth: 1
    
    getting_started.rst
-   useage.rst
+   usage.rst
    tests.rst
 
 
