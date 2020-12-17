@@ -724,7 +724,7 @@ void update_level_assignment(unsigned int which)
   log_A += log_push(proposal) - log_push(level_assignments[which]);
 
   // enforce uniform exploration if levels are enough
-  if(size_levels == options.max_num_levels)
+  if(enough_levels(levels, size_levels))
     log_A += options.beta*log( (double)(levels[level_assignments[which]].tries +1)/ (levels[proposal].tries +1) );
 
   if(log_A > 0.0)
