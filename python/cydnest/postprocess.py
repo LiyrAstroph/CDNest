@@ -1,4 +1,5 @@
 #from DNest4 (https://github.com/eggplantbren/DNest3), developed by Brendon Brewer.
+#with modifications
 #
 
 import copy
@@ -23,7 +24,7 @@ def postprocess(sample_dir, sample_tag, doplot):
   print("do postprocess...")
   
   if doplot == True:
-    pdf = PdfPages(sample_dir + '/dnest' + sample_tag + '.pdf')
+    pdf = PdfPages(sample_dir + '/cydnest' + sample_tag + '.pdf')
 
   cut = 0;
   numResampleLogX=1
@@ -55,7 +56,7 @@ def postprocess(sample_dir, sample_tag, doplot):
   sample_info[idx, 0] = levels_orig.shape[0] - 1
   
   plt.figure(1)
-  plt.plot(sample_info[:,0], "k")
+  plt.plot(sample_info[:,0], "k", lw=1)
   plt.xlabel("Iteration")
   plt.ylabel("Level")
 
