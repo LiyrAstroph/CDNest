@@ -60,7 +60,7 @@ class Model(object):
         coords[i] = np.random.randn() * self.prior_info[i][1] + self.prior_info[0]
         wrap(coords[i], self.param_range[i][0], self.param_range[i][1])
       else: # LOG prior
-        coords[i] = np.log(uniform(self.param_range[i][0]), np.log(self.param_range[i][1]))
+        coords[i] = np.random.uniform(np.log(self.param_range[i][0]), np.log(self.param_range[i][1]))
         coords[i] = np.exp(coords[i])
 
     return coords
