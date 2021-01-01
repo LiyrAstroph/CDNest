@@ -52,7 +52,18 @@ class Model(object):
     """
     generate initial values of model parameters from priors
     """
-    return np.random.uniform(-5.12, 5.12,size=(self.num_params,))
+    coords = np.zeros(self.num_params)
+    for i in range(self.num_params):
+      if self.prior_type[i] == "Uniform":
+        coords[i] = np.random.uniform(self.param_range[i][0], self.param_range[i][1])
+      elif self.prior_type[i] == "Gaussian":
+        coords[i] = np.random.randn() * self.prior_info[i][1] + self.prior_info[0]
+        wrap(coords[i], self.param_range[i][0], self.param_range[i][1])
+      else: # LOG prior
+        coords[i] = np.log(uniform(self.param_range[i][0]), np.log(self.param_range[i][1]))
+        coords[i] = np.exp(coords[i])
+
+    return coords
 
   # users can define their own functions to perturb 
   # parameter values for sampling 
@@ -63,9 +74,23 @@ class Model(object):
     perturb the parameters
     """
     i = np.random.randint(self.num_params)
-    coords[i] += 10.0*randh()
-    coords[i] = wrap(coords[i], -5.12, 5.12)
-    return 0.0  
+    
+    LogH = 0.0   # prior ratio: ln(prior(new)/prior(old)) = ln(prior(new)) - ln(prior(old))
+    width = (self.param_range[i][1]-self.param_range[i][0])
+    if self.prior_type[i] == "Uniform":
+      coords[i] += width*randh()
+      coords[i] = wrap(coords[i], self.param_range[i][0], self.param_range[i][1])
+    elif self.prior_type[i] == "Gaussian":  
+      LogH -= ( -0.5* (coords[i] - self.prior_info[i][0])**2/self.prior_info[i][1]**2  ) # ln(Gaussian)
+      coords[i] += width*randh()
+      coords[i] = wrap(coords[i], self.param_range[i][0], self.param_range[i][1])
+      LogH += ( -0.5* (coords[i] - self.prior_info[i][0])**2/self.prior_info[i][1]**2  )
+    else:
+      LogH -= ( -np.log(coords[i]) )   # ln(1/x) = -ln(x)
+      coords[i] += width*randh()
+      coords[i] = wrap(coords[i], self.param_range[i][0], self.param_range[i][1])
+      LogH += ( -np.log(coords[i]) )
+    return LogH 
   
   def log_likelihood(self, coords):
     """
