@@ -18,6 +18,10 @@ cdef enum PRIOR_TYPE:
   GAUSSIAN=1
   LOG=2
 
+
+cdef extern from 'mpi-compat.h': 
+  pass
+
 # include declarations in PyFuncs.h
 cdef extern from "PyFuncs.h":
   void set_py_self (object py_self) 

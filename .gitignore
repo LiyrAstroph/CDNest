@@ -9,6 +9,7 @@ cydnest/*
 !python/
 !python/cydnest/cydnest.pyx
 !python/cydnest/cydnest.pxd
+!python/cydnest/mpi-compat.h
 !python/cydnest/PyFuncs.h
 !python/cydnest/__init__.py
 !python/cydnest/test.py
