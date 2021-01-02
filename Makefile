@@ -1,9 +1,11 @@
 SHELL=/bin/bash
 
-ifndef __MPICC__  # passed from python setup.py
-  $(info "CC not defined, using mpicc")
-  CC       = mpicc 
+# if CC is the default value (cc), then CC=mpicc
+ifeq (${CC}, cc)
+  $(info use mpicc)
+  CC       = mpicc
 endif
+$(info  CC = $(CC))
 
 OPTIMIZE = -O2 -Wall -finline-functions -fcommon
 #OPTIMIZE += -DDebug

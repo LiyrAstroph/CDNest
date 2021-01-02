@@ -15,10 +15,7 @@ homedir = os.environ['HOME']
 
 # if CC is not set, use the default value
 if not os.environ.get("CC"):
-  os.environ["__MPICC__"] = "mpicc"
   os.environ["CC"] = "mpicc"
-else:
-  os.environ["__MPICC__"] = os.environ.get("CC")
 
 include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),]
 library_dirs = [basedir,]
