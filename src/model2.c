@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <string.h>
 #include <mpi.h>
 #include <gsl/gsl_rng.h>
 
