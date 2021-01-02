@@ -44,7 +44,9 @@ PyObject* get_npy_coords (void *params)
     exit(0);
   }
   double* data = (double*)PyArray_DATA(c);
-  for (int i = 0; i < size_; ++i) data[i] = pm[i];
+  memcpy(data, pm, size_*sizeof(double));
+  //int i;
+  //for (i = 0; i < size_; ++i) data[i] = pm[i];
   return c;
 }
 
@@ -73,10 +75,12 @@ void py_from_prior(void *params)
   }
   
   double* data = (double*)PyArray_DATA(rarray);
-  for (int i = 0; i < size_; ++i)
-  { 
-    pm[i] = data[i];
-  }
+  memcpy(pm, data, size_*sizeof(double));
+  //int i;
+  //for (i = 0; i < size_; ++i)
+  //{ 
+  //  pm[i] = data[i];
+  //}
 
   Py_DECREF(result);
   Py_DECREF(rarray);
@@ -112,7 +116,9 @@ double py_perturb (void *params)
   }
 
   double* data = (double*)PyArray_DATA(c);
-  for (int i = 0; i < size_; ++i) pm[i] = data[i];
+  memcpy(pm, data, size_*sizeof(double));
+  //int i;
+  //for (i = 0; i < size_; ++i) pm[i] = data[i];
   
   Py_DECREF(c);
   return log_H;
