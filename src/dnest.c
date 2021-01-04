@@ -29,6 +29,9 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   MPI_Comm_rank(MPI_COMM_WORLD, &dnest_thistask);
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
   
+  if(dnest_thistask == dnest_root)
+    printf("Use %d cores.\n", dnest_totaltask);
+
   dnest_check_fptrset(fptrset);
   
   // cope with argv
