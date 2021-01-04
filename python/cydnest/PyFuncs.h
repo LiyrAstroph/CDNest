@@ -94,6 +94,7 @@ double py_perturb (void *params)
   PyObject* c = get_npy_coords(params);
   
   // Call the Python method and get the Python return value.
+  // "O" means the argument is a pyobject
   PyObject* result = PyObject_CallMethod(py_self_, "perturb", "O", c);
   
   if (result == NULL || PyErr_Occurred() != NULL) 
@@ -132,7 +133,40 @@ double py_log_likelihood(void *params)
   PyObject* c = get_npy_coords(params);
   
   // Call the Python method and get the Python return value.
+  // "O" means the argument is a pyobject
   PyObject* result = PyObject_CallMethod(py_self_, "log_likelihood", "O", c);
+  Py_DECREF(c);
+  if (result == NULL) 
+  {
+    PyErr_Print();
+    Py_XDECREF(result);
+    exit(0);
+    return -INFINITY;
+  }
+
+  // Parse as double.
+  double log_like = PyFloat_AsDouble(result);
+  if (PyErr_Occurred() != NULL) 
+  {
+    PyErr_Print();
+    Py_DECREF(result);
+    exit(0);
+    return -INFINITY;
+  }
+  
+  return log_like;
+}
+
+// Likelihood function
+double py_log_likelihood_initial(void *params) 
+{
+  if (size_ == 0) return 0.0;
+    
+  PyObject* c = get_npy_coords(params);
+  
+  // Call the Python method and get the Python return value.
+  // "O" means the argument is a pyobject
+  PyObject* result = PyObject_CallMethod(py_self_, "log_likelihood_initial", "O", c);
   Py_DECREF(c);
   if (result == NULL) 
   {
@@ -169,6 +203,32 @@ void py_print_particle(FILE *fp, void *params)
 
 void py_restart_action(int iflag)
 {
+  return;
+}
+
+void py_accept_action()
+{
+  PyObject* result = PyObject_CallMethod(py_self_, "accept_action", NULL);
+  if (result == NULL || PyErr_Occurred() != NULL) 
+  {
+    PyErr_Print();
+    Py_XDECREF(result);
+    exit(0);
+    return 0.0;
+  }
+  return;
+}
+
+void py_kill_action(int i, int i_copy)
+{
+  PyObject* result = PyObject_CallMethod(py_self_, "kill_action", "ii", i, i_copy);
+  if (result == NULL || PyErr_Occurred() != NULL) 
+  {
+    PyErr_Print();
+    Py_XDECREF(result);
+    exit(0);
+    return 0.0;
+  }
   return;
 }
 #endif

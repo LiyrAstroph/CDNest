@@ -23,6 +23,12 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
+def get_which_particle_update():
+  """
+  return which particle is being updated
+  """
+  return dnest_get_which_particle_update()
+
 cdef class sampler:
   """
   a dnest mcmc sampler.
@@ -76,11 +82,11 @@ cdef class sampler:
       self.param_range[i*2+1] = model.param_range[i][1]
       self.prior_info[i*2+0] = model.prior_info[i][0]
       self.prior_info[i*2+1] = model.prior_info[i][1]
-      if model.prior_type[i] == 'Uniform' or model.prior_type[i] == 'uniform':
+      if model.prior_type[i].lower() == 'uniform':
         self.prior_type[i] = UNIFORM
-      elif model.prior_type[i] == 'Gaussian' or model.prior_type[i] == 'gaussian':
+      elif model.prior_type[i].lower() == 'gaussian':
         self.prior_type[i] = GAUSSIAN
-      elif model.prior_type[i] == 'Log' or model.prior_type[i] == 'log':
+      elif model.prior_type[i].lower() == 'log':
         self.prior_type[i] = LOG
       else:
         raise ValueError("Unable to identify prior type.")
@@ -149,14 +155,24 @@ cdef class sampler:
     # setup function set
     self.fptrset = dnest_malloc_fptrset(); 
     self.fptrset.log_likelihoods_cal = py_log_likelihood
-    self.fptrset.log_likelihoods_cal_initial = py_log_likelihood
+
+    if hasattr(model, "log_likelihood_initial") and callable(model.log_likelihood_initial):
+      self.fptrset.log_likelihoods_cal_initial = py_log_likelihood_initial
+    else:
+      self.fptrset.log_likelihoods_cal_initial = py_log_likelihood
+
     self.fptrset.log_likelihoods_cal_restart = py_log_likelihood
+
     self.fptrset.print_particle = py_print_particle
     self.fptrset.restart_action = py_restart_action
     if hasattr(model, "from_prior") and callable(model.from_prior):
       self.fptrset.from_prior = py_from_prior
     if hasattr(model, "perturb") and callable(model.perturb):
       self.fptrset.perturb = py_perturb
+    if hasattr(model, "accept_action") and callable(model.accept_action):
+      self.fptrset.accept_action = py_accept_action
+    if hasattr(model, "kill_action") and callable(model.kill_action):
+      self.fptrset.kill_action = py_kill_action
     
     return
   
@@ -180,7 +196,7 @@ cdef class sampler:
     return self.sample_postfix.decode('UTF-8')
 
   def get_sample_dir(self):
-    return self.sample_dir.decode('UTF-8')
+    return self.sample_dir.decode('UTF-8')    
 
   def save_options_file(self):
     """

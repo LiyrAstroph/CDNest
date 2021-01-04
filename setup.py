@@ -14,6 +14,7 @@ basedir = os.path.dirname(os.path.abspath(__file__))
 homedir = os.environ['HOME']
 
 # if CC is not set, use the default value
+
 if not os.environ.get("CC"):
   os.environ["CC"] = "mpicc"
 

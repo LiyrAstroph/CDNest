@@ -29,8 +29,11 @@ cdef extern from "PyFuncs.h":
   void py_from_prior(void *pm)
   double py_perturb(void *pm)
   double py_log_likelihood(void *pm) 
+  double py_log_likelihood_initial(void *pm) 
   void py_print_particle(FILE *fp, void *pm)
   void py_restart_action(int iflag)
+  void py_accept_action()
+  void py_kill_action(int i, int i_copy)
   void py_get_param_range(object py_param_range, double *param_range)
   void py_get_prior_info(object py_prior_info, double *prior_info)
   void py_get_prior_type(object py_prior_type, int *prior_type)
@@ -41,6 +44,8 @@ ctypedef double (*log_likelihoods_cal_type)(void *)
 ctypedef double (*perturb_type)(void *)
 ctypedef void (*print_particle_type)(FILE *, void*)
 ctypedef void (*restart_action_type)(int)
+ctypedef void (*accept_action_type)()
+ctypedef void (*kill_action_type)(int, int)
 
 # include declarations from dnestvars.h
 cdef extern from "dnest.h":
@@ -49,6 +54,7 @@ cdef extern from "dnest.h":
   double dnest_randn()
   double wrap(double *x, double xmin, double xmax)
   int dnest_rand_int(int size)
+  int dnest_get_which_particle_update()
 
   # function set
   ctypedef struct DNestFptrSet:
@@ -59,6 +65,8 @@ cdef extern from "dnest.h":
     perturb_type perturb
     print_particle_type print_particle
     restart_action_type restart_action
+    accept_action_type accept_action
+    kill_action_type kill_action
   
   DNestFptrSet * dnest_malloc_fptrset()
   void dnest_free_fptrset(DNestFptrSet *fptrset)
