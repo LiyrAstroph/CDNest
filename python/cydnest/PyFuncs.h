@@ -214,7 +214,7 @@ void py_accept_action()
     PyErr_Print();
     Py_XDECREF(result);
     exit(0);
-    return 0.0;
+    return;
   }
   return;
 }
@@ -227,7 +227,7 @@ void py_kill_action(int i, int i_copy)
     PyErr_Print();
     Py_XDECREF(result);
     exit(0);
-    return 0.0;
+    return;
   }
   return;
 }
