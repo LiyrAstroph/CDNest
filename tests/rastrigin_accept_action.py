@@ -139,13 +139,17 @@ class Model(object):
     """
     calculate likelihood at initial start
     """    
-    return -(10.0*2 + (coords[0]**2 - 10*np.cos(2.0*np.pi*coords[0])) + (coords[1]**2 - 10*np.cos(2.0*np.pi*coords[1])) )
+    self.which_particle_update = cydnest.get_which_particle_update()
+    self.value_accept[self.which_particle_update] = coords[0]**2 - 10*np.cos(2.0*np.pi*coords[0])
+    value =  self.value_accept[self.which_particle_update]
+    return -(10.0*2 + (value) + (coords[1]**2 - 10*np.cos(2.0*np.pi*coords[1])) )
 
   def log_likelihood(self, coords):
     """
     calculate likelihood
     """
     # get which particle is being updated, and save it to self model
+
     self.which_particle_update = cydnest.get_which_particle_update()
     
     value = 0.0
