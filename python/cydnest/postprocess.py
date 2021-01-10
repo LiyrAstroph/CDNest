@@ -20,7 +20,7 @@ def logdiffexp(x1, x2):    # log( exp(x1) - exp(x2))
   result = np.log(np.exp(xx1) - np.exp(xx2)) + biggest
   return result
 
-def postprocess(sample_dir, sample_tag, doplot):
+def postprocess(sample_dir, sample_tag, temperature=1.0, doplot=True):
   print("do postprocess...")
   
   if doplot == True:
@@ -30,7 +30,6 @@ def postprocess(sample_dir, sample_tag, doplot):
   numResampleLogX=1
   compression_bias_min=1.
   compression_scatter=0.
-  temperature = 1.0
   zoom_in = True
   moreSamples = 1
   

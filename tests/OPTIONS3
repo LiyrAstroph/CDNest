@@ -2,7 +2,7 @@
 # Lines beginning with '#' are regarded as comments and neglected.
 
 NumberParticles          5      # Number of particles
-NewLevelIntervalFactor   5      # new level interval
-ThreadStepsFactor        100    # threadSteps - how many steps each thread should do independently before communication
+NewLevelIntervalFactor   5.0      # new level interval
+ThreadStepsFactor        100.0    # threadSteps - how many steps each thread should do independently before communication
 MaxNumberSaves           50000  # Maximum number of saves 
 PTol                     0.1    # Likelihood tolerance in loge

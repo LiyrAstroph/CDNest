@@ -147,4 +147,4 @@ if rank == 0:
   plt.show()
 
   # do postprocess, plot, show the properties of sampling 
-  cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), doplot=True)
+  cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), temperature=1.0, doplot=True)

@@ -1112,17 +1112,17 @@ void options_load()
   strcpy(pardict[nt].tag, "NewLevelIntervalFactor");
   pardict[nt].addr = &options.new_level_interval_factor;
   pardict[nt].isset = 0;
-  pardict[nt++].id = INT;
+  pardict[nt++].id = DOUBLE;
 
   strcpy(pardict[nt].tag, "SaveIntervalFactor");
   pardict[nt].addr = &options.save_interval_factor;
   pardict[nt].isset = 0;
-  pardict[nt++].id = INT;
+  pardict[nt++].id = DOUBLE;
 
   strcpy(pardict[nt].tag, "ThreadStepsFactor");
   pardict[nt].addr = &options.thread_steps_factor;
   pardict[nt].isset = 0;
-  pardict[nt++].id = INT;
+  pardict[nt++].id = DOUBLE;
 
   strcpy(pardict[nt].tag, "MaxNumberLevels");
   pardict[nt].addr = &options.max_num_levels;
