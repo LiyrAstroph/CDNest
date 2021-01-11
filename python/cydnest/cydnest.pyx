@@ -50,7 +50,7 @@ cdef class sampler:
   cdef int rank, size
   cdef int num_particles, max_num_saves, max_num_levels
   cdef int new_level_interval, save_interval, thread_steps
-  cdef int thread_steps_factor, new_level_interval_factor, save_interval_factor
+  cdef double thread_steps_factor, new_level_interval_factor, save_interval_factor
   cdef double beta, Lambda, max_ptol
   
   def __cinit__(self, model, sample_dir="./", sample_tag="", sample_postfix="", 
