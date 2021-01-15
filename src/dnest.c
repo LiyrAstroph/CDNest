@@ -1321,6 +1321,7 @@ void options_load(char *optfile, DNestOptions *opts)
   fprintf(fp, "StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n", options.beta);
   fprintf(fp, "MaxNumberSaves           %d    # Maximum number of saves\n", options.max_num_saves);
   fprintf(fp, "PTol                     %.1e  # Likelihood tolerance in loge\n", options.max_ptol);
+  fprintf(fp, "ThreadSteps              %d   #\n", options.thread_steps);
   fprintf(fp, "SaveInterval             %d   #\n", options.save_interval);
   fprintf(fp, "NewLevelInterval         %d  #\n", options.new_level_interval);
   fprintf(fp, "SampleFile               %s  #\n", options.sample_file);
