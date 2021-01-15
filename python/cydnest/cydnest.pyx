@@ -23,6 +23,8 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
+import os
+
 def get_which_particle_update():
   """
   return which particle is being updated
@@ -214,6 +216,7 @@ cdef class sampler:
     fp.write("StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n"%(self.beta))
     fp.write("MaxNumberSaves           %d    # Maximum number of saves\n"%(self.max_num_saves))
     fp.write("PTol                     %.1e  # Likelihood tolerance in loge"%(self.max_ptol))
+    os.fsync(fp)
     fp.close()
   
   def run(self):
