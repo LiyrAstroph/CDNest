@@ -13,6 +13,7 @@ from __future__ import division
 from libc.string cimport *  
 from cpython.mem cimport PyMem_Malloc, PyMem_Free, PyMem_Realloc
 from cython.operator cimport dereference
+from posix.unistd cimport fsync
 
 #cimport python_unicode
 from mpi4py import MPI
@@ -22,8 +23,6 @@ from mpi4py.libmpi cimport *
 import numpy as np
 cimport numpy as np
 np.import_array()
-
-import os
 
 def get_which_particle_update():
   """
@@ -216,7 +215,7 @@ cdef class sampler:
     fp.write("StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n"%(self.beta))
     fp.write("MaxNumberSaves           %d    # Maximum number of saves\n"%(self.max_num_saves))
     fp.write("PTol                     %.1e  # Likelihood tolerance in loge"%(self.max_ptol))
-    os.fsync(fp)
+    fsync(fp)
     fp.close()
   
   def run(self):
