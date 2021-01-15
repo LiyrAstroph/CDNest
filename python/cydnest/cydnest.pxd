@@ -68,8 +68,18 @@ cdef extern from "dnest.h":
     accept_action_type accept_action
     kill_action_type kill_action
   
+  ctypedef struct DNestOptions:
+    unsigned int num_particles
+    unsigned int new_level_interval
+    unsigned int save_interval
+    unsigned int thread_steps
+    unsigned int max_num_levels
+    double lam, beta, max_ptol
+    unsigned int max_num_saves
+    double thread_steps_factor, new_level_interval_factor, save_interval_factor
+
   DNestFptrSet * dnest_malloc_fptrset()
   void dnest_free_fptrset(DNestFptrSet *fptrset)
   double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params, 
                double *param_range, int *prior_type, double *prior_info, 
-               char *sample_dir, char *optfile, void *args)
+               char *sample_dir, char *optfile, DNestOptions *opts, void *args)

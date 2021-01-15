@@ -22,7 +22,7 @@ FILE *fsample, *fsample_info;
 const gsl_rng_type * dnest_gsl_T;
 gsl_rng * dnest_gsl_r;
 
-Options options;
+DNestOptions options;
 char options_file[STR_MAX_LENGTH];
 
 // sampler
@@ -75,10 +75,10 @@ void wrap_limit(double *x, double min, double max);
 int mod_int(int y, int x);
 int dnest_cmp(const void *pa, const void *pb);
 
-void options_load();
+void options_load(char *optfile, DNestOptions *opts);
 void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
            double *param_range, int *prior_type, double *prior_info, 
-           char *sample_dir, char *optfile, void *args);
+           char *sample_dir, char *optfile, DNestOptions *opts, void *args);
 void finalise();
 
 void dnest_run();
@@ -94,7 +94,7 @@ void save_limits();
 void kill_lagging_particles();
 void renormalise_visits();
 void recalculate_log_X();
-void dnest_postprocess(double temperature);
+void dnest_postprocess(double temperature, char *optfile, DNestOptions *opts);
 void postprocess(double temperature);
 void initialize_output_file();
 void close_output_file();

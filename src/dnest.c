@@ -22,9 +22,9 @@
 
 double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
              double *param_range, int *prior_type, double *prior_info,
-             char *sample_dir, char *optfile, void *args)
+             char *sample_dir, char *optfile, DNestOptions *opts, void *args)
 {
-  int opt;
+  int optid;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &dnest_thistask);
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
@@ -49,9 +49,9 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
     opterr = 0;
     optind = 0;
-    while( (opt = getopt(argc, argv, "r:s:pt:clx:g:")) != -1)
+    while( (optid = getopt(argc, argv, "r:s:pt:clx:g:")) != -1)
     {
-      switch(opt)
+      switch(optid)
       {
         case 'r':
           dnest_flag_restart = 1;
@@ -113,11 +113,11 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
-  setup(argc, argv, fptrset, num_params, param_range, prior_type, prior_info, sample_dir, optfile, args);
+  setup(argc, argv, fptrset, num_params, param_range, prior_type, prior_info, sample_dir, optfile, opts, args);
 
   if(dnest_flag_postprc == 1)
   {
-    dnest_postprocess(dnest_post_temp);
+    dnest_postprocess(dnest_post_temp, optfile, opts);
     MPI_Barrier(MPI_COMM_WORLD);
     finalise();
     return post_logz;
@@ -125,7 +125,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
   if(dnest_flag_sample_info == 1)
   {
-    dnest_postprocess(dnest_post_temp);
+    dnest_postprocess(dnest_post_temp, optfile, opts);
     finalise();
     return post_logz;
   }
@@ -137,7 +137,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   dnest_run();
   close_output_file();
 
-  dnest_postprocess(dnest_post_temp);
+  dnest_postprocess(dnest_post_temp, optfile, opts);
 
   finalise();
   
@@ -145,11 +145,11 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 }
 
 // postprocess, calculate evidence, generate posterior sample.
-void dnest_postprocess(double temperature)
+void dnest_postprocess(double temperature,char *optfile, DNestOptions *opts)
 {
   if(dnest_thistask == dnest_root)
   {
-    options_load();
+    options_load(optfile, opts);
     postprocess(temperature);
   }
   MPI_Bcast(&post_logz, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
@@ -765,7 +765,7 @@ double log_push(unsigned int which_level)
     return 0.0;
 
   int i = which_level - (size_levels - 1);
-  return ((double)i)/options.lambda;
+  return ((double)i)/options.lam;
 }
 
 bool enough_levels(Level *l, int size_l)
@@ -852,7 +852,7 @@ void close_output_file()
 
 void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
            double *param_range, int *prior_type, double *prior_info,
-           char *sample_dir, char *optfile, void *args)
+           char *sample_dir, char *optfile, DNestOptions *opts, void *args)
 {
   int i, j;
 
@@ -908,12 +908,12 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
   // read options
   if(dnest_thistask == dnest_root)
-    options_load();
-  MPI_Bcast(&options, sizeof(Options), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
+    options_load(optfile, opts);
+  MPI_Bcast(&options, sizeof(DNestOptions), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   //dnest_post_temp = 1.0;
   compression = exp(1.0);
-  regularisation = options.new_level_interval*sqrt(options.lambda);
+  regularisation = options.new_level_interval*sqrt(options.lam);
   save_to_disk = true;
 
   // particles
@@ -1092,134 +1092,151 @@ int dnest_search_pardict(DNestPARDICT *pardict, int num_pardict, char *tag)
   return num_pardict+1;
 }
 
-void options_load()
+void options_load(char *optfile, DNestOptions *opts)
 {
-  DNestPARDICT *pardict;
-  int num_pardict;
-  pardict = malloc(10 * sizeof(DNestPARDICT));
-  enum TYPE {INT, DOUBLE, STRING};
-
-  FILE *fp;
-  char str[BUF_MAX_LENGTH], buf1[BUF_MAX_LENGTH], buf2[BUF_MAX_LENGTH], buf3[BUF_MAX_LENGTH];
-
-  int i, j, nt, idx;
-  nt = 0;
-  strcpy(pardict[nt].tag, "NumberParticles");
-  pardict[nt].addr = &options.num_particles;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = INT;
-
-  strcpy(pardict[nt].tag, "NewLevelIntervalFactor");
-  pardict[nt].addr = &options.new_level_interval_factor;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = DOUBLE;
-
-  strcpy(pardict[nt].tag, "SaveIntervalFactor");
-  pardict[nt].addr = &options.save_interval_factor;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = DOUBLE;
-
-  strcpy(pardict[nt].tag, "ThreadStepsFactor");
-  pardict[nt].addr = &options.thread_steps_factor;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = DOUBLE;
-
-  strcpy(pardict[nt].tag, "MaxNumberLevels");
-  pardict[nt].addr = &options.max_num_levels;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = INT;
-
-  strcpy(pardict[nt].tag, "BacktrackingLength");
-  pardict[nt].addr = &options.lambda;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = DOUBLE;
- 
-  strcpy(pardict[nt].tag, "StrengthEqualPush");
-  pardict[nt].addr = &options.beta;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = DOUBLE;
-
-  strcpy(pardict[nt].tag, "MaxNumberSaves");
-  pardict[nt].addr = &options.max_num_saves;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = INT;
-
-  strcpy(pardict[nt].tag, "PTol");
-  pardict[nt].addr = &options.max_ptol;
-  pardict[nt].isset = 0;
-  pardict[nt++].id = DOUBLE;
+  if(strlen(optfile) > 0)
+  {
+    DNestPARDICT *pardict;
+    int num_pardict;
+    pardict = malloc(10 * sizeof(DNestPARDICT));
+    enum TYPE {INT, DOUBLE, STRING};
   
-  num_pardict = nt;
-
-  /* default values */
-  options.new_level_interval_factor = 2;
-  options.save_interval_factor = options.new_level_interval_factor;
-  options.thread_steps_factor = 10;
-  options.num_particles = 1;
-  options.max_num_levels = 0;
-  options.lambda = 10.0;
-  options.beta = 100.0;
-  options.max_ptol = 0.1;
-  options.max_num_saves = 10000;
+    FILE *fp;
+    char str[BUF_MAX_LENGTH], buf1[BUF_MAX_LENGTH], buf2[BUF_MAX_LENGTH], buf3[BUF_MAX_LENGTH];
+  
+    int i, j, nt, idx;
+    nt = 0;
+    strcpy(pardict[nt].tag, "NumberParticles");
+    pardict[nt].addr = &options.num_particles;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = INT;
+  
+    strcpy(pardict[nt].tag, "NewLevelIntervalFactor");
+    pardict[nt].addr = &options.new_level_interval_factor;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = DOUBLE;
+  
+    strcpy(pardict[nt].tag, "SaveIntervalFactor");
+    pardict[nt].addr = &options.save_interval_factor;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = DOUBLE;
+  
+    strcpy(pardict[nt].tag, "ThreadStepsFactor");
+    pardict[nt].addr = &options.thread_steps_factor;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = DOUBLE;
+  
+    strcpy(pardict[nt].tag, "MaxNumberLevels");
+    pardict[nt].addr = &options.max_num_levels;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = INT;
+  
+    strcpy(pardict[nt].tag, "BacktrackingLength");
+    pardict[nt].addr = &options.lam;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = DOUBLE;
    
-  fp = fopen(options_file, "r");
-  if(fp == NULL)
-  {
-    fprintf(stderr, "# ERROR: Cannot open options file %s.\n", options_file);
-    exit(0);
-  }
+    strcpy(pardict[nt].tag, "StrengthEqualPush");
+    pardict[nt].addr = &options.beta;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = DOUBLE;
   
-  while(!feof(fp))
-  {
-    sprintf(str,"empty");
-    fgets(str, 200, fp);
-    if(sscanf(str, "%s%s%s", buf1, buf2, buf3)<2)
-      continue;
-    if(buf1[0]=='%' || buf1[0] == '#')
-      continue;
-    for(i=0, j=-1; i<nt; i++)
-      if(strcmp(buf1, pardict[i].tag) == 0 && pardict[i].isset == 0)
-      {
-        j = i;
-        pardict[i].isset = 1;
-        //printf("%s %s\n", buf1, buf2);
-        break;
-      }
-    if(j >=0)
+    strcpy(pardict[nt].tag, "MaxNumberSaves");
+    pardict[nt].addr = &options.max_num_saves;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = INT;
+  
+    strcpy(pardict[nt].tag, "PTol");
+    pardict[nt].addr = &options.max_ptol;
+    pardict[nt].isset = 0;
+    pardict[nt++].id = DOUBLE;
+    
+    num_pardict = nt;
+  
+    /* default values */
+    options.new_level_interval_factor = 2;
+    options.save_interval_factor = options.new_level_interval_factor;
+    options.thread_steps_factor = 10;
+    options.num_particles = 1;
+    options.max_num_levels = 0;
+    options.lam = 10.0;
+    options.beta = 100.0;
+    options.max_ptol = 0.1;
+    options.max_num_saves = 10000;
+     
+    fp = fopen(options_file, "r");
+    if(fp == NULL)
     {
-      switch(pardict[j].id)
-      {
-        case DOUBLE:
-          *((double *) pardict[j].addr) = atof(buf2);
-          break;
-        case STRING:
-          strcpy(pardict[j].addr, buf2);
-          break;
-        case INT:
-          *((unsigned int *)pardict[j].addr) = (unsigned int) atof(buf2);
-          break;
-      }
-    }
-    else
-    {
-      fprintf(stderr, "# Error in file %s: Tag '%s' is not allowed or multiple defined.\n",
-                    options_file, buf1);
+      fprintf(stderr, "# ERROR: Cannot open options file %s.\n", options_file);
       exit(0);
     }
-  }
-  fclose(fp);
+    
+    while(!feof(fp))
+    {
+      sprintf(str,"empty");
+      fgets(str, 200, fp);
+      if(sscanf(str, "%s%s%s", buf1, buf2, buf3)<2)
+        continue;
+      if(buf1[0]=='%' || buf1[0] == '#')
+        continue;
+      for(i=0, j=-1; i<nt; i++)
+        if(strcmp(buf1, pardict[i].tag) == 0 && pardict[i].isset == 0)
+        {
+          j = i;
+          pardict[i].isset = 1;
+          //printf("%s %s\n", buf1, buf2);
+          break;
+        }
+      if(j >=0)
+      {
+        switch(pardict[j].id)
+        {
+          case DOUBLE:
+            *((double *) pardict[j].addr) = atof(buf2);
+            break;
+          case STRING:
+            strcpy(pardict[j].addr, buf2);
+            break;
+          case INT:
+            *((unsigned int *)pardict[j].addr) = (unsigned int) atof(buf2);
+            break;
+        }
+      }
+      else
+      {
+        fprintf(stderr, "# Error in file %s: Tag '%s' is not allowed or multiple defined.\n",
+                      options_file, buf1);
+        exit(0);
+      }
+    }
+    fclose(fp);
+  
+    /* check options */
+    idx = dnest_search_pardict(pardict, num_pardict, "SaveIntervalFactor");
+    if(pardict[idx].isset == 0)  /* if not set */
+    {
+      options.save_interval_factor = options.new_level_interval_factor;
+    }
 
-  /* check options */
-  idx = dnest_search_pardict(pardict, num_pardict, "SaveIntervalFactor");
-  if(pardict[idx].isset == 0)  /* if not set */
+    free(pardict);
+  }
+  else 
   {
-    options.save_interval_factor = options.new_level_interval_factor;
+    options.new_level_interval_factor = opts->new_level_interval_factor;
+    options.save_interval_factor = opts->save_interval_factor;
+    options.thread_steps_factor = opts->thread_steps_factor;
+    options.num_particles = opts->num_particles;
+    options.max_num_levels = opts->max_num_levels;
+    options.lam = opts->lam;
+    options.beta = opts->beta;
+    options.max_ptol = opts->max_ptol;
+    options.max_num_saves = opts->max_num_saves;
   }
-
+  
   options.thread_steps = dnest_num_params * options.thread_steps_factor * options.num_particles;
   options.new_level_interval =  dnest_totaltask * options.thread_steps * options.new_level_interval_factor;
   options.save_interval =  dnest_totaltask * options.thread_steps * options.save_interval_factor;
-
+  
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.sample_file);
   strcpy(options.sample_file, dnest_sample_dir);
@@ -1286,7 +1303,37 @@ void options_load()
     exit(0);
   }
 
-  free(pardict);
+  char fname[STR_MAX_LENGTH];
+  strcpy(fname, dnest_sample_dir);
+  strcat(fname, "/DNEST_OPTIONS");
+  FILE *fp = fopen(fname, "w");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# ERROR: Cannot write file %s.\n", fname);
+    exit(0);
+  }
+  fprintf(fp, "NumberParticles          %d  # Number of particles\n", options.num_particles);
+  fprintf(fp, "NewLevelIntervalFactor   %.2f  # New level interval factor\n", options.new_level_interval_factor);
+  fprintf(fp, "SaveIntervalFactor       %.2f  # Save interval factor\n", options.save_interval_factor);
+  fprintf(fp, "ThreadStepsFactor        %.2f  # ThreadSteps factor\n", options.thread_steps_factor);
+  fprintf(fp, "MaxNumberLevels          %d  # Maximum number of levels\n", options.max_num_levels);
+  fprintf(fp, "BacktrackingLength       %.1f  # Backtracking scale length\n", options.lam);
+  fprintf(fp, "StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n", options.beta);
+  fprintf(fp, "MaxNumberSaves           %d    # Maximum number of saves\n", options.max_num_saves);
+  fprintf(fp, "PTol                     %.1e  # Likelihood tolerance in loge\n", options.max_ptol);
+  fprintf(fp, "SaveInterval             %d   #\n", options.save_interval);
+  fprintf(fp, "NewLevelInterval         %d  #\n", options.new_level_interval);
+  fprintf(fp, "SampleFile               %s  #\n", options.sample_file);
+  fprintf(fp, "SampleInfoFile           %s  #\n", options.sample_info_file);
+  fprintf(fp, "SamplerStateFile         %s  #\n", options.sampler_state_file);
+  fprintf(fp, "PosteriorSampleFile      %s  #\n", options.posterior_sample_file);
+  fprintf(fp, "PosteriorSampleInfoFile  %s  #\n", options.posterior_sample_info_file);
+  fprintf(fp, "LevelsFile               %s  #\n", options.levels_file);
+  if(dnest_flag_limits == 1)
+    fprintf(fp, "LimitsFile               %s  #\n", options.limits_file);
+  fprintf(fp, "NumberCores              %d   # Number of cores\n", dnest_totaltask);
+  fprintf(fp, "NumberParameters         %d   # Number of parameters\n", dnest_num_params);
+  fclose(fp);
 }
 
 

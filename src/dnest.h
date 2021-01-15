@@ -16,6 +16,10 @@ extern "C" {
 #define DNEST_MINOR_VERSION 1
 #define DNEST_PATCH_VERSION 0
 
+#define STR_MAX_LENGTH (100)
+#define BUF_MAX_LENGTH (200)
+#define LEVEL_NUM_MAX (1000)
+
 typedef struct
 {
   void (*from_prior)(void *model);
@@ -29,6 +33,27 @@ typedef struct
   void (*accept_action)();
   void (*kill_action)(int i, int i_copy);
 }DNestFptrSet;
+
+// struct for options
+typedef struct
+{
+  unsigned int num_particles;
+  unsigned int new_level_interval;
+  unsigned int save_interval;
+  unsigned int thread_steps;
+  unsigned int max_num_levels;
+  double lam, beta, max_ptol;
+  unsigned int max_num_saves;
+  double thread_steps_factor, new_level_interval_factor, save_interval_factor;
+
+  char sample_file[STR_MAX_LENGTH];
+  char sample_info_file[STR_MAX_LENGTH];
+  char levels_file[STR_MAX_LENGTH];
+  char sampler_state_file[STR_MAX_LENGTH];
+  char posterior_sample_file[STR_MAX_LENGTH];
+  char posterior_sample_info_file[STR_MAX_LENGTH];
+  char limits_file[STR_MAX_LENGTH];
+}DNestOptions;
 
 extern double dnest_randh();
 extern double dnest_rand();
@@ -50,7 +75,7 @@ extern void dnest_free_fptrset(DNestFptrSet * fptrset);
 
 extern double dnest(int argc, char **argv, DNestFptrSet *fptrset,  int num_params,  
              double *param_range, int *prior_type, double *prior_info, 
-             char *sample_dir, char *optfile, void *args);
+             char *sample_dir, char *optfile, DNestOptions *opts, void *args);
              
 #ifdef __cplusplus
 }

@@ -173,7 +173,7 @@ sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.
 # The full argument lists look like:
 # sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, 
 #               num_particles=1, thread_steps_factor = 10, 
-#               max_num_levels = 0, Lambda = 10, beta = 100
+#               max_num_levels = 0, lam = 10, beta = 100
 #               new_level_interval_factor = 2, save_interval_factor = 2)
 #
 

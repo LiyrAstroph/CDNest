@@ -49,16 +49,13 @@ cdef class sampler:
   cdef char sample_postfix[200]
   cdef char sample_dir[200]
   cdef int rank, size
-  cdef int num_particles, max_num_saves, max_num_levels
-  cdef int new_level_interval, save_interval, thread_steps
-  cdef double thread_steps_factor, new_level_interval_factor, save_interval_factor
-  cdef double beta, Lambda, max_ptol
+  cdef DNestOptions *options
   
   def __cinit__(self, model, sample_dir="./", sample_tag="", sample_postfix="", 
                 num_particles=1, thread_steps_factor = 10, 
                 max_num_saves = 10000, max_num_levels = 0,
                 new_level_interval_factor = 2, save_interval_factor = 2,
-                Lambda = 10, beta = 100, ptol = 0.1):
+                lam = 10, beta = 100, ptol = 0.1):
     
     cdef int i
 
@@ -102,6 +99,7 @@ cdef class sampler:
     py_byte_string =sample_dir.encode('UTF-8')
     strcpy(self.sample_dir, py_byte_string)
     # options file
+    self.options = <DNestOptions *>PyMem_Malloc(sizeof(DNestOptions))
     if hasattr(model, "options_file"):
       py_byte_string = model.options_file.encode('UTF-8')
       strcpy(self.options_file, py_byte_string)
@@ -110,18 +108,15 @@ cdef class sampler:
       strcat(self.options_file, "/OPTIONS")
       strcat(self.options_file, self.sample_tag)
       # options for CDNest
-      self.num_particles = num_particles
-      self.thread_steps_factor = thread_steps_factor
-      self.new_level_interval_factor = new_level_interval_factor
-      self.save_interval_factor = save_interval_factor
-      self.thread_steps = thread_steps_factor * num_particles * self.num_params
-      self.new_level_interval = self.thread_steps * self.size * new_level_interval_factor
-      self.save_interval = self.thread_steps * self.size * save_interval_factor
-      self.max_num_saves = max_num_saves
-      self.max_num_levels = max_num_levels
-      self.Lambda = Lambda 
-      self.beta = beta
-      self.max_ptol = ptol
+      self.options.num_particles = num_particles
+      self.options.thread_steps_factor = thread_steps_factor
+      self.options.new_level_interval_factor = new_level_interval_factor
+      self.options.save_interval_factor = save_interval_factor
+      self.options.max_num_saves = max_num_saves
+      self.options.max_num_levels = max_num_levels
+      self.options.lam = lam
+      self.options.beta = beta
+      self.options.max_ptol = ptol
       # save option file
       self.save_options_file()
     
@@ -188,6 +183,8 @@ cdef class sampler:
     PyMem_Free(self.param_range)
     PyMem_Free(self.prior_type)
     PyMem_Free(self.prior_info)
+
+    PyMem_Free(self.options)
     return
   
   def get_sample_tag(self):
@@ -206,16 +203,17 @@ cdef class sampler:
     fp = open(self.options_file.decode('UTF-8'), "w")
     fp.write("# File containing parameters for DNest\n")
     fp.write("# Lines beginning with '#' are regarded as comments\n\n\n")
-    fp.write("NumberParticles          %d  # Number of particles\n"%(self.num_particles))
-    fp.write("NewLevelIntervalFactor   %.2f  # New level interval factor\n"%(self.new_level_interval_factor))
-    fp.write("SaveIntervalFactor       %.2f  # Save interval factor\n"%(self.save_interval_factor))
-    fp.write("ThreadStepsFactor        %.2f  # ThreadSteps factor\n"%(self.thread_steps_factor))
-    fp.write("MaxNumberLevels          %d  # Maximum number of levels\n"%(self.max_num_levels))
-    fp.write("BacktrackingLength       %.1f  # Backtracking scale length\n"%(self.Lambda))
-    fp.write("StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n"%(self.beta))
-    fp.write("MaxNumberSaves           %d    # Maximum number of saves\n"%(self.max_num_saves))
-    fp.write("PTol                     %.1e  # Likelihood tolerance in loge"%(self.max_ptol))
-    fsync(fp)
+    fp.write("NumberParticles          %d  # Number of particles\n"%(self.options.num_particles))
+    fp.write("NewLevelIntervalFactor   %.2f  # New level interval factor\n"%(self.options.new_level_interval_factor))
+    fp.write("SaveIntervalFactor       %.2f  # Save interval factor\n"%(self.options.save_interval_factor))
+    fp.write("ThreadStepsFactor        %.2f  # ThreadSteps factor\n"%(self.options.thread_steps_factor))
+    fp.write("MaxNumberLevels          %d  # Maximum number of levels\n"%(self.options.max_num_levels))
+    fp.write("BacktrackingLength       %.1f  # Backtracking scale length\n"%(self.options.lam))
+    fp.write("StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n"%(self.options.beta))
+    fp.write("MaxNumberSaves           %d    # Maximum number of saves\n"%(self.options.max_num_saves))
+    fp.write("PTol                     %.1e  # Likelihood tolerance in loge"%(self.options.max_ptol))
+    fp.flush()
+    fsync(fp.fileno())
     fp.close()
   
   def run(self):
@@ -224,7 +222,9 @@ cdef class sampler:
 
     the value of evidence is returned.
     """
+    # make options_file empty, so as to use self.options
+    strcpy(self.options_file, "")
     logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, 
                  self.param_range, self.prior_type, self.prior_info, 
-                 self.sample_dir, self.options_file, self.args)
+                 self.sample_dir, self.options_file, self.options, self.args)
     return logz
