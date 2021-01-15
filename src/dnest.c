@@ -1443,6 +1443,13 @@ void dnest_get_posterior_sample_file(char *fname)
   strcpy(fname, options.posterior_sample_file);
   return;
 }
+
+void dnest_get_limit(int ilevel, int jparam, double *limit1, double *limit2)
+{
+  *limit1 = limits[ilevel*dnest_num_params*2 + jparam * 2 + 0];
+  *limit2 = limits[ilevel*dnest_num_params*2 + jparam * 2 + 1];
+  return;
+}
 /* 
  * version check
  * 

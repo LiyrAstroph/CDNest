@@ -69,6 +69,7 @@ extern int dnest_check_version(char *verion_str);
 extern unsigned int dnest_get_which_num_saves();
 extern unsigned int dnest_get_count_saves();
 extern unsigned long long int dnest_get_count_mcmc_steps();
+extern void dnest_get_limit(int ilevel, int jparam, double *limit1, double *limit2);
 extern void dnest_check_fptrset(DNestFptrSet *fptrset);
 extern DNestFptrSet * dnest_malloc_fptrset();
 extern void dnest_free_fptrset(DNestFptrSet * fptrset);

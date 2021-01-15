@@ -30,6 +30,26 @@ def get_which_particle_update():
   """
   return dnest_get_which_particle_update()
 
+def get_which_level_update():
+  """
+  return which level is being updated
+  """
+  return dnest_get_which_level_update()
+
+def get_size_levels():
+  """
+  return size of levels
+  """
+  return dnest_get_size_levels()
+
+def get_limit(int ilevel, int jparam):
+  """
+  return limit of jparam at ilevel
+  """
+  cdef double limit1, limit2
+  dnest_get_limit(ilevel, jparam, &limit1, &limit2)
+  return (limit1, limit2)
+  
 cdef class sampler:
   """
   a dnest mcmc sampler.
@@ -50,12 +70,13 @@ cdef class sampler:
   cdef char sample_dir[200]
   cdef int rank, size
   cdef DNestOptions *options
-  
+  cdef bint flag_limits
+    
   def __cinit__(self, model, sample_dir="./", sample_tag="", sample_postfix="", 
                 num_particles=1, thread_steps_factor = 10, 
                 max_num_saves = 10000, max_num_levels = 0,
                 new_level_interval_factor = 2, save_interval_factor = 2,
-                lam = 10, beta = 100, ptol = 0.1):
+                lam = 10, beta = 100, ptol = 0.1, limits_on=False):
     
     cdef int i
 
@@ -123,9 +144,12 @@ cdef class sampler:
     # setup functions from model
     set_py_self(model)
     set_size_(model.num_params)
-    
+
+    # limits 
+    self.flag_limits = limits_on
+
     # setup argc and argv
-    cdef int narg = 8
+    cdef int narg = 11
     self.argv = <char **>PyMem_Malloc(narg*sizeof(char *))
     for i in range(narg):
       self.argv[i] = <char *>PyMem_Malloc(200*sizeof(char))
@@ -146,7 +170,9 @@ cdef class sampler:
     self.argc += 1
     strcpy(self.argv[self.argc], self.sample_postfix)
     self.argc += 1
-    
+    if self.flag_limits:
+      self.argv[self.argc] = '-l'
+      self.argc += 1
     
     # setup function set
     self.fptrset = dnest_malloc_fptrset(); 
@@ -174,7 +200,7 @@ cdef class sampler:
   
   def __cdealloc__(self):
     cdef int i
-    for i in range(4):
+    for i in range(11):
       PyMem_Free(self.argv[i])
     PyMem_Free(self.argv)
 
@@ -223,6 +249,28 @@ cdef class sampler:
     the value of evidence is returned.
     """
     # make options_file empty, so as to use self.options
+    strcpy(self.options_file, "")
+    logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, 
+                 self.param_range, self.prior_type, self.prior_info, 
+                 self.sample_dir, self.options_file, self.options, self.args)
+    return logz
+  
+  def restart(self, restart_file="restart_dnest.txt", max_num_saves = 20000,
+                    max_num_levels = None, ptol = None):
+    """
+    restart running
+    """
+    self.argv[self.argc] = '-r'
+    self.argc += 1
+    strcpy(self.argv[self.argc], restart_file.encode('UTF-8'))
+    self.argc += 1
+    
+    self.options.max_num_saves = max_num_saves
+    if max_num_levels:
+      self.options.max_num_levels = max_num_levels
+    if ptol:
+      self.options.max_ptol = ptol
+
     strcpy(self.options_file, "")
     logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, 
                  self.param_range, self.prior_type, self.prior_info, 

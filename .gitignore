@@ -17,6 +17,7 @@ cydnest/*
 !tests/gauss.py
 !tests/mulgauss.py
 !tests/rastrigin.py
+!tests/rastrigin_restart.py
 !tests/rastrigin_accept_action.py
 !tests/OPTIONS[1-3]
 !tests/postprocess.py

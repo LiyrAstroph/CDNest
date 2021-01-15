@@ -55,6 +55,9 @@ cdef extern from "dnest.h":
   double wrap(double *x, double xmin, double xmax)
   int dnest_rand_int(int size)
   int dnest_get_which_particle_update()
+  void dnest_get_limit(int ilevel, int jparam, double *limit1, double *limit2)
+  int dnest_get_size_levels()
+  int dnest_get_which_level_update()
 
   # function set
   ctypedef struct DNestFptrSet:
