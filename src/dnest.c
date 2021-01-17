@@ -1589,7 +1589,7 @@ void dnest_free_fptrset(DNestFptrSet * fptrset)
 
 void dnest_check_directory(char *sample_dir)
 {
-  /* check if ./data exists
+  /* check if sample_dir exists
    * if not, create it;
    * if exists, check if it is a directory;
    * if not, throw an error.*/
@@ -1599,7 +1599,7 @@ void dnest_check_directory(char *sample_dir)
   if(status != 0)
   {
     printf("================================\n"
-           "Directory %s not exist! pyCALI create it.\n", sample_dir);
+           "Directory %s not exist! create it.\n", sample_dir);
     status = mkdir(sample_dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     if(status!=0)
     {

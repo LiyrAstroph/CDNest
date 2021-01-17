@@ -231,7 +231,7 @@ cdef class sampler:
     cdef bint status = False
     if self.rank == 0:
       if not exists(sample_dir):
-        print("Directory %s does not exist! we create it.\n"%sample_dir)
+        print("Directory %s does not exist! create it.\n"%sample_dir)
         mkdir(sample_dir)
         status = True
       else:
