@@ -14,6 +14,7 @@
 #include <math.h>
 #include <float.h>
 #include <mpi.h>
+#include <sys/stat.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
@@ -859,6 +860,12 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   // root task.
   dnest_root = 0;
 
+  if(dnest_thistask == dnest_root)
+  {
+    dnest_check_directory(sample_dir);
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+
   // setup function pointers
   from_prior = fptrset->from_prior;
   log_likelihoods_cal = fptrset->log_likelihoods_cal;
@@ -1580,6 +1587,38 @@ void dnest_free_fptrset(DNestFptrSet * fptrset)
   return;
 }
 
+void dnest_check_directory(char *sample_dir)
+{
+  /* check if ./data exists
+   * if not, create it;
+   * if exists, check if it is a directory;
+   * if not, throw an error.*/
+  struct stat st;
+  int status;
+  status = stat(sample_dir, &st);
+  if(status != 0)
+  {
+    printf("================================\n"
+          "Directory %s not exist! pyCALI create it.\n", sample_dir);
+    status = mkdir(sample_dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if(status!=0)
+    {
+      printf("Cannot create %s\n"
+             "================================", sample_dir);
+    }
+  }
+  else
+  {
+    if(!S_ISDIR(st.st_mode))
+    {
+      printf("================================\n"
+             "%s is not a direcotry!\n"
+             "================================", sample_dir);
+      exit(-1);
+    }
+  }
+  return;
+}
 
 /*!
  *  Save sampler state for later restart. 

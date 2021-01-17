@@ -186,8 +186,8 @@ comm.Barrier()
 if rank == 0:
   print("Evidence:", logz)
 
-  psample = np.loadtxt(sampler.get_sample_dir() +"posterior_sample" + sampler.get_sample_tag() + ".txt")
-  psample_info = np.loadtxt(sampler.get_sample_dir() +"posterior_sample_info" + sampler.get_sample_tag() + ".txt")
+  psample = np.loadtxt(sampler.get_sample_dir() +"/posterior_sample" + sampler.get_sample_tag() + ".txt")
+  psample_info = np.loadtxt(sampler.get_sample_dir() +"/posterior_sample_info" + sampler.get_sample_tag() + ".txt")
 
   fig = plt.figure(figsize=(15, 12))
   ax = fig.add_subplot(111, projection='3d')

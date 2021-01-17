@@ -24,6 +24,9 @@ import numpy as np
 cimport numpy as np
 np.import_array()
 
+from os.path import exists, isfile, isdir
+from os import mkdir
+
 def get_which_particle_update():
   """
   return which particle is being updated
@@ -88,6 +91,8 @@ cdef class sampler:
     
     self.size  = MPI.COMM_WORLD.Get_size()
     self.rank  = MPI.COMM_WORLD.Get_rank()
+
+    self.check_directory(sample_dir)
 
     # setup options
     self.num_params = model.num_params
@@ -222,6 +227,26 @@ cdef class sampler:
   def get_sample_dir(self):
     return self.sample_dir.decode('UTF-8')    
 
+  def check_directory(self, sample_dir):
+    cdef bint status = False
+    if self.rank == 0:
+      if not exists(sample_dir):
+        print("Directory %s does not exist! we create it.\n"%sample_dir)
+        mkdir(sample_dir)
+        status = True
+      else:
+        if not isdir(sample_dir):
+          status = False
+          print("%s is not a directory!"%sample_dir)  
+        else:
+          status = True
+    
+    status = MPI.COMM_WORLD.bcast(status, root=0)
+    if not status:
+      exit()
+    
+    return
+  
   def save_options_file(self):
     """
     write out an OPTIONS file that CDNest needs to read in
@@ -242,9 +267,9 @@ cdef class sampler:
       fp.flush()
       fsync(fp.fileno())
       fp.close()
-      return 
-    else: 
-      return
+    
+    MPI.COMM_WORLD.Barrier()
+    return
   
   def run(self):
     """

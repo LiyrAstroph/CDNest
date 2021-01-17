@@ -62,7 +62,7 @@ comm.Barrier()
 # ouput evidence
 if rank == 0:
   print("Evidence:", logz)
-  sample = np.loadtxt(sampler.get_sample_dir() +"posterior_sample" + sampler.get_sample_tag() + ".txt")
+  sample = np.loadtxt(sampler.get_sample_dir() +"/posterior_sample" + sampler.get_sample_tag() + ".txt")
   fig = plt.figure()
   ax = fig.add_subplot(111)
   ax.hist(sample, bins=20, density=True, label='CDNest sample')
