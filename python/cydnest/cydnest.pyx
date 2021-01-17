@@ -226,21 +226,25 @@ cdef class sampler:
     """
     write out an OPTIONS file that CDNest needs to read in
     """
-    fp = open(self.options_file.decode('UTF-8'), "w")
-    fp.write("# File containing parameters for DNest\n")
-    fp.write("# Lines beginning with '#' are regarded as comments\n\n\n")
-    fp.write("NumberParticles          %d  # Number of particles\n"%(self.options.num_particles))
-    fp.write("NewLevelIntervalFactor   %.2f  # New level interval factor\n"%(self.options.new_level_interval_factor))
-    fp.write("SaveIntervalFactor       %.2f  # Save interval factor\n"%(self.options.save_interval_factor))
-    fp.write("ThreadStepsFactor        %.2f  # ThreadSteps factor\n"%(self.options.thread_steps_factor))
-    fp.write("MaxNumberLevels          %d  # Maximum number of levels\n"%(self.options.max_num_levels))
-    fp.write("BacktrackingLength       %.1f  # Backtracking scale length\n"%(self.options.lam))
-    fp.write("StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n"%(self.options.beta))
-    fp.write("MaxNumberSaves           %d    # Maximum number of saves\n"%(self.options.max_num_saves))
-    fp.write("PTol                     %.1e  # Likelihood tolerance in loge"%(self.options.max_ptol))
-    fp.flush()
-    fsync(fp.fileno())
-    fp.close()
+    if self.rank == 0:
+      fp = open(self.options_file.decode('UTF-8'), "w")
+      fp.write("# File containing parameters for DNest\n")
+      fp.write("# Lines beginning with '#' are regarded as comments\n\n\n")
+      fp.write("NumberParticles          %d  # Number of particles\n"%(self.options.num_particles))
+      fp.write("NewLevelIntervalFactor   %.2f  # New level interval factor\n"%(self.options.new_level_interval_factor))
+      fp.write("SaveIntervalFactor       %.2f  # Save interval factor\n"%(self.options.save_interval_factor))
+      fp.write("ThreadStepsFactor        %.2f  # ThreadSteps factor\n"%(self.options.thread_steps_factor))
+      fp.write("MaxNumberLevels          %d  # Maximum number of levels\n"%(self.options.max_num_levels))
+      fp.write("BacktrackingLength       %.1f  # Backtracking scale length\n"%(self.options.lam))
+      fp.write("StrengthEqualPush        %.1f  # Strength of effect to force histogram to equal push\n"%(self.options.beta))
+      fp.write("MaxNumberSaves           %d    # Maximum number of saves\n"%(self.options.max_num_saves))
+      fp.write("PTol                     %.1e  # Likelihood tolerance in loge"%(self.options.max_ptol))
+      fp.flush()
+      fsync(fp.fileno())
+      fp.close()
+      return 
+    else: 
+      return
   
   def run(self):
     """
