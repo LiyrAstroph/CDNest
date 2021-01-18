@@ -243,7 +243,7 @@ cdef class sampler:
     
     status = MPI.COMM_WORLD.bcast(status, root=0)
     if not status:
-      exit()
+      raise OSError()
     
     return
   
