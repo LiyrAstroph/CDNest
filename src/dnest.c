@@ -1363,18 +1363,18 @@ double mod(double y, double x)
   
 }
 
-void dnest_wrap(double *x, double min, double max)
+inline void dnest_wrap(double *x, double min, double max)
 {
   *x = mod(*x - min, max - min) + min;
 }
 
-void wrap_limit(double *x, double min, double max)
+inline void wrap_limit(double *x, double min, double max)
 {
 
   *x = fmax(fmin(*x, max), min);
 }
 
-int mod_int(int y, int x)
+inline int mod_int(int y, int x)
 {
   if(y >= 0)
     return y - (y/x)*x;
@@ -1382,22 +1382,22 @@ int mod_int(int y, int x)
     return (x-1) - mod_int(-y-1, x);
 }
 
-double dnest_randh()
+inline double dnest_randh()
 {
   return pow(10.0, 1.5 - 3.0*fabs(gsl_ran_tdist(dnest_gsl_r, 2))) * gsl_ran_ugaussian(dnest_gsl_r);
 }
 
-double dnest_rand()
+inline double dnest_rand()
 {
   return gsl_rng_uniform(dnest_gsl_r);
 }
 
-int dnest_rand_int(int size)
+inline int dnest_rand_int(int size)
 {
   return gsl_rng_uniform_int(dnest_gsl_r, size);
 }
 
-double dnest_randn()
+inline double dnest_randn()
 {
   return gsl_ran_ugaussian(dnest_gsl_r);
 }
@@ -1417,22 +1417,22 @@ int dnest_cmp(const void *pa, const void *pb)
 }
 
 
-int dnest_get_size_levels()
+inline int dnest_get_size_levels()
 {
   return size_levels;
 }
 
-int dnest_get_which_level_update()
+inline int dnest_get_which_level_update()
 {
   return dnest_which_level_update;
 }
 
-int dnest_get_which_particle_update()
+inline int dnest_get_which_particle_update()
 {
   return dnest_which_particle_update;
 }
 
-unsigned int dnest_get_which_num_saves()
+inline unsigned int dnest_get_which_num_saves()
 {
   return num_saves;
 }
@@ -1441,18 +1441,18 @@ unsigned int dnest_get_count_saves()
   return count_saves;
 }
 
-unsigned long long int dnest_get_count_mcmc_steps()
+inline unsigned long long int dnest_get_count_mcmc_steps()
 {
   return count_mcmc_steps;
 }
 
-void dnest_get_posterior_sample_file(char *fname)
+inline void dnest_get_posterior_sample_file(char *fname)
 {
   strcpy(fname, options.posterior_sample_file);
   return;
 }
 
-void dnest_get_limit(int ilevel, int jparam, double *limit1, double *limit2)
+inline void dnest_get_limit(int ilevel, int jparam, double *limit1, double *limit2)
 {
   *limit1 = limits[ilevel*dnest_num_params*2 + jparam * 2 + 0];
   *limit2 = limits[ilevel*dnest_num_params*2 + jparam * 2 + 1];
@@ -1581,7 +1581,7 @@ DNestFptrSet * dnest_malloc_fptrset()
   return fptrset;
 }
 
-void dnest_free_fptrset(DNestFptrSet * fptrset)
+inline void dnest_free_fptrset(DNestFptrSet * fptrset)
 {
   free(fptrset);
   return;
@@ -1942,7 +1942,7 @@ double dnest_perturb(void *model)
   return logH;
 }
 
-void dnest_print_particle(FILE *fp, const void *model)
+inline void dnest_print_particle(FILE *fp, const void *model)
 {
   int i;
   double *pm = (double *)model;
@@ -1972,17 +1972,17 @@ void dnest_read_particle(FILE *fp, void *model)
   return;
 }
 
-void dnest_restart_action(int iflag)
+inline void dnest_restart_action(int iflag)
 {
   return;
 }
 
-void dnest_accept_action()
+inline void dnest_accept_action()
 {
   return;
 }
 
-void dnest_kill_action(int i, int i_copy)
+inline void dnest_kill_action(int i, int i_copy)
 {
   return;
 }
