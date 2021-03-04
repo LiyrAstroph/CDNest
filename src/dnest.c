@@ -955,6 +955,13 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
     if(dnest_flag_limits == 1)
     {
       limits = malloc(options.max_num_levels * particle_offset_double * 2 * sizeof(double));
+      if(limits == NULL)
+      {
+        printf("Cannot allocate memory for limits.\n"
+               "This usually happens when both the numbers of parameters and levels are extremely large.\n"
+               "Please do not switch on '-l' option in argv passed to dnest.\n");
+        exit(EXIT_FAILURE);
+      }
       for(i=0; i<options.max_num_levels; i++)
       {
         for(j=0; j<particle_offset_double; j++)
@@ -967,6 +974,13 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
       if(dnest_thistask == dnest_root)
       {
         copies_of_limits = malloc( dnest_totaltask * options.max_num_levels * particle_offset_double * 2 * sizeof(double));
+        if(copies_of_limits == NULL)
+        {
+          printf("Cannot allocate memory for limits.\n"
+                 "This usually happens when both the numbers of parameters and levels are extremely large.\n"
+                 "Please do not switch on '-l' option in argv passed to dnest.\n");
+          exit(EXIT_FAILURE);
+        }
       }
     }
   }
