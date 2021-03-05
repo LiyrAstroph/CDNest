@@ -1781,7 +1781,7 @@ void dnest_restart()
     fread(&count_mcmc_steps, sizeof(int), 1, fp);
     fread(&size_levels_combine, sizeof(int), 1, fp);
     
-    /* consider that the newly input max_num_levels may be different from the save one */
+    /* consider that the newly input max_num_levels may be different from the saved size of levels */
     if(options.max_num_levels != 0)
     {
       if(size_levels_combine > options.max_num_levels)
@@ -1794,6 +1794,18 @@ void dnest_restart()
         size_levels = size_levels_combine;
       }
         
+    }
+    else  /* not input max_num_levels, directly use the saved size of levels */
+    {
+      if(size_levels_combine > LEVEL_NUM_MAX)
+      {
+        printf("# the saved size of levels %d exceeds LEVEL_NUM_MAX %d. \n", size_levels_combine, LEVEL_NUM_MAX);
+        exit(EXIT_FAILURE);
+      }
+      else
+      {
+        size_levels = size_levels_combine;
+      }
     }
     // read levels
     for(i=0; i<size_levels_combine; i++)
