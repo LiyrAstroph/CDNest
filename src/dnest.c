@@ -31,7 +31,11 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
   
   if(dnest_thistask == dnest_root)
-    printf("Use %d cores.\n", dnest_totaltask);
+  {
+    printf("#=======================================================\n");
+    printf("# Starting CDNest.\n");
+    printf("# Use %d cores.\n", dnest_totaltask);
+  }
 
   dnest_check_fptrset(fptrset);
   
@@ -169,6 +173,13 @@ void dnest_run()
     buf_size_above = malloc(dnest_totaltask * sizeof(int));  
     buf_displs = malloc(dnest_totaltask * sizeof(int));
   }
+
+  if(dnest_thistask == dnest_root)
+  {
+    printf("#=======================================================\n");
+    printf("# Starting diffusive nested sampling.\n");
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
 
   while(true)
   {
@@ -552,7 +563,7 @@ void save_particle()
   if(dnest_thistask == dnest_root)
   {
     if(count_saves%1 == 0)
-      printf("# Saving particle to disk. N= %d.\n", count_saves);
+      printf("#[%.1f\%] Saving particle to disk. N= %d.\n", 100.0*count_saves/options.max_num_saves, count_saves);
 
     whichtask = gsl_rng_uniform_int(dnest_gsl_r,dnest_totaltask);
   }
@@ -1109,7 +1120,10 @@ void finalise()
   }
 
   if(dnest_thistask == dnest_root)
-    printf("# Finalizing dnest.\n");
+  {
+    printf("# Finalizing CDNest.\n");
+    printf("#=======================================================\n");
+  }
 }
 
 int dnest_search_pardict(DNestPARDICT *pardict, int num_pardict, char *tag)
