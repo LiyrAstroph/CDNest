@@ -563,7 +563,7 @@ void save_particle()
   if(dnest_thistask == dnest_root)
   {
     if(count_saves%1 == 0)
-      printf("#[%.1f\%] Saving particle to disk. N= %d.\n", 100.0*count_saves/options.max_num_saves, count_saves);
+      printf("#[%.1f%%] Saving particle to disk. N= %d.\n", 100.0*count_saves/options.max_num_saves, count_saves);
 
     whichtask = gsl_rng_uniform_int(dnest_gsl_r,dnest_totaltask);
   }
