@@ -103,3 +103,28 @@ To run this test, using the following command:
 .. code-block:: bash
   
   mpiexec -n np python rastrigin.py
+
+Test V in Python --- gauss_plateau.py
+=====================================
+
+A 2D clipped Gaussian likelihood, defined as 
+
+.. math::
+
+  &L(x, y) = \frac{1}{2\pi} \exp\left(-\frac{x^2+y^2}{2} \right) ~for~ x^2+y^2 <= 4
+
+  &L(x, y) = \frac{1}{2\pi} \exp\left(- 2 \right) ~for~ x^2+y^2 > 4
+
+We set a uniform prior for both :math:`x` and :math:`y` in a range (-5, 5). The true 
+evidence is :math:`\log(Z) = -2 + \log(3/100)\approx-5.51`.  The evidence obtained 
+value by CDNest is -5.51.
+
+.. figure:: _static/fig_gauss_plateau.jpg 
+  :scale: 30%
+  :align: center
+
+To run this test, using the following command:
+
+  .. code-block:: bash
+    
+    mpiexec -n np python gauss_plateau.py

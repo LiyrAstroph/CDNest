@@ -15,6 +15,7 @@ cydnest/*
 !python/cydnest/test.py
 !python/cydnest/postprocess.py
 !tests/gauss.py
+!tests/gauss_plateau.py
 !tests/mulgauss.py
 !tests/rastrigin.py
 !tests/rastrigin_restart.py
