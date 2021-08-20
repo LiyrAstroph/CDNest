@@ -291,6 +291,8 @@ void postprocess(double temperature)
       //printf("%e %e %e\n", right, left, logdiffexp(right, left));
       
       logx_samples[logl_samples_thisLevel[j].id] = logx_samples_thisLevel[j];
+      //logp_samples[logl_samples_thisLevel[j].id] = log(0.5)  + logdiffexp(right, left);
+      //note here that do not need log(0.5), because logp_samples will be nomoralized below.
       logp_samples[logl_samples_thisLevel[j].id] = log(0.5)  + logdiffexp(right, left);
     }
   }
@@ -420,6 +422,21 @@ void postprocess(double temperature)
   for(i=0; i<num_ps; i++)
   {
     fprintf(fp, "%e\n", posterior_sample_info[i]);
+  }
+  fclose(fp);
+
+  //save sample weights
+  char fname[STR_MAX_LENGTH];
+  sprintf(fname, "%s/%s", dnest_sample_dir, "weights.txt");
+  fp = fopen(fname, "w");
+  if(fp == NULL)
+  {
+    fprintf(stderr, "# Error: Cannot open file %s.\n", fname);
+    exit(0);
+  }
+  for(i=0; i<num_samples; i++)
+  {
+    fprintf(fp, "%e %e %e\n", logx_samples[i], sample_info[i][1], exp(logP_samples[i]));
   }
   fclose(fp);
   

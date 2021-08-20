@@ -144,7 +144,8 @@ def postprocess(sample_dir, sample_tag, temperature=1.0, doplot=True):
         else:
           right = levels[i][0]
   
-        logp_samples[logl_samples_thisLevel[j][2]][z] = np.log(0.5) + logdiffexp(right, left)
+        #logp_samples[logl_samples_thisLevel[j][2]][z] = np.log(0.5) + logdiffexp(right, left)
+        logp_samples[logl_samples_thisLevel[j][2]][z] = logdiffexp(right, left)
   
     logl = sample_info[:,1]/temperature
     
@@ -204,7 +205,7 @@ def postprocess(sample_dir, sample_tag, temperature=1.0, doplot=True):
   w = P_samples
   w = w/np.max(w)
   
-  np.savetxt(sample_dir+'/weigths'+sample_tag+'.txt', w)
+  np.savetxt(sample_dir+'/weights'+sample_tag+'.txt', w)
   
   if doplot == True:
     pdf.close()
