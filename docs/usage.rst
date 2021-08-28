@@ -23,11 +23,47 @@ The statements in C/C++ look like
   fptrset_thismodel->restart_action = restart_action_model1;
   
   /* run dnest */
-  dnest(argc, argv, fptrset_thismodel, num_params, NULL, NULL, NULL, "./", "OPTIONS1", NULL);
+  dnest(argc, argv, fptrset_thismodel, num_params, NULL, NULL, NULL, "./", "OPTIONS1", NULL, NULL);
     
   /* free function memory */
   dnest_free_fptrset(fptrset_thismodel);
 
+Here, ``OPTIONS1`` specifies the name of the OPTIONS file, which usually looks like,::
+
+  # File containing parameters for DNest
+  # Lines beginning with '#' are regarded as comments
+  
+  
+  NumberParticles          1      # Number of particles
+  NewLevelIntervalFactor   2.00   # New level interval factor
+  ThreadStepsFactor        10.00  # ThreadSteps factor
+  MaxNumberSaves           20000    # Maximum number of saves
+  PTol                     1.0e-01  # Likelihood tolerance in loge
+
+  # Full options and their default values (if not specified) are:
+  # MaxNumberSaves           10000 #maximum number of saving
+  # PTol                     0.1   #likelihood tolerance in loge
+  # NumberParticles          1  #number of particles
+  # NewLevelIntervalFactor   2  #new level interval
+  # SaveIntervalFactor       2  #particular saving interval
+  # ThreadStepsFactor        10 #thread steps before communications between cores
+  # MaxNumberLevels          0  #maximum number of levels; unlimited for 0
+  # BacktrackingLength       10.0  #backforward tracking length (lambda)
+  # StrengthEqualPush        100.0 #strength to force equal push (beta)
+
+All lines are optional and if not specified, the default value will be used. 
+ 
+  * ``NumberParticles`` constrols the number of particles for each core.
+  * ``MaxNumberSaves`` constrols the number of saves, namely, the number of output parameter samples
+  * ``PTol`` constrols likelihood tolerance in loge 
+  * ``ThreadStepsFactor`` constrols the steps that each core run before all cores communicate, i.e., 
+    ThreadStep=ThreadStepsFactor * NumberParticles * NumberParameters
+  * ``NewLevelIntervalFactor`` constrol the steps for creating a new likelihood level, i.e., 
+    NewLevelInterval=NewLevelIntervalFactor * NumberCores * ThreadSteps
+  * ``SaveIntervalFactor`` controls the steps that all cores run for saving a sample, i.e.,
+    SaveInterval = SaveIntervalFactor * NumberCores * ThreadSteps
+  * ``BacktrackingLength`` controls the backforward tracking length (lambda in Brewer's paper)
+  * ``StrengthEqualPush`` controls strength to force equal push (beta in Brewer's paper)
 
 Python
 ======
