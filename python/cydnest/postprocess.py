@@ -168,7 +168,7 @@ def postprocess(sample_dir, sample_tag, temperature=1.0, doplot=True):
     lower -= 0.05*diff
     upper += 0.05*diff
     if zoom_in:
-      plt.ylim([lower, upper])
+      ax.set_ylim([lower, upper])
   
     xlim = plt.gca().get_xlim()
   
@@ -178,10 +178,17 @@ def postprocess(sample_dir, sample_tag, temperature=1.0, doplot=True):
     ax.set_xlabel('log(X)')
     ax.set_xlim(xlim)
 
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+    ax.text(xlim[0]+0.1*(xlim[1]-xlim[0]), ylim[1]-0.1*(ylim[1]-ylim[0]), 'T='+str(temperature))
+
     fig.align_ylabels()
 
     if doplot == True:
       pdf.savefig()
+    
+    plt.show()
+    plt.close()
   
   P_samples = np.mean(P_samples, 1)
   P_samples = P_samples/np.sum(P_samples)
@@ -194,8 +201,6 @@ def postprocess(sample_dir, sample_tag, temperature=1.0, doplot=True):
   print("log(Z) = " + str(logz_estimate) + " +- " + str(logz_error))
   print("Information = " + str(H_estimate) + " +- " + str(H_error) + " nats.")
   print("Effective sample size = " + str(ESS))
-  
-  plt.show()
   
   N = int(moreSamples*ESS)
   posterior_sample = np.zeros((N, sample.shape[1]))
