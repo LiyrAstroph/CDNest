@@ -128,3 +128,27 @@ To run this test, using the following command:
   .. code-block:: bash
     
     mpiexec -n np python gauss_plateau.py
+
+Test VI in Python --- cauchy.py
+===============================
+
+The 48-d Cauchy likelihood is defined as 
+
+.. math::
+  &L = \prod_{i=1}^{n} \frac{1}{2}\left[ {\rm Cauchy}(x_i|\mu, \sigma) + {\rm Cauchy}(x_i|-\mu, \sigma)\right] 
+
+  & \mu = 5, \sigma = 1, n=48
+
+We set a uniform prior over a range [-100, 100] for all the parameters. 
+The true evidence is :math:`\log(Z) = 48(-\ln(200) + \ln(2\tan^{-1}(100)/\pi)) \approx 254.626`. The obtained evidence 
+by CDNest is -254.654. 
+
+.. figure:: _static/fig_cauchy.jpg 
+  :scale: 50%
+  :align: center
+
+To run this test, using the following command:
+
+  .. code-block:: bash
+    
+    mpiexec -n np python cauchy.py
