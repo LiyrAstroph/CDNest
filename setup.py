@@ -9,24 +9,41 @@ from setuptools.command.install import install
 import subprocess
 import numpy
 import shutil
-
-basedir = os.path.dirname(os.path.abspath(__file__))
-homedir = os.environ['HOME']
+from glob import glob
+import pkgconfig
 
 # if CC is not set, use the default value
-
 if not os.environ.get("CC"):
   os.environ["CC"] = "mpicc"
 
-include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),]
-library_dirs = [basedir,]
+def configure_mpi():
+  """
+  get configurations of mpi
+  """
+  if pkgconfig.exists('mpich'):
+    mpiconf = pkgconfig.parse('mpich')
+  elif pkgconfig.exists('ompi'):
+    mpiconf = pkgconfig.parse('ompi')
+  else:
+    raise SystemError("Not found MPICH or OpenMPI installed.")
+
+  return mpiconf
+
+mpiconf = configure_mpi()
+
+basedir = os.path.dirname(os.path.abspath(__file__))
+homedir = os.environ['HOME']
+include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),] + mpiconf['include_dirs']
+library_dirs = [basedir] + mpiconf['library_dirs']
 
 if os.name == 'nt':  # Windows, assumming MSVC compiler
   libraries = ['dnest']
   compiler_args = ['/Ox', '/fp:fast']
+  link_args = []
 elif os.name == 'posix':  # UNIX, assumming GCC compiler
-  libraries = ['m', 'c', 'dnest', 'gsl', 'gslcblas']
-  compiler_args = ['-O3', '-ffast-math']
+  libraries = ['m', 'c', 'gsl', 'gslcblas',] + mpiconf['libraries']
+  compiler_args = ['-O3', '-ffast-math'] 
+  link_args = []
 
 try:
   from Cython.Build import cythonize
@@ -35,26 +52,26 @@ except ImportError:
 
 class Build(build):
   def run(self):
-    command = "cd ./"
-    command += " && make"
-    process = subprocess.Popen(command, shell=True)
-    process.wait()
+    #command = "cd ./"
+    #command += " && make"
+    #process = subprocess.Popen(command, shell=True)
+    #process.wait()
     build.run(self)
 
 class Install(install):
   def run(self):
-    command = "cd ./"
-    command += " && make"
-    process = subprocess.Popen(command, shell=True)
-    process.wait()
+    #command = "cd ./"
+    #command += " && make"
+    #process = subprocess.Popen(command, shell=True)
+    #process.wait()
     install.run(self)
 
 class BuildExt(build_ext):
   def run(self):
-    command = "cd ./"
-    command += " && make"
-    process = subprocess.Popen(command, shell=True)
-    process.wait()
+    #command = "cd ./"
+    #command += " && make"
+    #process = subprocess.Popen(command, shell=True)
+    #process.wait()
     build_ext.run(self)
 
 class Clean(clean):
@@ -69,11 +86,14 @@ class Clean(clean):
     if os.path.isdir("dist"):
       shutil.rmtree("dist", ignore_errors=True)
 
-src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")]
+src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")] + glob(os.path.join(basedir, "src", "dnest*.c"))
+headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pyd")] + glob(os.path.join(basedir, "src", "dnest*.h"))
 extensions = cythonize([
   Extension("cydnest.cydnest", 
 	  sources=src,
+    depends=headerfiles,
 	  extra_compile_args=compiler_args,
+    extra_link_args=link_args,
     include_dirs=include_dirs,
     libraries=libraries,
     library_dirs=library_dirs
@@ -90,8 +110,8 @@ setup(
   author = 'Yan-Rong Li',
   author_email = 'liyanrong@mail.ihep.ac.cn',
   cmdclass={'build_ext': BuildExt, 'build':Build, 'install':Install, 'clean':Clean},
-  setup_requires=['numpy', 'mpi4py'],
-  install_requires=['numpy', 'mpi4py'],
+  setup_requires=['numpy', 'mpi4py', 'pkgconfig'],
+  install_requires=['numpy', 'mpi4py', 'pkgconfig'],
   license="GSL",
   # install header and library to ~/.local/lib
   #data_files=[(os.path.join(homedir, ".local/lib/"), [basedir+"/libdnest.so"]),
