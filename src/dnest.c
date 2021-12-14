@@ -21,6 +21,26 @@
 #include "dnest.h"
 #include "dnestvars.h"
 
+/*
+ * dnest
+ * call this function to do sampling
+ * ========================================================
+ * arguments:
+ * argc:        number of command-line options (mandatory)
+ * argv:        command-line options  (mandatory)
+ * fptrset:     function set pointers required  (mandatory)
+ * num_params:  number of parameters (mandatory)
+ * param_range: parameter ranges  (mandatory)
+ * prior_type:  prior types  (optional)
+ * prior_info:  prior informations  (optional)
+ * sample_dir:  output directory for sampling  (mandatory)
+ * optfile:     option files  (optional)
+ * opts:        options struct. if optfile is empty, use this struct (optional)
+ * args:        any other arguments transferred to cdnest.  (optional)
+ *              useful when referring to external variables or calling external functions (optional)
+ * ========================================================
+ * optional arguments can be set to "NULL"
+ */
 double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
              double *param_range, int *prior_type, double *prior_info,
              char *sample_dir, char *optfile, DNestOptions *opts, void *args)
