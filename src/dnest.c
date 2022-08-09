@@ -81,49 +81,49 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
         case 'r':
           dnest_flag_restart = 1;
           strcpy(file_restart, optarg);
-          printf("# Dnest restarts.\n");
+          printf("# CDnest restarts.\n");
           break;
         case 's':
           strcpy(file_save_restart, optarg);
-          printf("# Dnest sets restart file %s.\n", file_save_restart);
+          printf("# CDnest sets restart file %s.\n", file_save_restart);
           break;
         case 'p':
           dnest_flag_postprc = 1;
           dnest_post_temp = 1.0;
-          printf("# Dnest does postprocess.\n");
+          printf("# CDnest does postprocess.\n");
           break;
         case 't':
           dnest_post_temp = atof(optarg);
-          printf("# Dnest sets a temperature %f.\n", dnest_post_temp);
+          printf("# CDnest sets a temperature %f.\n", dnest_post_temp);
           if(dnest_post_temp == 0.0)
           {
-            printf("# Dnest incorrect option -t %s.\n", optarg);
+            printf("# CDnest incorrect option -t %s.\n", optarg);
             exit(0);
           }
           if(dnest_post_temp < 1.0)
           {
-            printf("# Dnest temperature should >= 1.0\n");
+            printf("# CDnest temperature should >= 1.0\n");
             exit(0);
           }
           break;
         case 'c':
           dnest_flag_sample_info = 1;
-          printf("# Dnest recalculates sample information.\n");
+          printf("# CDnest recalculates sample information.\n");
           break;
         case 'l':
           dnest_flag_limits = 1;
-          printf("# Dnest level-dependent sampling.\n");
+          printf("# CDnest level-dependent sampling.\n");
           break;
         case 'x':
           strcpy(dnest_sample_postfix, optarg);
-          printf("# Dnest sets sample postfix %s.\n", dnest_sample_postfix);
+          printf("# CDnest sets sample postfix %s.\n", dnest_sample_postfix);
           break;
         case 'g':
           strcpy(dnest_sample_tag, optarg);
-          printf("# Dnest sets sample tag %s.\n", dnest_sample_tag);
+          printf("# CDnest sets sample tag %s.\n", dnest_sample_tag);
           break;
         case '?':
-          printf("# Dnest incorrect option -%c %s.\n", optopt, optarg);
+          printf("# CDnest incorrect option -%c %s.\n", optopt, optarg);
           exit(0);
           break;
         default:
@@ -990,7 +990,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
       {
         printf("Cannot allocate memory for limits.\n"
                "This usually happens when both the numbers of parameters and levels are extremely large.\n"
-               "Please do not switch on '-l' option in argv passed to dnest.\n");
+               "Please do not switch on '-l' option in argv passed to cdnest.\n");
         exit(EXIT_FAILURE);
       }
       for(i=0; i<options.max_num_levels; i++)
@@ -1031,7 +1031,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
       {
         printf("Cannot allocate memory for limits.\n"
                "This usually happens when both the numbers of parameters and levels are extremely large.\n"
-               "Please do not switch on '-l' option in argv passed to dnest.\n");
+               "Please do not switch on '-l' option in argv passed to cdnest.\n");
         exit(EXIT_FAILURE);
       }
       for(i=0; i<LEVEL_NUM_MAX; i++)
@@ -1050,7 +1050,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
         {
           printf("Cannot allocate memory for limits.\n"
                  "This usually happens when both the numbers of parameters and levels are extremely large.\n"
-                 "Please do not switch on '-l' option in argv passed to dnest.\n");
+                 "Please do not switch on '-l' option in argv passed to cdnest.\n");
           exit(EXIT_FAILURE);
         }
       }
@@ -1556,21 +1556,21 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
   if(fptrset->from_prior == NULL)
   {
     printf("\"from_prior\" function is not defined at task %d.\
-      \nSet to the default function in dnest.\n", dnest_thistask);
+      \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->from_prior = dnest_from_prior;
   }
 
   if(fptrset->print_particle == NULL)
   {
     printf("\"print_particle\" function is not defined at task %d. \
-      \nSet to be default function in dnest.\n", dnest_thistask);
+      \nSet to be default function in cdnest.\n", dnest_thistask);
     fptrset->print_particle = dnest_print_particle;
   }
 
   if(fptrset->read_particle == NULL)
   {
     printf("\"read_particle\" function is not defined at task %d. \
-      \nSet to be default function in dnest.\n", dnest_thistask);
+      \nSet to be default function in cdnest.\n", dnest_thistask);
     fptrset->read_particle = dnest_read_particle;
   }
 
@@ -1597,28 +1597,28 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
   if(fptrset->perturb == NULL)
   {
     printf("\"perturb\" function is not defined at task %d.\
-      \nSet to the default function in dnest.\n", dnest_thistask);
+      \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->perturb = dnest_perturb;
   }
 
   if(fptrset->restart_action == NULL)
   {
     printf("\"restart_action\" function is not defined at task %d.\
-      \nSet to the default function in dnest.\n", dnest_thistask);
+      \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->restart_action = dnest_restart_action;
   }
 
   if(fptrset->accept_action == NULL)
   {
     printf("\"accept_action\" function is not defined at task %d.\
-      \nSet to the default function in dnest.\n", dnest_thistask);
+      \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->accept_action = dnest_accept_action;
   }
 
   if(fptrset->kill_action == NULL)
   {
     printf("\"kill_action\" function is not defined at task %d.\
-      \nSet to the default function in dnest.\n", dnest_thistask);
+      \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->kill_action = dnest_kill_action;
   }
 
