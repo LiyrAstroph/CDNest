@@ -403,7 +403,7 @@ void postprocess(double temperature)
     fprintf(stderr, "# Error: Cannot open file %s.\n", options.posterior_sample_file);
     exit(0);
   }
-  fprintf(fp, "# %d %f\n", num_ps, temperature);
+  fprintf(fp, "# %d\n", num_ps);
 
   for(i=0; i<num_ps; i++)
   {
