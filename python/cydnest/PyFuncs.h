@@ -195,7 +195,7 @@ void py_print_particle(FILE *fp, void *params)
   double *pm = (double *)params;
   for(i=0; i<size_; i++)
   {
-    fprintf(fp, "%f ", pm[i] );
+    fprintf(fp, "%e ", pm[i] );
   }
   fprintf(fp, "\n"); 
   return;

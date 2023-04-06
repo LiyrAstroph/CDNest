@@ -562,7 +562,7 @@ void save_limits()
   {
     fprintf(fp, "%d  ", i);
     for(j=0; j<particle_offset_double; j++)
-      fprintf(fp, "%f  %f  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
+      fprintf(fp, "%e  %e  ", limits[i*2*particle_offset_double+j*2], limits[i*2*particle_offset_double+j*2+1]);
 
     fprintf(fp, "\n");
   }
@@ -1598,7 +1598,10 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
   {
     printf("\"perturb\" function is not defined at task %d.\
       \nSet to the default function in cdnest.\n", dnest_thistask);
-    fptrset->perturb = dnest_perturb;
+    if(dnest_flag_limits == 0)
+      fptrset->perturb = dnest_perturb;
+    else 
+      fptrset->perturb = dnest_perturb_limit;
   }
 
   if(fptrset->restart_action == NULL)
@@ -1992,6 +1995,52 @@ double dnest_perturb(void *model)
   which = dnest_rand_int(dnest_num_params);
 
   width = ( dnest_param_range[which*2+1] - dnest_param_range[which*2+0] );
+
+  if(dnest_prior_type[which] == UNIFORM)
+  {
+    pm[which] += dnest_randh() * width;
+    dnest_wrap(&(pm[which]), dnest_param_range[which*2+0], dnest_param_range[which*2+1]);
+  }
+  else if(dnest_prior_type[which] == LOG)
+  {
+    logH -= (-log(pm[which]));
+    pm[which] += dnest_randh() * width;
+    dnest_wrap(&(pm[which]), dnest_param_range[which*2+0], dnest_param_range[which*2+1]);
+    logH += (-log(pm[which]));
+  }
+  else
+  {
+    logH -= (-0.5*pow((pm[which] - dnest_prior_info[which*2+0])/dnest_prior_info[which*2+1], 2.0) );
+    pm[which] += dnest_randh() * width;
+    dnest_wrap(&pm[which], dnest_param_range[which*2+0], dnest_param_range[which*2+1]);
+    logH += (-0.5*pow((pm[which] - dnest_prior_info[which*2+0])/dnest_prior_info[which*2+1], 2.0) );
+  }
+  
+  return logH;
+}
+
+double dnest_perturb_limit(void *model)
+{
+  double *pm = (double *)model;
+  double logH = 0.0, width, limit1, limit2;
+  int which, which_level, which_level_update, size_levels;
+
+  which = dnest_rand_int(dnest_num_params);
+
+  which_level_update = dnest_get_which_level_update();
+  size_levels = dnest_get_size_levels();
+  which_level = which_level_update-5 > (size_levels - 15)?(size_levels-15):which_level_update-5;
+  
+  if( which_level > 0)
+  {
+    limit1 = limits[(which_level-1) * dnest_num_params *2 + which *2];
+    limit2 = limits[(which_level-1) * dnest_num_params *2 + which *2 + 1];
+    width = limit2 - limit1;
+  }
+  else
+  {
+    width = ( dnest_param_range[which*2+1] - dnest_param_range[which*2+0] );
+  }
 
   if(dnest_prior_type[which] == UNIFORM)
   {

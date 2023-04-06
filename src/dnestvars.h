@@ -137,6 +137,7 @@ extern void dnest_accept_action();
 extern void dnest_kill_action(int i, int i_copy);
 extern void dnest_from_prior(void *model);
 extern double dnest_perturb(void *model);
+extern double dnest_perturb_limit(void *model);
 extern void dnest_print_particle(FILE *fp, const void *model);
 extern void dnest_read_particle(FILE *fp, void *model);
 extern void dnest_check_directory(char *sample_dir);
