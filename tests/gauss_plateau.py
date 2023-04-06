@@ -35,10 +35,11 @@ class Model(object):
     # parameter prior type.
     # three types: Uniform, Gaussian, Log 
     self.prior_type = ["Uniform", "Uniform"]
-
+    
+    # if using Gaussian prior
     # parameter prior information. used when the prior is Gaussian
     # indicate the mean and standard deviation of the Gaussian prior
-    self.prior_info = [[0.0, 1.0]]*num_params
+    #self.prior_info = [[0.0, 1.0]]*num_params
 
   def log_likelihood(self, coords):
     """

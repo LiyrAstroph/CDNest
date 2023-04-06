@@ -87,7 +87,7 @@ class Clean(clean):
       shutil.rmtree("dist", ignore_errors=True)
 
 src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")] + glob(os.path.join(basedir, "src", "dnest*.c"))
-headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pyd")] + glob(os.path.join(basedir, "src", "dnest*.h"))
+headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pxd")] + glob(os.path.join(basedir, "src", "dnest*.h"))
 extensions = cythonize([
   Extension("cydnest.cydnest", 
 	  sources=src,

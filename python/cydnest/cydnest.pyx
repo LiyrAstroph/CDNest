@@ -104,12 +104,12 @@ cdef class sampler:
     for i in range(self.num_params):
       self.param_range[i*2+0] = model.param_range[i][0]
       self.param_range[i*2+1] = model.param_range[i][1]
-      self.prior_info[i*2+0] = model.prior_info[i][0]
-      self.prior_info[i*2+1] = model.prior_info[i][1]
       if model.prior_type[i].lower() == 'uniform':
         self.prior_type[i] = UNIFORM
       elif model.prior_type[i].lower() == 'gaussian':
         self.prior_type[i] = GAUSSIAN
+        self.prior_info[i*2+0] = model.prior_info[i][0]
+        self.prior_info[i*2+1] = model.prior_info[i][1]
       elif model.prior_type[i].lower() == 'log':
         self.prior_type[i] = LOG
       else:
