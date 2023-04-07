@@ -74,7 +74,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
     opterr = 0;
     optind = 0;
-    while( (optid = getopt(argc, argv, "r:s:pt:clx:g:")) != -1)
+    while( (optid = getopt(argc, argv, "r:s:pt:clx:g:m:")) != -1)
     {
       switch(optid)
       {
@@ -121,6 +121,15 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
         case 'g':
           strcpy(dnest_sample_tag, optarg);
           printf("# CDnest sets sample tag %s.\n", dnest_sample_tag);
+          break;
+        case 'm':
+          dnest_compression = atof(optarg);
+          if(dnest_compression > exp(1.0))
+          {
+            printf("Too large compression, better to <exp(1.0).\n");
+            exit(0);
+          }
+          printf("# CDnest sets compression %f.\n", dnest_compression);
           break;
         case '?':
           printf("# CDnest incorrect option -%c %s.\n", optopt, optarg);
@@ -246,7 +255,7 @@ void dnest_run()
       //update size_all_above
       size_all_above += size_all_above_incr; 
 
-      if(size_all_above > options.new_level_interval*2)
+      if(size_all_above > size_all_above_max)
       {
         printf("# Error, all above overflow.\n");
         exit(0);
@@ -950,7 +959,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   MPI_Bcast(&options, sizeof(DNestOptions), MPI_BYTE, dnest_root, MPI_COMM_WORLD);
 
   //dnest_post_temp = 1.0;
-  compression = exp(1.0);
+  compression = dnest_compression;
   regularisation = options.new_level_interval*sqrt(options.lam);
   save_to_disk = true;
 
@@ -961,7 +970,14 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   
   // initialise sampler
   if(dnest_thistask == dnest_root)
-    all_above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
+  {
+    size_all_above_max = ((int)ceil(1+compression)) * options.thread_steps * dnest_totaltask 
+                        *(int)ceil(options.new_level_interval/options.thread_steps + 1);
+    if(size_all_above_max < options.new_level_interval * 2)
+      size_all_above_max = options.new_level_interval * 2;
+    
+    all_above = (LikelihoodType *)malloc(size_all_above_max * sizeof(LikelihoodType));
+  }
 
   above = (LikelihoodType *)malloc(2*options.new_level_interval * sizeof(LikelihoodType));
 

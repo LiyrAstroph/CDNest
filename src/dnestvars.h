@@ -79,10 +79,10 @@ extern LikelihoodType *all_above;
 extern unsigned int count_saves, num_saves, num_saves_restart;
 extern unsigned long long int count_mcmc_steps;
 extern LikelihoodType *above;
-extern unsigned int size_above, size_all_above;
+extern unsigned int size_above, size_all_above, size_all_above_max;
 
 extern int dnest_flag_restart, dnest_flag_postprc, dnest_flag_sample_info, dnest_flag_limits;
-extern double dnest_post_temp;
+extern double dnest_post_temp, dnest_compression;
 extern char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
 extern double post_logz;

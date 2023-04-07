@@ -79,7 +79,8 @@ cdef class sampler:
                 num_particles=1, thread_steps_factor = 10, 
                 max_num_saves = 10000, max_num_levels = 0,
                 new_level_interval_factor = 2, save_interval_factor = 2,
-                lam = 10, beta = 100, ptol = 0.1, limits_on=False):
+                lam = 10, beta = 100, ptol = 0.1, limits_on=False,
+                compression = None):
     
     cdef int i
 
@@ -154,7 +155,7 @@ cdef class sampler:
     self.flag_limits = limits_on
 
     # setup argc and argv
-    cdef int narg = 11
+    cdef int narg = 13
     self.argv = <char **>PyMem_Malloc(narg*sizeof(char *))
     for i in range(narg):
       self.argv[i] = <char *>PyMem_Malloc(200*sizeof(char))
@@ -178,6 +179,15 @@ cdef class sampler:
     if self.flag_limits:
       self.argv[self.argc] = '-l'
       self.argc += 1
+    
+    if compression and isinstance(compression, float):
+      self.argv[self.argc] = '-m'
+      self.argc += 1
+      cstr = "%f"%(compression)
+      strcpy(self.argv[self.argc], cstr.encode("UTF-8")) 
+      self.argc += 1
+    else:
+      raise ValueError("compresion should be a float.")
     
     # setup function set
     self.fptrset = dnest_malloc_fptrset(); 
