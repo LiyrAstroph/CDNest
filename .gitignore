@@ -24,6 +24,7 @@ cydnest/*
 !tests/postprocess.py
 !tests/road.txt
 !tests/display*.py
+!tests/diamond_ring.py
 !python_config
 !setup.py
 !setup.cfg

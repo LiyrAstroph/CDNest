@@ -152,3 +152,33 @@ To run this test, using the following command:
   .. code-block:: bash
     
     mpiexec -n np python cauchy.py
+
+Test VII in Python --- diamond_ring.py
+======================================
+
+The diamond ring problem, with the likelihood as (see Buchner 2023, arXiv:2101.09675)
+
+.. math:: 
+  & L = N_1 + 100 N_2
+
+  & N_i = \frac{1}{\sqrt{2\pi}w_i} \exp \left[-\frac{1}{2}\left(\frac{d_i-r_i}{w_i^2}\right)^2 \right]
+
+  & r_1 = 10^{-11}, w_1 = 0.4\times r_1, d_1 = \sqrt{x^2+y^2}
+
+  & r_2 = r_1/40, w_1 = w_2/40, d_2 = \sqrt{(x+r_2)^2+y^2}
+
+We set a uniform prior over a range [-1, 1] for both :math:`x` and :math:`y`. Note that small scales of the likelihood 
+peak regions compared to the priors.
+
+The true evidence is :math:`\log(Z)\approx-23.62`. The obtained evidence by CDNest is -23.89 by one run 
+(the value subjecting to fluctuations). 
+
+.. figure:: _static/fig_diamond.jpg 
+  :scale: 50%
+  :align: center
+
+To run this test, using the following command:
+
+  .. code-block:: bash
+    
+    mpiexec -n np python diamond_ring.py
