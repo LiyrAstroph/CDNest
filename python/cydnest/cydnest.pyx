@@ -180,14 +180,15 @@ cdef class sampler:
       self.argv[self.argc] = '-l'
       self.argc += 1
     
-    if compression and isinstance(compression, float):
-      self.argv[self.argc] = '-m'
-      self.argc += 1
-      cstr = "%f"%(compression)
-      strcpy(self.argv[self.argc], cstr.encode("UTF-8")) 
-      self.argc += 1
-    else:
-      raise ValueError("compresion should be a float.")
+    if compression != None:
+      if isinstance(compression, float):
+        self.argv[self.argc] = '-m'
+        self.argc += 1
+        cstr = "%f"%(compression)
+        strcpy(self.argv[self.argc], cstr.encode("UTF-8")) 
+        self.argc += 1
+      else:
+        raise ValueError("compression should be a float.")
     
     # setup function set
     self.fptrset = dnest_malloc_fptrset(); 
