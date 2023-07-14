@@ -819,7 +819,7 @@ bool enough_levels(Level *l, int size_l)
     {
       printf("Warning:size of levels approches the limit %d!\nbetter to increase compression!\n", LEVEL_NUM_MAX);
       printf("The default value is exp(1.0)=2.72; the present value is %f.", compression);
-      exit(0);
+      //exit(0);
       return true;
     }
 
