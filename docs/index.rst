@@ -9,8 +9,11 @@ Welcome to CDNest's documentation!
 **CDNest** is a C version of diffusive nested sampling proposed by Brendon Brewer (https://github.com/eggplantbren/DNest3) with
 minor modifications.
 
- * It provides a C library **libdnest.so**. Examples for using this library are shown in **model1.c**, **model2.c**, and **model3.c**.
- * It also provides a python callable module **cydnest.so** wrapped using Cython. Examples for using cydnest in Python are shown in **gauss.py** and **mulgauss.py**.
+ * It provides a C library **libdnest.so**. Examples for using this library are 
+   shown with **model1.c**, **model2.c**, and **model3.c** in the subfolder **src/**.
+ * It also provides a python callable module **cydnest** wrapped using Cython. 
+   Examples for using **cydnest** in Python are shown with **gauss.py**, **mulgauss.py**, 
+   and other Python scripts in the subfolder **tests/**.
 
 .. image:: https://www.zenodo.org/badge/DOI/10.5281/zenodo.2527924.svg
    :target: https://doi.org/10.5281/zenodo.2527924

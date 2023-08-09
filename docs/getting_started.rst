@@ -18,19 +18,19 @@ For python interface, additional packages required:
 
 C/C++ library: libdnest.so
 ==========================
-To create the C library **libnest.so**, edit the paths for library and header files in Makefile and 
+To create the C library **libdnest.so**, edit the paths for library and header files in Makefile and 
 then compile using the following terminal command
 
 .. code-block:: bash
 
   make
 
-Then add the path of **libnest.so** to the system environment variable "LD_LIBRARY_PATH". 
+Then add the path of **libdnest.so** to the system environment variable "LD_LIBRARY_PATH". 
 Edit "bashrc" file in home directory and add a line as 
 
 .. code-block:: bash
 
-  export LD_LIBRARY_PATH=/path/to/libnest.so/:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=/path/to/libdnest.so/:$LD_LIBRARY_PATH
 
 
 Python package: cydnest
