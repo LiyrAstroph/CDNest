@@ -65,7 +65,7 @@ int *dnest_perturb_accept;
 int dnest_root;
 
 int dnest_flag_restart=0, dnest_flag_postprc=0, dnest_flag_sample_info=0, dnest_flag_limits=0;
-double dnest_post_temp=1.0, dnest_compression=exp(1.0);
+double dnest_post_temp=1.0, dnest_compression=2.7182818;/*exp(1.0)*/
 char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
 //***********************************************
