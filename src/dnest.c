@@ -348,7 +348,7 @@ void dnest_run()
       if(dnest_thistask == dnest_root )
       {
         // save levels, limits, sync samples when running a number of steps
-        if( count_saves % num_saves == 0 )
+        if( (count_saves - count_start) % num_saves == 0 )
         {
           save_levels();
           if(dnest_flag_limits == 1)
@@ -361,7 +361,7 @@ void dnest_run()
         }
       }
 
-      if( count_saves % num_saves_restart == 0 )
+      if( (count_saves - count_start) % num_saves_restart == 0 )
       {
         dnest_save_restart();
       }
@@ -1086,6 +1086,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
   count_mcmc_steps = 0;
   count_saves = 0;
+  count_start = 0;
   num_saves = (int)fmax(0.02*options.max_num_saves, 1.0);
   num_saves_restart = (int)fmax(0.2 * options.max_num_saves, 1.0);
 
@@ -1939,6 +1940,7 @@ void dnest_restart()
   }
   size_levels_combine = size_levels; /* reset szie_levels_combine */
   
+  count_start = count_saves;
   num_saves = (int)fmax(0.02*(options.max_num_saves-count_saves), 1.0); /* reset num_saves */
   num_saves_restart = (int)fmax(0.2 * (options.max_num_saves-count_saves), 1.0); /* reset num_saves_restart */
 

@@ -44,7 +44,7 @@ int size_levels, size_levels_combine;
 Level *levels;
 Level *copies_of_levels, *levels_combine;
 LikelihoodType *all_above;
-unsigned int count_saves, num_saves, num_saves_restart;
+unsigned int count_saves, count_start, num_saves, num_saves_restart;
 int dnest_which_particle_update; // which particle to be updated
 int dnest_which_level_update;    // which level to be updated;
 unsigned long long int count_mcmc_steps;
