@@ -368,7 +368,16 @@ void dnest_run()
     }
   }
   
-  //dnest_save_restart();
+  /* make sure save restart at the last step */
+  if((count_saves - count_start) % num_saves_restart != 0)
+  {
+    if(dnest_thistask == dnest_root)
+    {
+      printf("save restart file at the last step.\n");
+    }
+    
+    dnest_save_restart();
+  }
 
   if(dnest_thistask == dnest_root)
   {
