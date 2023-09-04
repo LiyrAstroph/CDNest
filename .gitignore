@@ -38,3 +38,4 @@ docs/*
 !docs/_static/
 !docs/_static/*.jpg
 !.gitignore
+!.readthedocs.yaml
