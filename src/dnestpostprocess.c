@@ -197,8 +197,15 @@ void postprocess(double temperature)
       {
         j--;
       }*/
-
-      sample_info[i][0] = (double)dnest_rand_int(j); // randomly assign a level [0, j-1]
+      
+      if(j==0)
+      {
+        sample_info[i][0] = 0.0;
+      }
+      else
+      {
+        sample_info[i][0] = (double)dnest_rand_int(j); // randomly assign a level [0, j-1]
+      }
 
       fprintf(fp, "%d %e %f %d\n", (int)sample_info[i][0], sample_info[i][1], sample_info[i][2], 1);
     }
