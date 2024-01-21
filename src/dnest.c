@@ -199,8 +199,8 @@ void dnest_run()
   // used to gather levels' information
   if(dnest_thistask == dnest_root)
   {
-    buf_size_above = malloc(dnest_totaltask * sizeof(int));  
-    buf_displs = malloc(dnest_totaltask * sizeof(int));
+    buf_size_above = (int *)malloc(dnest_totaltask * sizeof(int));  
+    buf_displs = (int *)malloc(dnest_totaltask * sizeof(int));
   }
 
   if(dnest_thistask == dnest_root)
@@ -275,7 +275,7 @@ void dnest_run()
     if(dnest_thistask == dnest_root)
     {
       //backup levels_combine
-      levels_orig = malloc(size_levels_combine * sizeof(Level));
+      levels_orig = (Level *)malloc(size_levels_combine * sizeof(Level));
       memcpy(levels_orig, levels_combine, size_levels_combine*sizeof(Level));
 
       //scan over all copies of levels
@@ -949,17 +949,17 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
   if(param_range != NULL)
   {
-    dnest_param_range = malloc(num_params*2*sizeof(double));
+    dnest_param_range = (double *)malloc(num_params*2*sizeof(double));
     memcpy(dnest_param_range, param_range, num_params*2*sizeof(double));
   }
   if(prior_type != NULL)
   {
-    dnest_prior_type = malloc(num_params*sizeof(int));
+    dnest_prior_type = (int *)malloc(num_params*sizeof(int));
     memcpy(dnest_prior_type, prior_type, num_params*sizeof(int));
   }
   if(prior_info != NULL)
   {
-    dnest_prior_info = malloc(num_params*2*sizeof(double));
+    dnest_prior_info = (double *)malloc(num_params*2*sizeof(double));
     memcpy(dnest_prior_info, prior_info, num_params*2*sizeof(double));
   }
   if(args != NULL)
@@ -1015,7 +1015,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
     if(dnest_flag_limits == 1)
     {
-      limits = malloc(options.max_num_levels * particle_offset_double * 2 * sizeof(double));
+      limits = (double *)malloc(options.max_num_levels * particle_offset_double * 2 * sizeof(double));
       if(limits == NULL)
       {
         printf("Cannot allocate memory for limits.\n"
@@ -1034,7 +1034,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
       if(dnest_thistask == dnest_root)
       {
-        copies_of_limits = malloc( dnest_totaltask * options.max_num_levels * particle_offset_double * 2 * sizeof(double));
+        copies_of_limits = (double *)malloc( dnest_totaltask * options.max_num_levels * particle_offset_double * 2 * sizeof(double));
         if(copies_of_limits == NULL)
         {
           printf("Cannot allocate memory for limits.\n"
@@ -1056,7 +1056,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
     if(dnest_flag_limits == 1)
     {
-      limits = malloc(LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
+      limits = (double *)malloc(LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
       if(limits == NULL)
       {
         printf("Cannot allocate memory for limits.\n"
@@ -1075,7 +1075,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
       if(dnest_thistask == dnest_root)
       {
-        copies_of_limits = malloc(dnest_totaltask * LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
+        copies_of_limits = (double *)malloc(dnest_totaltask * LEVEL_NUM_MAX * particle_offset_double * 2 * sizeof(double));
         if(copies_of_limits == NULL)
         {
           printf("Cannot allocate memory for limits.\n"
@@ -1087,7 +1087,7 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
     }
   }
   
-  dnest_perturb_accept = malloc(options.num_particles * sizeof(int));
+  dnest_perturb_accept = (int *)malloc(options.num_particles * sizeof(int));
   for(i=0; i<options.num_particles; i++)
   {
     dnest_perturb_accept[i] = 0;
@@ -1198,7 +1198,7 @@ void options_load(char *optfile, DNestOptions *opts)
   {
     DNestPARDICT *pardict;
     int num_pardict;
-    pardict = malloc(10 * sizeof(DNestPARDICT));
+    pardict = (DNestPARDICT *)malloc(10 * sizeof(DNestPARDICT));
     enum TYPE {INT, DOUBLE, STRING};
   
     FILE *fp;

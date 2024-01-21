@@ -36,6 +36,11 @@ def postprocess(sample_dir, sample_tag, temperature=1.0, doplot=True):
   levels_orig = np.atleast_2d(np.loadtxt(sample_dir+"/levels"+sample_tag+".txt", comments='#'))
   sample_info = np.atleast_2d(np.loadtxt(sample_dir+"/sample_info"+sample_tag+".txt", comments='#'))
   sample = np.atleast_2d(np.loadtxt(sample_dir+"/sample"+sample_tag+".txt"))
+
+  # copy with the one-parameter case
+  # when there is only one row in sample, sample_info.shape[0] should also be one. 
+  if sample.shape[0] == 1 and sample_info.shape[0] != 1:
+    sample = sample.T
   
   sample = sample[int(cut*sample.shape[0]):, :]
   sample_info = sample_info[int(cut*sample_info.shape[0]):, :]
