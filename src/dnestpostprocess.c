@@ -93,11 +93,11 @@ void postprocess(double temperature)
   sample_info = (double **)malloc(num_samples * sizeof(double *));
   for(i=0; i< num_samples; i++)
   {
-    sample_info[i] = malloc(3 * sizeof(double));
+    sample_info[i] = (double *)malloc(3 * sizeof(double));
   }
   
   // allocate memory for samples
-  logl = (void *)malloc(num_samples * sizeof(double));
+  logl = (double *)malloc(num_samples * sizeof(double));
   sandwhich = (int *)malloc(num_samples * sizeof(int));
   psample = (double *)malloc(dnest_size_of_modeltype);
   
