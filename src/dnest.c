@@ -1344,6 +1344,11 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.sample_file, dnest_sample_tag);
   strcat(options.sample_file, ".txt");
   strcat(options.sample_file, dnest_sample_postfix);
+  if(strlen(options.sample_file)>=STR_MAX_LENGTH)
+  {
+    fprintf(stderr, "# Error: filename of sample exceeds allowed size (256). Shorten path length!\n");
+    exit(0);
+  }
   
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.sample_info_file);
@@ -1352,7 +1357,12 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.sample_info_file, dnest_sample_tag);
   strcat(options.sample_info_file, ".txt");
   strcat(options.sample_info_file, dnest_sample_postfix);
-  
+  if(strlen(options.sample_info_file)>=STR_MAX_LENGTH)
+  {
+    fprintf(stderr, "# Error: filename of sample_info exceeds allowed size (256). Shorten path length!\n");
+    exit(0);
+  }
+
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.levels_file);
   strcpy(options.levels_file, dnest_sample_dir);
@@ -1360,6 +1370,11 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.levels_file, dnest_sample_tag);
   strcat(options.levels_file, ".txt");
   strcat(options.levels_file, dnest_sample_postfix);
+  if(strlen(options.levels_file)>=STR_MAX_LENGTH)
+  {
+    fprintf(stderr, "# Error: filename of levels exceeds allowed size (256). Shorten path length!\n");
+    exit(0);
+  }
   
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.sampler_state_file);
@@ -1368,6 +1383,11 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.sampler_state_file, dnest_sample_tag);
   strcat(options.sampler_state_file, ".txt");
   strcat(options.sampler_state_file, dnest_sample_postfix);
+  if(strlen(options.levels_file)>=STR_MAX_LENGTH)
+  {
+    fprintf(stderr, "# Error: filename of sampler state exceeds allowed size (256). Shorten path length!\n");
+    exit(0);
+  }
   
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.posterior_sample_file);
@@ -1376,6 +1396,11 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.posterior_sample_file, dnest_sample_tag);
   strcat(options.posterior_sample_file, ".txt");
   strcat(options.posterior_sample_file, dnest_sample_postfix);
+  if(strlen(options.posterior_sample_file)>=STR_MAX_LENGTH)
+  {
+    fprintf(stderr, "# Error: filename of posterior sample exceeds allowed size (256). Shorten path length!\n");
+    exit(0);
+  }
 
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.posterior_sample_info_file);
@@ -1384,6 +1409,11 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.posterior_sample_info_file, dnest_sample_tag);
   strcat(options.posterior_sample_info_file, ".txt");
   strcat(options.posterior_sample_info_file, dnest_sample_postfix);
+  if(strlen(options.posterior_sample_info_file)>=STR_MAX_LENGTH)
+  {
+    fprintf(stderr, "# Error: filename of posterior sample info exceeds allowed size (256). Shorten path length!\n");
+    exit(0);
+  }
 
   //fgets(buf, BUF_MAX_LENGTH, fp);
   //sscanf(buf, "%s", options.limits_file);
@@ -1392,6 +1422,11 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.limits_file, dnest_sample_tag);
   strcat(options.limits_file, ".txt");
   strcat(options.limits_file, dnest_sample_postfix);
+  if(strlen(options.limits_file)>=STR_MAX_LENGTH)
+  {
+    fprintf(stderr, "# Error: filename of limits exceeds allowed size (256). Shorten path length!\n");
+    exit(0);
+  }
 
   // check options.
   
