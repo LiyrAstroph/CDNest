@@ -30,6 +30,11 @@ levels_orig = np.loadtxt("levels.txt", comments='#')
 sample_info = np.loadtxt("sample_info.txt", comments='#')
 sample = np.atleast_2d(np.loadtxt("sample.txt"))
 
+# copy with the one-parameter case
+# when there is only one row in sample, sample_info.shape[0] should also be one. 
+if sample.shape[0] == 1 and sample_info.shape[0] != 1:
+  sample = sample.T
+
 sample = sample[int(cut*sample.shape[0]):, :]
 sample_info = sample_info[int(cut*sample_info.shape[0]):, :]
 
@@ -43,13 +48,17 @@ sample_info = sample_info[0:lowest, :]
 idx = (sample_info[:, 0] > levels_orig.shape[0] - 1)
 sample_info[idx, 0] = levels_orig.shape[0] - 1
 
-plt.figure(1)
+fig = plt.figure(figsize=(12, 8))
+fig.subplots_adjust(wspace=0.2, hspace=0.3)
+ax1 = fig.add_subplot(3, 1, 1)
 plt.plot(sample_info[:,0], "k")
 plt.xlabel("Iteration")
 plt.ylabel("Level")
 
-plt.figure(2)
-plt.subplot(2,1,1)
+# resterization
+ax1.set_rasterization_zorder(0)
+
+ax2=fig.add_subplot(3,2,3)
 plt.plot(np.diff(levels_orig[:,0]), "k")
 plt.ylabel("Compression")
 plt.xlabel("Level")
@@ -58,7 +67,7 @@ plt.axhline(-1., color='g')
 plt.axhline(-np.log(10.), color='g', linestyle="--")
 plt.ylim(ymax=0.05)
 
-plt.subplot(2,1,2)
+ax3=fig.add_subplot(3,2,5)
 good = np.nonzero(levels_orig[:,4] > 0)[0]
 plt.plot(levels_orig[good,3]/levels_orig[good,4], marker='o')
 plt.xlim(xlim)
@@ -140,14 +149,19 @@ for z in range(0, numResampleLogX):
   P_samples[:,z] = np.exp(logP_samples[:,z])
   H_estimates[z] = -logz_estimates[z] + np.sum(P_samples[:,z]*logl)
 
-  plt.figure(3)
-  plt.subplot(2,1,1)
+  ax4=fig.add_subplot(3,2,4)
   plt.plot(logx_samples[:,z], sample_info[:,1], 'b.', label='Samples')
   plt.plot(levels[1:,0], levels[1:,1], 'r.', label='Levels')
   plt.legend(numpoints=1, loc='lower left')
   plt.ylabel('log(L)')
-  plt.title(str(z+1) + "/" + str(numResampleLogX) + ", log(Z) = " + str(logz_estimates[z][0]))
-      # Use all plotted logl values to set ylim
+  plt.xlabel('log(X)')
+
+  # resterization
+  ax4.set_rasterization_zorder(0)
+
+  ax1.set_title(str(z+1) + "/" + str(numResampleLogX) + ", log(Z) = " + str(logz_estimates[z][0]))
+  
+  # Use all plotted logl values to set ylim
   combined_logl = np.hstack([sample_info[:,1], levels[1:, 1]])
   combined_logl = np.sort(combined_logl)
   lower = combined_logl[int(0.1*combined_logl.size)]
@@ -160,11 +174,13 @@ for z in range(0, numResampleLogX):
 
   xlim = plt.gca().get_xlim()
 
-  plt.subplot(2,1,2)
+  ax5=fig.add_subplot(3,2,6)
   plt.plot(logx_samples[:,z], P_samples[:,z], 'b.')
   plt.ylabel('Posterior Weights')
   plt.xlabel('log(X)')
   plt.xlim(xlim)
+  # resterization
+  ax5.set_rasterization_zorder(0)
 
 P_samples = np.mean(P_samples, 1)
 P_samples = P_samples/np.sum(P_samples)
