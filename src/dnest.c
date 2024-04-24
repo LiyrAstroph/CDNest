@@ -1383,7 +1383,7 @@ void options_load(char *optfile, DNestOptions *opts)
   strcat(options.sampler_state_file, dnest_sample_tag);
   strcat(options.sampler_state_file, ".txt");
   strcat(options.sampler_state_file, dnest_sample_postfix);
-  if(strlen(options.levels_file)>=STR_MAX_LENGTH)
+  if(strlen(options.sampler_state_file)>=STR_MAX_LENGTH)
   {
     fprintf(stderr, "# Error: filename of sampler state exceeds allowed size (256). Shorten path length!\n");
     exit(0);
