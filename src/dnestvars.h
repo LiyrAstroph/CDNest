@@ -100,6 +100,8 @@ extern int dnest_which_level_update;    // which level to be updated;
 extern int dnest_thistask, dnest_totaltask;
 extern int *dnest_perturb_accept;
 extern int dnest_root;
+
+extern int dnest_flag_plateau;
 //***********************************************
 /*                  functions                  */
 extern double mod(double y, double x);
@@ -114,9 +116,9 @@ extern void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 extern void finalise();
 
 extern void dnest_run();
-extern void dnest_mcmc_run();
-extern void update_particle(unsigned int which);
-extern void update_level_assignment(unsigned int which);
+extern void dnest_mcmc_run_normal();
+extern void update_particle_normal(unsigned int which);
+extern void update_level_assignment_normal(unsigned int which);
 extern double log_push(unsigned int which_level);
 extern bool enough_levels(Level *l, int size_l);
 extern void do_bookkeeping();
@@ -141,6 +143,16 @@ extern double dnest_perturb_limit(void *model);
 extern void dnest_print_particle(FILE *fp, const void *model);
 extern void dnest_read_particle(FILE *fp, void *model);
 extern void dnest_check_directory(char *sample_dir);
+
+/* for likelihood with plateau */
+extern void dnest_mcmc_run_plateau();
+extern void update_particle_plateau(unsigned int which);
+extern void update_level_assignment_plateau(unsigned int which);
+
+extern void (*dnest_mcmc_run)();
+extern void (*update_particle)(unsigned int which);
+extern void (*update_level_assignment)(unsigned int which);
+
 /*=====================================================*/
 // users responsible for following functions
 extern void (*print_particle)(FILE *fp, const void *model);

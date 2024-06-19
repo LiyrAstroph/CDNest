@@ -57,7 +57,7 @@ model = Model()
 # create a dnest sampler
 # max_num_save is the number of samples to generate
 # ptol is the likelihood tolerance in loge()
-sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 20000, ptol=0.1)
+sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 20000, ptol=0.1, plateau=True)
 #
 # The full argument lists look like:
 # sampler = cydnest.sampler(model, sample_dir="./", max_num_saves = 10000, ptol=0.1, 

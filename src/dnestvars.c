@@ -68,6 +68,7 @@ int dnest_flag_restart=0, dnest_flag_postprc=0, dnest_flag_sample_info=0, dnest_
 double dnest_post_temp=1.0, dnest_compression=2.7182818;/*exp(1.0)*/
 char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
+int dnest_flag_plateau;
 //***********************************************
 /*                  functions                  */
 double mod(double y, double x);
@@ -82,9 +83,9 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 void finalise();
 
 void dnest_run();
-void dnest_mcmc_run();
-void update_particle(unsigned int which);
-void update_level_assignment(unsigned int which);
+void dnest_mcmc_run_normal();
+void update_particle_normal(unsigned int which);
+void update_level_assignment_normal(unsigned int which);
 double log_push(unsigned int which_level);
 bool enough_levels(Level *l, int size_l);
 void do_bookkeeping();
@@ -107,6 +108,16 @@ void dnest_from_prior(void *model);
 double dnest_perturb(void *model);
 void dnest_print_particle(FILE *fp, const void *model);
 void dnest_read_particle(FILE *fp, void *model);
+
+/* for likelihood with plateau */
+void dnest_mcmc_run_plateau();
+void update_particle_plateau(unsigned int which);
+void update_level_assignment_plateau(unsigned int which);
+
+void (*dnest_mcmc_run)();
+void (*update_particle)(unsigned int which);
+void (*update_level_assignment)(unsigned int which);
+
 /*=====================================================*/
 // users responsible for following functions
 void (*print_particle)(FILE *fp, const void *model);

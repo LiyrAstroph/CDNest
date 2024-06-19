@@ -67,6 +67,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
     dnest_flag_postprc = 0;
     dnest_flag_sample_info = 0;
     dnest_flag_limits = 0;
+    dnest_flag_plateau = 0;
 
     strcpy(file_save_restart, "restart_dnest.txt");
     strcpy(dnest_sample_postfix, "\0");
@@ -74,7 +75,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
 
     opterr = 0;
     optind = 0;
-    while( (optid = getopt(argc, argv, "r:s:pt:clx:g:m:")) != -1)
+    while( (optid = getopt(argc, argv, "r:s:pt:clx:g:m:a")) != -1)
     {
       switch(optid)
       {
@@ -131,6 +132,10 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
           }
           printf("# CDnest sets compression %f.\n", dnest_compression);
           break;
+        case 'a':
+          dnest_flag_plateau = 1;
+          printf("# CDnest copes with pleteau likelihood.\n");
+          break;
         case '?':
           printf("# CDnest incorrect option -%c %s.\n", optopt, optarg);
           exit(0);
@@ -146,6 +151,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   MPI_Bcast(&dnest_flag_sample_info, 1, MPI_INT,dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_post_temp, 1, MPI_DOUBLE, dnest_root, MPI_COMM_WORLD);
   MPI_Bcast(&dnest_flag_limits, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
+  MPI_Bcast(&dnest_flag_plateau, 1, MPI_INT, dnest_root, MPI_COMM_WORLD);
 
   setup(argc, argv, fptrset, num_params, param_range, prior_type, prior_info, sample_dir, optfile, opts, args);
 
@@ -669,7 +675,7 @@ void save_particle()
   }
 }
 
-void dnest_mcmc_run()
+void dnest_mcmc_run_normal()
 {
   unsigned int which;
   unsigned int i;
@@ -699,7 +705,7 @@ void dnest_mcmc_run()
       update_particle(which);
     }
         
-    if( !enough_levels(levels, size_levels)  && levels[size_levels-1].log_likelihood.value <= log_likelihoods[which].value)
+    if( !enough_levels(levels, size_levels)  && levels[size_levels-1].log_likelihood.value < log_likelihoods[which].value)
     {
       above[size_above] = log_likelihoods[which];
       size_above++;
@@ -708,7 +714,7 @@ void dnest_mcmc_run()
 }
 
 
-void update_particle(unsigned int which)
+void update_particle_normal(unsigned int which)
 {
   void *particle = particles+ which*particle_offset_size;
   LikelihoodType *logl = &(log_likelihoods[which]);
@@ -732,7 +738,7 @@ void update_particle(unsigned int which)
     log_H = 0.0;
 
   dnest_perturb_accept[which] = 0;
-  if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value <= logl_proposal.value)
+  if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value < logl_proposal.value)
   {
     memcpy(particle, proposal, dnest_size_of_modeltype);
     memcpy(logl, &logl_proposal, sizeof(LikelihoodType));
@@ -752,7 +758,7 @@ void update_particle(unsigned int which)
   for(; current_level < size_levels-1; ++current_level)
   {
     levels[current_level].visits++;
-    if(levels[current_level+1].log_likelihood.value <= log_likelihoods[which].value)
+    if(levels[current_level+1].log_likelihood.value < log_likelihoods[which].value)
       levels[current_level].exceeds++;
     else
       break; // exit the loop if it does not satify higher levels
@@ -760,7 +766,7 @@ void update_particle(unsigned int which)
   free(proposal);
 }
 
-void update_level_assignment(unsigned int which)
+void update_level_assignment_normal(unsigned int which)
 {
   int i;
 
@@ -783,7 +789,7 @@ void update_level_assignment(unsigned int which)
   if(log_A > 0.0)
     log_A = 0.0;
 
-  if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_A) && levels[proposal].log_likelihood.value <= log_likelihoods[which].value)
+  if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_A) && levels[proposal].log_likelihood.value < log_likelihoods[which].value)
   {
     level_assignments[which] = proposal;
 
@@ -933,6 +939,20 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   kill_action = fptrset->kill_action;
   strcpy(options_file, optfile);
   strcpy(dnest_sample_dir, sample_dir);
+  
+  // functions for normal or plateau likelihood
+  if(dnest_flag_plateau == 0)
+  {
+    dnest_mcmc_run = dnest_mcmc_run_normal;
+    update_particle = update_particle_normal;
+    update_level_assignment = update_level_assignment_normal;
+  }
+  else 
+  {
+    dnest_mcmc_run = dnest_mcmc_run_plateau;
+    update_particle = update_particle_plateau;
+    update_level_assignment = update_level_assignment_plateau;
+  }
 
   // random number generator
   dnest_gsl_T = (gsl_rng_type *) gsl_rng_default;
@@ -2175,4 +2195,141 @@ inline void dnest_accept_action()
 inline void dnest_kill_action(int i, int i_copy)
 {
   return;
+}
+
+/*==================================================
+  for likelihood with plateau
+ *==================================================*/
+void dnest_mcmc_run_plateau()
+{
+  unsigned int which;
+  unsigned int i;
+  
+  for(i = 0; i<options.thread_steps; i++)
+  {
+
+    /* randomly select out one particle to update */
+    which = gsl_rng_uniform_int(dnest_gsl_r, options.num_particles);
+
+    dnest_which_particle_update = which;
+
+    //if(count_mcmc_steps >= 10000)printf("FFFF\n");
+    //printf("%d\n", which);
+    //printf("%f %f %f\n", particles[which].param[0], particles[which].param[1], particles[which].param[2]);
+    //printf("level:%d\n", level_assignments[which]);
+    //printf("%e\n", log_likelihoods[which].value);
+
+    if(gsl_rng_uniform(dnest_gsl_r) <= 0.5)
+    {
+      update_particle(which);
+      update_level_assignment(which);
+    }
+    else
+    {
+      update_level_assignment(which);
+      update_particle(which);
+    }
+        
+    if( !enough_levels(levels, size_levels)  && levels[size_levels-1].log_likelihood.value <= log_likelihoods[which].value)
+    {
+      above[size_above] = log_likelihoods[which];
+      size_above++;
+    }
+  }
+}
+
+void update_particle_plateau(unsigned int which)
+{
+  void *particle = particles+ which*particle_offset_size;
+  LikelihoodType *logl = &(log_likelihoods[which]);
+  
+  Level *level = &(levels[level_assignments[which]]);
+
+  void *proposal = (void *)malloc(dnest_size_of_modeltype);
+  LikelihoodType logl_proposal;
+  double log_H;
+
+  memcpy(proposal, particle, dnest_size_of_modeltype);
+  dnest_which_level_update = level_assignments[which];
+  
+  log_H = perturb(proposal);
+  
+  logl_proposal.value = log_likelihoods_cal(proposal);
+  logl_proposal.tiebreaker =  (*logl).tiebreaker + gsl_rng_uniform(dnest_gsl_r);
+  dnest_wrap(&logl_proposal.tiebreaker, 0.0, 1.0);
+  
+  if(log_H > 0.0)
+    log_H = 0.0;
+
+  dnest_perturb_accept[which] = 0;
+  if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_H) && level->log_likelihood.value <= logl_proposal.value)
+  {
+    memcpy(particle, proposal, dnest_size_of_modeltype);
+    memcpy(logl, &logl_proposal, sizeof(LikelihoodType));
+    level->accepts++;
+
+    dnest_perturb_accept[which] = 1;
+    accept_action();
+    account_unaccepts[which] = 0; /* reset the number of unaccepted perturb */
+  }
+  else 
+  {
+    account_unaccepts[which] += 1; /* number of unaccepted perturb */
+  }
+  level->tries++;
+  
+  unsigned int current_level = level_assignments[which];
+  for(; current_level < size_levels-1; ++current_level)
+  {
+    levels[current_level].visits++;
+    if(levels[current_level+1].log_likelihood.value <= log_likelihoods[which].value)
+      levels[current_level].exceeds++;
+    else
+      break; // exit the loop if it does not satify higher levels
+  }
+  free(proposal);
+}
+
+void update_level_assignment_plateau(unsigned int which)
+{
+  int i;
+
+  int proposal = level_assignments[which] 
+                 + (int)( pow(10.0, 2*gsl_rng_uniform(dnest_gsl_r))*gsl_ran_ugaussian(dnest_gsl_r));
+
+  if(proposal == level_assignments[which])
+    proposal =  ((gsl_rng_uniform(dnest_gsl_r) < 0.5)?(proposal-1):(proposal+1));
+
+  proposal=mod_int(proposal, size_levels);
+
+  double log_A = -levels[proposal].log_X + levels[level_assignments[which]].log_X;
+
+  log_A += log_push(proposal) - log_push(level_assignments[which]);
+
+  // enforce uniform exploration if levels are enough
+  if(enough_levels(levels, size_levels))
+    log_A += options.beta*log( (double)(levels[level_assignments[which]].tries +1)/ (levels[proposal].tries +1) );
+
+  if(log_A > 0.0)
+    log_A = 0.0;
+
+  if( gsl_rng_uniform(dnest_gsl_r) <= exp(log_A) && levels[proposal].log_likelihood.value <= log_likelihoods[which].value)
+  {
+    level_assignments[which] = proposal;
+
+// update the limits of the level
+    if(dnest_flag_limits == 1)
+    {
+      double *particle = (double *) (particles+ which*particle_offset_size);
+      for(i=0; i<particle_offset_double; i++)
+      {
+        limits[proposal * 2 * particle_offset_double +  i*2] = 
+            fmin(limits[proposal * 2* particle_offset_double +  i*2], particle[i]);
+        limits[proposal * 2 * particle_offset_double +  i*2+1] = 
+            fmax(limits[proposal * 2 * particle_offset_double +  i*2+1], particle[i]);
+      }
+    }
+
+  }
+
 }

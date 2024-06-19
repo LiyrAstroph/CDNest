@@ -73,14 +73,14 @@ cdef class sampler:
   cdef char sample_dir[200]
   cdef int rank, size
   cdef DNestOptions *options
-  cdef bint flag_limits
+  cdef bint flag_limits, flag_plateau
     
   def __cinit__(self, model, sample_dir="./", sample_tag="", sample_postfix="", 
                 num_particles=1, thread_steps_factor = 10, 
                 max_num_saves = 10000, max_num_levels = 0,
                 new_level_interval_factor = 2, save_interval_factor = 2,
                 lam = 10, beta = 100, ptol = 0.1, limits_on=False,
-                compression = None):
+                compression = None, plateau = False):
     
     cdef int i
 
@@ -154,8 +154,11 @@ cdef class sampler:
     # limits 
     self.flag_limits = limits_on
 
+    # if there is plateau 
+    self.flag_plateau = plateau
+
     # setup argc and argv
-    cdef int narg = 13
+    cdef int narg = 14
     self.argv = <char **>PyMem_Malloc(narg*sizeof(char *))
     for i in range(narg):
       self.argv[i] = <char *>PyMem_Malloc(200*sizeof(char))
@@ -178,6 +181,10 @@ cdef class sampler:
     self.argc += 1
     if self.flag_limits:
       self.argv[self.argc] = '-l'
+      self.argc += 1
+    
+    if self.flag_plateau:
+      self.argv[self.argc] = '-a'
       self.argc += 1
     
     if compression != None:
