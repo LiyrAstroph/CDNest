@@ -97,11 +97,17 @@ The statements in Python look like
   
       # parameter prior information. used when the prior is Gaussian
       # indicate the mean and standard deviation of the Gaussian prior
+      # note:
+      # 1) prior_info is a list consisting of num_params elements
+      #    echo element is a list specifying the mean and standard deviation 
+      # 2) the element is used only when the corresponding prior_type is gaussian,
+      #    otherwise, it will be ignored.
       self.prior_info = [[0.0, 1.0]]*num_params
   
     def log_likelihood(self, coords):
       """
       calculate likelihood
+      coords is a set of model parameters 
       """
       return -0.5*np.sum(coords**2) + self.num_params * (-0.5*np.log(2*np.pi))
 
