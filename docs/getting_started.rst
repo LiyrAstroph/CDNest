@@ -80,4 +80,43 @@ To use the package **cydnest**,  import it in a Python scirpt as
 
   import cydnest
 
-Several Python scripts are provided in the tests subdirectory to illustrate its usage. 
+Several Python scripts are provided in the **tests** subdirectory to illustrate its usage. 
+
+Outputs
+=========
+
+**CDNest** forces writing to the computer's disk every **num_max_saves/50** steps, so one does not need to wait until the end of 
+running, but instead, one can inspect the results during the running and adjust the options when necessary.
+
+The default output files of **CDNest** are as follows.
+
+- **sample.txt**
+  
+  The ancillary file to record saved parameters during the sampling. Each row corresponds to a set of parameters 
+  and the number of rows is the **num_max_saves** option. 
+
+- **sample_info.txt**
+  
+  The level assignment, log likelihood, tiebreaker, id of each set of parameters in **sample.txt**. 
+  Here tiebreaker is a random number is used to distinguish parameter sets with the same likelihood,
+  and id is a number marking which CUP cores the saved parameters come from. 
+  
+- **sampler_state.txt**
+  
+  Record the number of levels and the number of rows of parameters saved.
+
+- **levels.txt**
+  
+  Record the level informations.
+
+- **limits.txt**
+  
+  Record the limits of each parameter at each level.
+
+- **posterior_sample.txt**
+  
+  **The posterior sample of parameters.**
+
+- **posterior_sample_info.txt**
+  
+  **The likelihod of posterior sample.**
