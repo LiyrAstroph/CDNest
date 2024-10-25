@@ -27,6 +27,7 @@ Documentation
    getting_started.rst
    usage.rst
    post.rst
+   resume.rst
    tests.rst
 
 
