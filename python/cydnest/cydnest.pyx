@@ -302,13 +302,20 @@ cdef class sampler:
                  self.sample_dir, self.options_file, self.options, self.args)
     return logz
   
-  def post_run(self):
+  def post_run(self, temperature=1):
     """
     only do posterior processing
 
     the value of evidence is reuturned 
     """
     self.argv[self.argc] = '-p'
+    self.argc += 1
+
+    self.argv[self.argc] = '-t'
+    self.argc += 1
+    
+    cstr = str(temperature)
+    strcpy(self.argv[self.argc], cstr.encode('UTF-8'))
     self.argc += 1
 
     strcpy(self.options_file, "")
