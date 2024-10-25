@@ -139,3 +139,5 @@ The statements in Python look like
 
     # do postprocess, plot, show the properties of sampling 
     cydnest.postprocess(sampler.get_sample_dir(), sampler.get_sample_tag(), doplot=True)
+
+In the folder **tests/** packaged along with the source code, a number of python examples are provided.
