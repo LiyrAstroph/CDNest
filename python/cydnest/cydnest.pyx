@@ -302,6 +302,22 @@ cdef class sampler:
                  self.sample_dir, self.options_file, self.options, self.args)
     return logz
   
+  def post_run(self):
+    """
+    only do posterior processing
+
+    the value of evidence is reuturned 
+    """
+    self.argv[self.argc] = '-p'
+    self.argc += 1
+
+    strcpy(self.options_file, "")
+    logz = dnest(self.argc, self.argv, self.fptrset, self.num_params, 
+                 self.param_range, self.prior_type, self.prior_info, 
+                 self.sample_dir, self.options_file, self.options, self.args)
+    
+    return logz
+  
   def restart(self, restart_file="restart_dnest.txt", max_num_saves = 20000,
                     max_num_levels = None, ptol = None):
     """
