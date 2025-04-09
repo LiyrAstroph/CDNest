@@ -7,7 +7,7 @@ ifeq (${CC}, cc)
 endif
 $(info  CC = $(CC))
 
-OPTIMIZE = -O2 -Wall -finline-functions -fcommon
+OPTIMIZE = -O2 -Wall -finline-functions -fcommon -std=c11
 #OPTIMIZE += -DDebug
 
 #---------target system

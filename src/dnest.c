@@ -46,6 +46,9 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
              char *sample_dir, char *optfile, DNestOptions *opts, void *args)
 {
   int optid;
+  extern int optind, opterr, optopt;
+  extern char *optarg;
+  extern int getopt(int argc, char *const *argv, const char *options);
 
   MPI_Comm_rank(MPI_COMM_WORLD, &dnest_thistask);
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
@@ -198,9 +201,10 @@ void dnest_postprocess(double temperature,char *optfile, DNestOptions *opts)
 void dnest_run()
 {
   int i, j, k, size_all_above_incr;
-  Level *pl, *levels_orig;
-  int *buf_size_above, *buf_displs;
-  double *plimits;
+  Level *pl=NULL, *levels_orig=NULL;
+  int *buf_size_above=NULL, *buf_displs=NULL;
+  double *plimits=NULL;
+  extern int fileno(const FILE *stream);
   
   // used to gather levels' information
   if(dnest_thistask == dnest_root)
@@ -1776,12 +1780,12 @@ void dnest_check_directory(char *sample_dir)
  */
 void dnest_save_restart()
 {
-  FILE *fp;
+  FILE *fp=NULL;
   int i, j;
-  void *particles_all;
-  LikelihoodType *log_likelihoods_all;
-  unsigned int *level_assignments_all;
-  char str[200];
+  void *particles_all=NULL;
+  LikelihoodType *log_likelihoods_all=NULL;
+  unsigned int *level_assignments_all=NULL;
+  char str[512];
 
   if(dnest_thistask == dnest_root)
   {
@@ -1878,12 +1882,12 @@ void dnest_save_restart()
 
 void dnest_restart()
 {
-  FILE *fp;
+  FILE *fp=NULL;
   int i, j;
-  void *particles_all;
-  unsigned int *level_assignments_all;
-  LikelihoodType *log_likelihoods_all;
-  void *particle;
+  void *particles_all=NULL;
+  unsigned int *level_assignments_all=NULL;
+  LikelihoodType *log_likelihoods_all=NULL;
+  void *particle=NULL;
 
   if(dnest_thistask == dnest_root)
   {

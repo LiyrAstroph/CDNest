@@ -433,7 +433,7 @@ void postprocess(double temperature)
   fclose(fp);
 
   //save sample weights
-  char fname[STR_MAX_LENGTH];
+  char fname[STR_MAX_LENGTH*2];
   sprintf(fname, "%s/%s", dnest_sample_dir, "weights.txt");
   fp = fopen(fname, "w");
   if(fp == NULL)

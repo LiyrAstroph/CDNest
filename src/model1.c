@@ -84,7 +84,7 @@ double log_likelihoods_cal_thismodel(const void *model)
   double logL;
   const double u = 0.01;
 	const double v = 0.1;
-	const double C = log(1.0/sqrt(2*M_PI));
+	const double C = log(1.0/sqrt(2*3.14159));
 
 	double logl1 = num_params*(C - log(u));
 	double logl2 = num_params*(C - log(v));

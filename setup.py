@@ -42,7 +42,7 @@ if os.name == 'nt':  # Windows, assumming MSVC compiler
   link_args = []
 elif os.name == 'posix':  # UNIX, assumming GCC compiler
   libraries = ['m', 'c', 'gsl', 'gslcblas',] + mpiconf['libraries']
-  compiler_args = ['-O3', '-ffast-math'] 
+  compiler_args = ['-O3', '-ffast-math', '-std=c11'] 
   link_args = []
 
 try:

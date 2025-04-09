@@ -85,9 +85,9 @@ double log_likelihoods_cal_thismodel3(const void *model)
   double logl2;
 
   logl1 = -0.5 * pow( (sqrt((params[0] - 3.0)* (params[0] - 3.0) + params[1]*params[1])- 2.0)/0.1,  2.0)
-          - 0.5 * log(2.0*M_PI * 0.01);
+          - 0.5 * log(2.0*3.14159 * 0.01);
   logl2 = -0.5 * pow( (sqrt((params[0] + 3.0)* (params[0] + 3.0) + params[1]*params[1])- 2.0)/0.1,  2.0)
-          - 0.5 * log(2.0*M_PI * 0.01);
+          - 0.5 * log(2.0*3.14159 * 0.01);
   
   double max = fmax(logl1, logl2);
   

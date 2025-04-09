@@ -106,7 +106,7 @@ double log_likelihoods_cal_thismodel2(const void *model)
   for(i=0; i<num_data_points; i++)
   {
     mu = params[0] * data[i].x + params[1];
-    logL += -0.5*log(2*M_PI*var) - 0.5*pow(data[i].y - mu, 2.0)/var;
+    logL += -0.5*log(2*3.14159*var) - 0.5*pow(data[i].y - mu, 2.0)/var;
   }
   
   return logL;
@@ -115,7 +115,7 @@ double log_likelihoods_cal_thismodel2(const void *model)
 double perturb_thismodel2(void *model)
 { 
   double *params = (double *)model;
-  double logH = 0.0, width, limit1, limit2;
+  double logH = 0.0, width=0.0, limit1=0.0, limit2=0.0;
   int which = dnest_rand_int(num_params), which_level;
   int size_levels;
   
