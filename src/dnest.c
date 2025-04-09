@@ -204,7 +204,7 @@ void dnest_run()
   Level *pl=NULL, *levels_orig=NULL;
   int *buf_size_above=NULL, *buf_displs=NULL;
   double *plimits=NULL;
-  extern int fileno(const FILE *stream);
+  extern int fileno(FILE *stream);
   
   // used to gather levels' information
   if(dnest_thistask == dnest_root)
