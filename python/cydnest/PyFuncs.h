@@ -32,7 +32,7 @@ void set_size_(int size)
   return;
 }
 
-PyObject* get_npy_coords (void *params) 
+PyObject* get_npy_coords (const void *params) 
 {
   double *pm = (double *)params;
   
@@ -126,7 +126,7 @@ double py_perturb (void *params)
 }
 
  // Likelihood function
-double py_log_likelihood(void *params) 
+double py_log_likelihood(const void *params) 
 {
   if (size_ == 0) return 0.0;
     
@@ -158,7 +158,7 @@ double py_log_likelihood(void *params)
 }
 
 // Likelihood function
-double py_log_likelihood_initial(void *params) 
+double py_log_likelihood_initial(const void *params) 
 {
   if (size_ == 0) return 0.0;
     
@@ -189,7 +189,7 @@ double py_log_likelihood_initial(void *params)
   return log_like;
 }
 
-void py_print_particle(FILE *fp, void *params)
+void py_print_particle(FILE *fp, const void *params)
 {
   int i;
   double *pm = (double *)params;
