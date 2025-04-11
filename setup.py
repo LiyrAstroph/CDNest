@@ -36,7 +36,7 @@ def configure_gsl():
   if pkgconfig.exists('gsl'):
     gslconf = pkgconfig.parse('gsl')
   else:
-    raise SystemError("Not found GS installed.")
+    raise SystemError("Not found GSL installed.")
 
   return gslconf
 
@@ -44,10 +44,20 @@ def configure_gsl():
 mpiconf = configure_mpi()
 gslconf = configure_gsl()
 
+#======================================================================
+#in MacOS, sometimes hwloc library is not found, specify the path here
+hwloc_include_dir = []
+hwloc_library_dir = []
+#======================================================================
+
 basedir = os.path.dirname(os.path.abspath(__file__))
 homedir = os.environ['HOME']
-include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),] + mpiconf['include_dirs'] + gslconf['include_dirs']
-library_dirs = [basedir] + mpiconf['library_dirs'] + gslconf['library_dirs']
+include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),] \
+             + mpiconf['include_dirs']                                       \
+             + gslconf['include_dirs']                                       \
+             + hwloc_include_dir
+library_dirs = [basedir] + mpiconf['library_dirs'] \
+             + gslconf['library_dirs'] + hwloc_library_dir
 
 if os.name == 'nt':  # Windows, assumming MSVC compiler
   libraries = ['dnest']
