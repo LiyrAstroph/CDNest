@@ -11,6 +11,7 @@ CDNest
 
 C version of diffusive nested sampling proposed by Brendon Brewer ( https://github.com/eggplantbren/DNest3 ).
 
+**CDNest works in Linux and MacOS.** 
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Read `the documentation <http://cdnest.readthedocs.io/>`_.

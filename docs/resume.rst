@@ -11,7 +11,7 @@ In Python runs, one can keep the Python script unchanged, but only replace **run
     
     # ... (python code)
     # keep the Python script unchanged but 
-    # only replace run() with post_run()
+    # only replace run() with restart()
 
     logz = sampler.restart(restart_file="restart_dnest.txt_10000")
 

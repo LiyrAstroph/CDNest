@@ -4,17 +4,37 @@ Installation
 
 The dependent third-party packages includes
 
-  * MPICH: a MPI implementation library
+  * MPICH: `an MPI implementation library <https://www.mpich.org/>`_
 
-  * GSL: the GNU Scientific library
+  * GSL: `GNU Scientific Library <https://www.gnu.org/software/gsl/>`_
+  
+In Linux systems, one can use the package manager (like ``dnf``, which is different among different distributions) 
+to install the above packages 
 
-For python interface, additional packages required:
+.. code-block:: bash 
+
+  dnf install mpich mpich-devel gsl gsl-devel
+
+In Mac systems, one can use `homebrew <https://brew.sh>`_ package manager to install the above packages 
+
+.. code-block:: bash 
+
+  brew install mpich gsl
+
+**For python interface**, additional packages required:
   
   * Cython
 
   * MPI4PY
 
   * Numpy
+
+Using ``pip`` to install these packages  
+
+.. code-block:: bash 
+
+  pip install cython mpi4py numpy
+
 
 C/C++ library: libdnest.so
 ==========================
