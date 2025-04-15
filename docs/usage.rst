@@ -11,6 +11,12 @@ The statements in C/C++ look like
   
   /* include dnest header */
   #include "dnest.h"
+  
+  /* functions used for dnest */
+  DNestFptrSet *fptrset_thismodel;
+  /* Bayesian evidence */
+  double logz;
+
 
   /* allocate function memory used by cdnest */
   fptrset_thismodel = dnest_malloc_fptrset();
@@ -23,7 +29,7 @@ The statements in C/C++ look like
   fptrset_thismodel->restart_action = restart_action_model1;
   
   /* run dnest */
-  dnest(argc, argv, fptrset_thismodel, num_params, NULL, NULL, NULL, "./", "OPTIONS1", NULL, NULL);
+  logz=dnest(argc, argv, fptrset_thismodel, num_params, NULL, NULL, NULL, "./", "OPTIONS1", NULL, NULL);
     
   /* free function memory */
   dnest_free_fptrset(fptrset_thismodel);
@@ -64,6 +70,35 @@ All lines are optional and if not specified, the default value will be used.
     SaveInterval = SaveIntervalFactor * NumberCores * ThreadSteps
   * ``BacktrackingLength`` controls the backforward tracking length (lambda in Brewer's paper)
   * ``StrengthEqualPush`` controls strength to force equal push (beta in Brewer's paper)
+
+The full arguments to the function ``dnest`` are 
+
+.. code-block:: C
+
+  double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params, 
+             double *param_range, int *prior_type, double *prior_info,
+             char *sample_dir, char *optfile, DNestOptions *opts, void *args)
+  
+  /* ========================================================
+  * arguments:
+  * argc:        number of command-line options (mandatory)
+  * argv:        command-line options  (mandatory)
+  * fptrset:     function set pointers required  (mandatory)
+  * num_params:  number of parameters (mandatory)
+  * param_range: parameter ranges  (mandatory)
+  * prior_type:  prior types  (optional)
+  * prior_info:  prior informations  (optional)
+  * sample_dir:  output directory for sampling  (mandatory)
+  * optfile:     option files  (optional)
+  * opts:        options struct. if optfile is empty, use this struct (optional)
+  * args:        any other arguments transferred to cdnest.  (optional)
+  *              useful when referring to external variables or calling external functions (optional)
+  * ========================================================
+  * optional arguments can be set to "NULL"
+  *
+  * return:
+  * Bayesian evidence, double 
+  */
 
 Python
 ======

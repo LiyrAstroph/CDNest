@@ -21,6 +21,8 @@ To run this test, using the following command:
   
   mpiexec -n np ./dnest 1
 
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
+
 Test II --- model2.c
 ====================
 
@@ -31,6 +33,8 @@ To run this test, using the following command:
 .. code-block:: bash
   
   mpiexec -n np ./dnest 2
+
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
 
 Test III --- model3.c
 =====================
@@ -53,6 +57,8 @@ To run this test, using the following command:
   
   mpiexec -n np ./dnest 3
 
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
+
 Test IV in Python --- gauss.py
 ================================
 
@@ -68,6 +74,8 @@ To run this test, using the following command:
   
   mpiexec -n np python gauss.py
 
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
+
 Test V in Python --- mulgauss.py
 ================================
 
@@ -80,6 +88,8 @@ To run this test, using the following command:
 .. code-block:: bash
   
   mpiexec -n np python mulgauss.py
+
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
 
 Test VI in Python --- rastrigin.py
 ==================================
@@ -103,6 +113,8 @@ To run this test, using the following command:
 .. code-block:: bash
   
   mpiexec -n np python rastrigin.py
+
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
 
 Test V in Python --- gauss_plateau.py
 =====================================
@@ -128,6 +140,8 @@ To run this test, using the following command:
   .. code-block:: bash
     
     mpiexec -n np python gauss_plateau.py
+  
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
 
 Test VI in Python --- cauchy.py
 ===============================
@@ -152,6 +166,8 @@ To run this test, using the following command:
   .. code-block:: bash
     
     mpiexec -n np python cauchy.py
+
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
 
 Test VII in Python --- diamond_ring.py
 ======================================
@@ -182,3 +198,5 @@ To run this test, using the following command:
   .. code-block:: bash
     
     mpiexec -n np python diamond_ring.py
+
+where ``np`` is the number of CPU cores. Change it to a number you wants to use.
