@@ -8,18 +8,28 @@ The dependent third-party packages includes
 
   * GSL: `GNU Scientific Library <https://www.gnu.org/software/gsl/>`_
   
-In Linux systems, one can use the package manager (like ``dnf``, which is different among different distributions) 
-to install the above packages 
+In Linux and Mac systems, it is convenient to use package managers to install the above packages. 
 
-.. code-block:: bash 
+- In Linux systems, one can use the package manager (like ``dnf``, which is different among different distributions) 
+  to install the above packages 
 
-  dnf install mpich mpich-devel gsl gsl-devel
+  .. code-block:: bash 
 
-In Mac systems, one can use `homebrew <https://brew.sh>`_ package manager to install the above packages 
+    dnf install mpich mpich-devel gsl gsl-devel
 
-.. code-block:: bash 
+- In Mac systems, one can use `homebrew <https://brew.sh>`_ package manager to install the above packages 
 
-  brew install mpich gsl
+  .. code-block:: bash 
+
+    brew install mpich hwloc gsl
+
+  If ``hwloc`` is not found, one can add the include and library paths to the environment `PKG_CONFIG_PATH` so as to let it be 
+  findable by `pkg-config`. For example, if ``hwloc`` is installed at ``/opt/homebrew/opt/hwloc``, then execute the commands
+
+  .. code-block:: bash
+
+    export PKG_CONFIG_PATH=/opt/homebrew/opt/hwloc/lib/pkgconfig:$PKG_CONFIG_PATH
+
 
 **For python interface**, additional packages required:
   
@@ -89,7 +99,7 @@ The above commands by default assume that **mpicc** is located in the standard p
 
 .. code-block:: python 
   
-  CC=/path/to/mpicc/ python setup.py install
+  CC=/path/to/mpicc python setup.py install
 
 .. note::
   Both **python2** and **python3** are supported.

@@ -21,13 +21,21 @@ ifeq ($(SYSTEM), "Linux")
 NCORE      :=$(grep -c ^processor /proc/cpuinfo)
 GSL_INCL    = $(shell pkg-config --cflags gsl) 
 GSL_LIBS    = $(shell pkg-config --libs gsl) 
+
+HWLOC_INCL  = 
+HWLOC_LIBS  = 
+
 OPTIMIZE    += 
 endif
 
 ifeq ($(SYSTEM), "Darwin")
-NCORE      :=$(shell sysctl machdep.cpu.core_count | awk '{print $2}')
+NCORE      := $(shell sysctl machdep.cpu.core_count | awk '{print $2}')
 GSL_INCL    = $(shell pkg-config --cflags gsl) 
 GSL_LIBS    = $(shell pkg-config --libs gsl)   
+
+HWLOC_INCL  = $(shell pkg-config --cflags hwloc) 
+HWLOC_LIBS  = $(shell pkg-config --libs hwloc)  
+
 OPTIMIZE    += 
 endif
 
@@ -52,8 +60,8 @@ LDN     = libdnest.so
 all: $(EXEC) $(LDN)
 
 OPTIONS  = $(OPTIMIZE)
-CFLAGS   = $(OPTIONS) $(GSL_INCL) $(LAPACK_INCL) $(CBLAS_INCL) $(MPIINCL)
-LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB)
+CFLAGS   = $(OPTIONS) $(GSL_INCL) $(LAPACK_INCL) $(CBLAS_INCL) $(MPIINCL) $(HWLOC_INCL)
+LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB) $(HWLOC_LIBS)
 
 
 SRC      = src/

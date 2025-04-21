@@ -40,9 +40,20 @@ def configure_gsl():
 
   return gslconf
 
+def configure_hwloc():
+  """
+  get configuration of hwloc
+  """
+  if pkgconfig.exists('hwloc'):
+    hwlocconf = pkgconfig.parse('hwloc')
+  else:
+    raise SystemError("Not found hwloc installed.")
+
+  return hwlocconf
 
 mpiconf = configure_mpi()
 gslconf = configure_gsl()
+hwlocconf = configure_hwloc()
 
 #======================================================================
 #in MacOS, sometimes hwloc library is not found, specify the path here
@@ -55,9 +66,9 @@ homedir = os.environ['HOME']
 include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),] \
              + mpiconf['include_dirs']                                       \
              + gslconf['include_dirs']                                       \
-             + hwloc_include_dir
+             + hwlocconf['include_dirs']
 library_dirs = [basedir] + mpiconf['library_dirs'] \
-             + gslconf['library_dirs'] + hwloc_library_dir
+             + gslconf['library_dirs'] + hwlocconf['library_dirs']
 
 if os.name == 'nt':  # Windows, assumming MSVC compiler
   libraries = ['dnest']
