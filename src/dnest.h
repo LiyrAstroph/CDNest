@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 #define DNEST_MAJOR_VERSION 0  // Dec 2, 2018
-#define DNEST_MINOR_VERSION 1
+#define DNEST_MINOR_VERSION 4
 #define DNEST_PATCH_VERSION 0
 
 #define STR_MAX_LENGTH (256)

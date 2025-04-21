@@ -138,7 +138,7 @@ extensions = cythonize([
 
 setup(
 	name="cydnest",
-  version="0.2.0",
+  version="0.4.0",
 	packages=["cydnest"],
   package_dir={"":"python"},
 	ext_modules = extensions,
