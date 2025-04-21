@@ -53,12 +53,10 @@ def configure_hwloc():
 
 mpiconf = configure_mpi()
 gslconf = configure_gsl()
-hwlocconf = configure_hwloc()
 
 #======================================================================
 #in MacOS, sometimes hwloc library is not found, specify the path here
-hwloc_include_dir = []
-hwloc_library_dir = []
+hwlocconf = configure_hwloc()
 #======================================================================
 
 basedir = os.path.dirname(os.path.abspath(__file__))
@@ -120,8 +118,12 @@ class Clean(clean):
     if os.path.isdir("dist"):
       shutil.rmtree("dist", ignore_errors=True)
 
-src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")] + glob(os.path.join(basedir, "src", "dnest*.c"))
-headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pxd")] + glob(os.path.join(basedir, "src", "dnest*.h"))
+src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")] + glob(os.path.join(basedir, "src", "dnest*.c"))         \
+    + [os.path.join(basedir, "src", "mygetopt.c")] 
+
+headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pxd")] + glob(os.path.join(basedir, "src", "dnest*.h")) \
+            + [os.path.join(basedir, "src", "mygetopt.h")]
+
 extensions = cythonize([
   Extension("cydnest.cydnest", 
 	  sources=src,

@@ -20,6 +20,7 @@
 
 #include "dnest.h"
 #include "dnestvars.h"
+#include "mygetopt.h"
 
 /*
  * dnest
@@ -46,9 +47,9 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
              char *sample_dir, char *optfile, DNestOptions *opts, void *args)
 {
   int optid;
-  extern int optind, opterr, optopt;
-  extern char *optarg;
-  extern int getopt(int argc, char *const *argv, const char *options);
+  extern int my_optind, my_opterr, my_optopt;
+  extern char *my_optarg;
+  extern int my_getopt(int argc, char *const *argv, const char *options);
 
   MPI_Comm_rank(MPI_COMM_WORLD, &dnest_thistask);
   MPI_Comm_size(MPI_COMM_WORLD, &dnest_totaltask);
@@ -76,28 +77,20 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
     strcpy(dnest_sample_postfix, "\0");
     strcpy(dnest_sample_tag, "\0");
 
-    opterr = 0;
+    my_opterr = 0;
+    my_optind = 0; /* optind=0 reset getopt */
 
-    /* MAC getopt and GNU  getopt seem not compatible */
-#if defined(__APPLE__) && defined(__MACH__)
-    extern int optreset;
-    optreset = 1; /* in BSD, optreset=1 reset getopt */
-    optind = 1; 
-#else 
-    optind = 0; /* in GNU, optind=0 reset getopt */
-#endif
-
-    while( (optid = getopt(argc, argv, "r:s:pt:clx:g:m:a")) != -1)
+    while( (optid = my_getopt(argc, argv, "r:s:pt:clx:g:m:a")) != -1)
     {
       switch(optid)
       {
         case 'r':
           dnest_flag_restart = 1;
-          strcpy(file_restart, optarg);
+          strcpy(file_restart, my_optarg);
           printf("# CDnest restarts.\n");
           break;
         case 's':
-          strcpy(file_save_restart, optarg);
+          strcpy(file_save_restart, my_optarg);
           printf("# CDnest sets restart file %s.\n", file_save_restart);
           break;
         case 'p':
@@ -106,11 +99,11 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
           printf("# CDnest does postprocess.\n");
           break;
         case 't':
-          dnest_post_temp = atof(optarg);
+          dnest_post_temp = atof(my_optarg);
           printf("# CDnest sets a temperature %f.\n", dnest_post_temp);
           if(dnest_post_temp == 0.0)
           {
-            printf("# CDnest incorrect option -t %s.\n", optarg);
+            printf("# CDnest incorrect option -t %s.\n", my_optarg);
             exit(0);
           }
           if(dnest_post_temp < 1.0)
@@ -128,15 +121,15 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
           printf("# CDnest level-dependent sampling.\n");
           break;
         case 'x':
-          strcpy(dnest_sample_postfix, optarg);
+          strcpy(dnest_sample_postfix, my_optarg);
           printf("# CDnest sets sample postfix %s.\n", dnest_sample_postfix);
           break;
         case 'g':
-          strcpy(dnest_sample_tag, optarg);
+          strcpy(dnest_sample_tag, my_optarg);
           printf("# CDnest sets sample tag %s.\n", dnest_sample_tag);
           break;
         case 'm':
-          dnest_compression = atof(optarg);
+          dnest_compression = atof(my_optarg);
           if(dnest_compression > exp(1.0))
           {
             printf("Too large compression, better to <exp(1.0).\n");
@@ -149,7 +142,7 @@ double dnest(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
           printf("# CDnest copes with pleteau likelihood.\n");
           break;
         case '?':
-          printf("# CDnest incorrect option -%c %s.\n", optopt, optarg);
+          printf("# CDnest incorrect option -%c %s.\n", my_optopt, my_optarg);
           exit(0);
           break;
         default:

@@ -66,10 +66,10 @@ LIBS     = $(GSL_LIBS) $(LAPACK_LIBS) $(CBLAS_LIBS) $(MPICHLIB) $(HWLOC_LIBS)
 
 SRC      = src/
 INCL     = Makefile $(SRC)/dnestvars.h $(SRC)/model1.h $(SRC)/model2.h $(SRC)/model3.h \
-           $(SRC)/dnest.h
+           $(SRC)/dnest.h $(SRC)/mygetopt.h
  
 OBJS = $(SRC)/dnest.o $(SRC)/dnestvars.o $(SRC)/dnestpostprocess.o $(SRC)/model1.o \
-       $(SRC)/main.o $(SRC)/model2.o $(SRC)/model3.o
+       $(SRC)/main.o $(SRC)/model2.o $(SRC)/model3.o $(SRC)/mygetopt.o
 
 $(EXEC): $(OBJS)
 	cd $(SRC)
