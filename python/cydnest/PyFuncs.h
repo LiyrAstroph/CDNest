@@ -43,7 +43,7 @@ PyObject* get_npy_coords (const void *params)
     PyErr_Print();
     exit(0);
   }
-  double* data = (double*)PyArray_DATA(c);
+  double* data = (double*)PyArray_DATA((PyArrayObject *)c);
   memcpy(data, pm, size_*sizeof(double));
   //int i;
   //for (i = 0; i < size_; ++i) data[i] = pm[i];
@@ -66,7 +66,7 @@ void py_from_prior(void *params)
   
   // Parse that return value as a numpy array.
   PyObject* rarray = PyArray_FROM_OTF(result, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-  if (result == NULL || (int)PyArray_NDIM(rarray) != 1) 
+  if (result == NULL || (int)PyArray_NDIM((PyArrayObject *)rarray) != 1) 
   {
     Py_DECREF(result);
     Py_XDECREF(rarray);
@@ -74,7 +74,7 @@ void py_from_prior(void *params)
     return;
   }
   
-  double* data = (double*)PyArray_DATA(rarray);
+  double* data = (double*)PyArray_DATA((PyArrayObject *)rarray);
   memcpy(pm, data, size_*sizeof(double));
   //int i;
   //for (i = 0; i < size_; ++i)
@@ -116,7 +116,7 @@ double py_perturb (void *params)
     return 0.0;
   }
 
-  double* data = (double*)PyArray_DATA(c);
+  double* data = (double*)PyArray_DATA((PyArrayObject *)c);
   memcpy(pm, data, size_*sizeof(double));
   //int i;
   //for (i = 0; i < size_; ++i) pm[i] = data[i];
