@@ -7,7 +7,7 @@ Welcome to CDNest's documentation!
 ==================================
 
 **CDNest** is a C version of diffusive nested sampling proposed by Brendon Brewer (https://github.com/eggplantbren/DNest3) with
-minor modifications.
+minor modifications. It uses MPI for parallel communication and can be used in high-performance computing (HPC) environments.
 
  * It provides a C library **libdnest.so**. Examples for using this library are 
    shown with **model1.c**, **model2.c**, and **model3.c** in the subfolder **src/**.

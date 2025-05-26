@@ -15,7 +15,7 @@ In Linux and Mac systems, it is convenient to use package managers to install th
 
   .. code-block:: bash 
 
-    dnf install mpich mpich-devel gsl gsl-devel
+    dnf install mpich mpich-devel gsl gsl-devel hwloc hwloc-devel
 
 - In Mac systems, one can use `homebrew <https://brew.sh>`_ package manager to install the above packages 
 
@@ -33,17 +33,19 @@ In Linux and Mac systems, it is convenient to use package managers to install th
 
 **For python interface**, additional packages required:
   
-  * Cython
+  * cython
 
-  * MPI4PY
+  * mpi4py
 
-  * Numpy
+  * numpy
+
+  * pkgconfig
 
 Using ``pip`` to install these packages  
 
 .. code-block:: bash 
 
-  pip install cython mpi4py numpy
+  pip install cython mpi4py numpy pkgconfig
 
 
 C/C++ library: libdnest.so
