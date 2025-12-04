@@ -39,3 +39,4 @@ docs/*
 !docs/_static/*.jpg
 !.gitignore
 !.readthedocs.yaml
+!pyproject.toml

@@ -15,9 +15,10 @@
 #include <float.h>
 #include <mpi.h>
 #include <sys/stat.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
+// #include <gsl/gsl_rng.h>
+// #include <gsl/gsl_randist.h>
 
+#include "gsl_rng.h"
 #include "dnest.h"
 #include "dnestvars.h"
 #include "mygetopt.h"

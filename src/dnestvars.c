@@ -11,8 +11,9 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-#include <gsl/gsl_rng.h>
+// #include <gsl/gsl_rng.h>
 
+#include "gsl_rng.h"
 #include "dnestvars.h"
  
 /* output files */

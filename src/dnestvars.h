@@ -17,8 +17,9 @@ extern "C" {
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-#include <gsl/gsl_rng.h>
+// #include <gsl/gsl_rng.h>
 
+#include "gsl_rng.h"
 #include "dnest.h"
 
 enum PRIOR_TYPE {UNIFORM=0, GAUSSIAN=1, LOG=2};

@@ -1,10 +1,10 @@
 import os
 from setuptools import setup
 from setuptools.extension import Extension
-from distutils.command.build import build
-from distutils.command.clean import clean
 from setuptools.command.build_ext import build_ext
 from setuptools.command.install import install
+from setuptools.command.build import build
+from distutils.command.clean import clean
 
 import subprocess
 import numpy
@@ -29,17 +29,6 @@ def configure_mpi():
 
   return mpiconf
 
-def configure_gsl():
-  """
-  get configuration of gsl
-  """
-  if pkgconfig.exists('gsl'):
-    gslconf = pkgconfig.parse('gsl')
-  else:
-    raise SystemError("Not found GSL installed.")
-
-  return gslconf
-
 def configure_hwloc():
   """
   get configuration of hwloc
@@ -52,7 +41,6 @@ def configure_hwloc():
   return hwlocconf
 
 mpiconf = configure_mpi()
-gslconf = configure_gsl()
 
 #======================================================================
 #in MacOS, sometimes hwloc library is not found, specify the path here
@@ -62,18 +50,16 @@ hwlocconf = configure_hwloc()
 basedir = os.path.dirname(os.path.abspath(__file__))
 homedir = os.environ['HOME']
 include_dirs = [basedir, os.path.join(basedir, "src"), numpy.get_include(),] \
-             + mpiconf['include_dirs']                                       \
-             + gslconf['include_dirs']                                       \
-             + hwlocconf['include_dirs']
+             + mpiconf['include_dirs'] + hwlocconf['include_dirs']
 library_dirs = [basedir] + mpiconf['library_dirs'] \
-             + gslconf['library_dirs'] + hwlocconf['library_dirs']
+             + hwlocconf['library_dirs']
 
 if os.name == 'nt':  # Windows, assumming MSVC compiler
   libraries = ['dnest']
   compiler_args = ['/Ox', '/fp:fast']
   link_args = []
 elif os.name == 'posix':  # UNIX, assumming GCC compiler
-  libraries = ['m', 'c', 'gsl', 'gslcblas',] + mpiconf['libraries']
+  libraries = ['m', 'c',] + mpiconf['libraries']
   compiler_args = ['-O3', '-ffast-math', '-std=c11'] 
   link_args = []
 
@@ -118,11 +104,17 @@ class Clean(clean):
     if os.path.isdir("dist"):
       shutil.rmtree("dist", ignore_errors=True)
 
-src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")] + glob(os.path.join(basedir, "src", "dnest*.c"))         \
-    + [os.path.join(basedir, "src", "mygetopt.c")] 
+src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")] \
+    + glob(os.path.join(basedir, "src", "dnest*.c"))         \
+    + [os.path.join(basedir, "src", "mygetopt.c")] \
+    + [os.path.join(basedir, "src", "gsl_errno.c")] \
+    + [os.path.join(basedir, "src", "gsl_rng.c")]
 
-headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pxd")] + glob(os.path.join(basedir, "src", "dnest*.h")) \
-            + [os.path.join(basedir, "src", "mygetopt.h")]
+headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pxd")] \
+            + glob(os.path.join(basedir, "src", "dnest*.h")) \
+            + [os.path.join(basedir, "src", "mygetopt.h")] \
+            + [os.path.join(basedir, "src", "gsl_errno.h")] \
+            + [os.path.join(basedir, "src", "gsl_rng.h")]
 
 extensions = cythonize([
   Extension("cydnest.cydnest", 

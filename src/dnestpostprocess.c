@@ -12,8 +12,9 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
-#include <gsl/gsl_rng.h>
+// #include <gsl/gsl_rng.h>
 
+#include "gsl_rng.h"
 #include "dnest.h"
 #include "dnestvars.h"
 
