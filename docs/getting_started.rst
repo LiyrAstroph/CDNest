@@ -67,31 +67,22 @@ Edit "bashrc" file in home directory and add a line as
 
 Python package: cydnest
 ========================
-After creating ``libnest.so``, to create the Python package **cydnest**, use the terminal command
 
-.. code-block:: bash 
-  
-  python setup.py build_ext --inplace
-
-This will generate Python-callable package **cydnest** in the local path **./build/libXXX/cydnest**, where 
-**XXX** depend on the compiling system. (In my Fedora 33 laptop, the path name is lib.linux-x86_64-3.9)
-Add this path to your python environment settings,
-
-.. code-block:: bash
-
-  export PYTHONPATH=/path/to/CDNest/build/libXXX/cydnest:$PYTHONPATH
-
-If one wants to install **cydnest** to the standard python path, use the command 
+Use the terminal command 
 
 .. code-block:: bash 
   
   sudo python setup.py install
+  # or 
+  sudo python -m pip install .
 
 or 
 
 .. code-block:: bash 
   
   python setup.py install --user
+  # or 
+  python -m pip install .
 
 The former command generally installs cydnest to the path like **/usr/libXX/pythonXX/site-packages**, 
 while the latter to the path like **~/.local/libXX/pythonXX/site-packages/**, where **XX** depends 
