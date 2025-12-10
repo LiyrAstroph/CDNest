@@ -40,3 +40,4 @@ docs/*
 !.gitignore
 !readthedocs.yaml
 !pyproject.toml
+!docs/requirements.txt
