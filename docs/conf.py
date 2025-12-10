@@ -82,9 +82,9 @@ pygments_style = None
 
 # Readthedocs.
 on_rtd = os.environ.get("READTHEDOCS", None) == "True"
-if not on_rtd:
-    import sphinx_rtd_theme
-    html_theme = "sphinx_book_theme"
+
+exclude_patterns = ["_build"]
+html_theme = "sphinx_book_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
