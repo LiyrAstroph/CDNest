@@ -108,13 +108,15 @@ src = [os.path.join(basedir, "python", "cydnest", "cydnest.pyx")] \
     + glob(os.path.join(basedir, "src", "dnest*.c"))         \
     + [os.path.join(basedir, "src", "mygetopt.c")] \
     + [os.path.join(basedir, "src", "gsl_errno.c")] \
-    + [os.path.join(basedir, "src", "gsl_rng.c")]
+    + [os.path.join(basedir, "src", "gsl_rng.c")]   \
+    + [os.path.join(basedir, "src", "progress-bar.c")]
 
 headerfiles = [os.path.join(basedir, "python", "cydnest", "cydnest.pxd")] \
             + glob(os.path.join(basedir, "src", "dnest*.h")) \
             + [os.path.join(basedir, "src", "mygetopt.h")] \
             + [os.path.join(basedir, "src", "gsl_errno.h")] \
-            + [os.path.join(basedir, "src", "gsl_rng.h")]
+            + [os.path.join(basedir, "src", "gsl_rng.h")]   \
+            + [os.path.join(basedir, "src", "progress-bar.h")]
 
 extensions = cythonize([
   Extension("cydnest.cydnest", 

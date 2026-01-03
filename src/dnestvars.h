@@ -21,6 +21,7 @@ extern "C" {
 
 #include "gsl_rng.h"
 #include "dnest.h"
+#include "progress-bar.h"
 
 enum PRIOR_TYPE {UNIFORM=0, GAUSSIAN=1, LOG=2};
 
@@ -103,6 +104,9 @@ extern int *dnest_perturb_accept;
 extern int dnest_root;
 
 extern int dnest_flag_plateau;
+
+extern FILE *fp_dnest_status;
+extern ProgressBar *pb_dnest;
 //***********************************************
 /*                  functions                  */
 extern double mod(double y, double x);

@@ -7,6 +7,3 @@ requires = [
 ]
 
 build-backend = "setuptools.build_meta"
-
-[project.optional-dependencies]
-docs = ["sphinx>=1.7.5","sphinx-book-theme","mpi4py"]

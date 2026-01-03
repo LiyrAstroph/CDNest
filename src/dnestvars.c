@@ -70,6 +70,9 @@ double dnest_post_temp=1.0, dnest_compression=2.7182818;/*exp(1.0)*/
 char file_restart[STR_MAX_LENGTH], file_save_restart[STR_MAX_LENGTH];
 
 int dnest_flag_plateau;
+
+FILE *fp_dnest_status;
+ProgressBar *pb_dnest;
 //***********************************************
 /*                  functions                  */
 double mod(double y, double x);

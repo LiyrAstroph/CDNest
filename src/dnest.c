@@ -22,6 +22,7 @@
 #include "dnest.h"
 #include "dnestvars.h"
 #include "mygetopt.h"
+#include "progress-bar.h"
 
 /*
  * dnest
@@ -220,6 +221,9 @@ void dnest_run()
   {
     printf("#=======================================================\n");
     printf("# Starting diffusive nested sampling.\n");
+
+    pb_update(pb_dnest, 0);
+    pb_print(pb_dnest);
   }
   MPI_Barrier(MPI_COMM_WORLD);
 
@@ -370,7 +374,7 @@ void dnest_run()
           fsync(fileno(fsample_info));
           fflush(fsample);
           fsync(fileno(fsample));
-          printf("# Save levels, limits, and sync samples at N= %d.\n", count_saves);
+          fprintf(fp_dnest_status,"# Save levels, limits, and sync samples at N= %d.\n", count_saves);
         }
       }
 
@@ -386,7 +390,7 @@ void dnest_run()
   {
     if(dnest_thistask == dnest_root)
     {
-      printf("save restart file at the last step.\n");
+      fprintf(fp_dnest_status,"save restart file at the last step.\n");
     }
     
     dnest_save_restart();
@@ -425,7 +429,7 @@ void do_bookkeeping()
     levels_combine[size_levels_combine] = level_tmp;
     size_levels_combine++;
     
-    printf("# Creating level %d with log likelihood = %e.\n", 
+    fprintf(fp_dnest_status, "# Creating level %d with log likelihood = %e.\n", 
                size_levels_combine-1, levels_combine[size_levels_combine-1].log_likelihood.value);
 
     // clear out the last index records
@@ -440,7 +444,7 @@ void do_bookkeeping()
     {
       renormalise_visits();
       options.max_num_levels = size_levels_combine;
-      printf("# Done creating levles.\n");
+      fprintf(fp_dnest_status, "# Done creating levles.\n");
     }
     else
     {
@@ -547,13 +551,13 @@ void kill_lagging_particles()
 
         deletions++;
 
-        printf("# Replacing lagging particle.\n");
-        printf("# This has happened %d times.\n", deletions);
+        fprintf(fp_dnest_status,"# Replacing lagging particle.\n");
+        fprintf(fp_dnest_status,"# This has happened %d times.\n", deletions);
       }
     }
   }
   else
-    printf("# Warning: all particles lagging!.\n");
+    fprintf(fp_dnest_status,"# Warning: all particles lagging!.\n");
 
   free(good);
 }
@@ -613,8 +617,12 @@ void save_particle()
   
   if(dnest_thistask == dnest_root)
   {
+    pb_update(pb_dnest, count_saves);
+    pb_print(pb_dnest);
+
     if(count_saves%1 == 0)
-      printf("#[%.1f%%] Saving particle to disk. N= %d.\n", 100.0*count_saves/options.max_num_saves, count_saves);
+      fprintf(fp_dnest_status, "#[%.1f%%] Saving particle to disk. N= %d.\n", 
+        100.0*count_saves/options.max_num_saves, count_saves);
 
     whichtask = gsl_rng_uniform_int(dnest_gsl_r,dnest_totaltask);
   }
@@ -1156,6 +1164,19 @@ void setup(int argc, char** argv, DNestFptrSet *fptrset, int num_params,
   printf("%f %f %f \n", particles[0].param[0], particles[0].param[1], particles[0].param[2] );
   proposal = particles[0];
   printf("%f %f %f \n", proposal.param[0], proposal.param[1], proposal.param[2] );*/
+  
+  if(dnest_thistask == dnest_root)
+  {
+    char fname[STR_MAX_LENGTH];
+    pb_dnest = pb_alloc();
+
+    pb_init(pb_dnest, '#', 50, options.max_num_saves);
+    showPercent(pb_dnest, true);
+    showCount(pb_dnest, true);
+    
+    sprintf(fname, "%s/%s%s.txt", dnest_sample_dir, "status", dnest_sample_tag);
+    fp_dnest_status = fopen(fname, "w");
+  }
 }
 
 void finalise()
@@ -1199,6 +1220,9 @@ void finalise()
 
   if(dnest_thistask == dnest_root)
   {
+    pb_free(pb_dnest);
+    fclose(fp_dnest_status);
+
     printf("# Finalizing CDNest.\n");
     printf("#=======================================================\n");
   }
@@ -1648,49 +1672,56 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
 {
   if(fptrset->from_prior == NULL)
   {
-    printf("\"from_prior\" function is not defined at task %d.\
-      \nSet to the default function in cdnest.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"from_prior\" function is not defined at task %d.\
+        \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->from_prior = dnest_from_prior;
   }
 
   if(fptrset->print_particle == NULL)
   {
-    printf("\"print_particle\" function is not defined at task %d. \
-      \nSet to be default function in cdnest.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"print_particle\" function is not defined at task %d. \
+        \nSet to be default function in cdnest.\n", dnest_thistask);
     fptrset->print_particle = dnest_print_particle;
   }
 
   if(fptrset->read_particle == NULL)
   {
-    printf("\"read_particle\" function is not defined at task %d. \
-      \nSet to be default function in cdnest.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"read_particle\" function is not defined at task %d. \
+        \nSet to be default function in cdnest.\n", dnest_thistask);
     fptrset->read_particle = dnest_read_particle;
   }
 
   if(fptrset->log_likelihoods_cal == NULL)
   {
-    printf("\"log_likelihoods_cal\" function is not defined at task %d.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"log_likelihoods_cal\" function is not defined at task %d.\n", dnest_thistask);
     exit(0);
   }
 
   if(fptrset->log_likelihoods_cal_initial == NULL)
   {
-    printf("\"log_likelihoods_cal_initial\" function is not defined at task %d. \
-      \nSet to the same as \"log_likelihoods_cal\" function.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"log_likelihoods_cal_initial\" function is not defined at task %d. \
+        \nSet to the same as \"log_likelihoods_cal\" function.\n", dnest_thistask);
     fptrset->log_likelihoods_cal_initial = fptrset->log_likelihoods_cal;
   }
 
   if(fptrset->log_likelihoods_cal_restart == NULL)
   {
-    printf("\"log_likelihoods_cal_restart\" function is not defined at task %d. \
-      \nSet to the same as \"log_likelihoods_cal\" function.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"log_likelihoods_cal_restart\" function is not defined at task %d. \
+        \nSet to the same as \"log_likelihoods_cal\" function.\n", dnest_thistask);
     fptrset->log_likelihoods_cal_restart = fptrset->log_likelihoods_cal;
   }
 
   if(fptrset->perturb == NULL)
   {
-    printf("\"perturb\" function is not defined at task %d.\
-      \nSet to the default function in cdnest.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"perturb\" function is not defined at task %d.\
+        \nSet to the default function in cdnest.\n", dnest_thistask);
     if(dnest_flag_limits == 0)
       fptrset->perturb = dnest_perturb;
     else 
@@ -1699,22 +1730,25 @@ void dnest_check_fptrset(DNestFptrSet *fptrset)
 
   if(fptrset->restart_action == NULL)
   {
-    printf("\"restart_action\" function is not defined at task %d.\
-      \nSet to the default function in cdnest.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"restart_action\" function is not defined at task %d.\
+        \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->restart_action = dnest_restart_action;
   }
 
   if(fptrset->accept_action == NULL)
   {
-    printf("\"accept_action\" function is not defined at task %d.\
-      \nSet to the default function in cdnest.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"accept_action\" function is not defined at task %d.\
+        \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->accept_action = dnest_accept_action;
   }
 
   if(fptrset->kill_action == NULL)
   {
-    printf("\"kill_action\" function is not defined at task %d.\
-      \nSet to the default function in cdnest.\n", dnest_thistask);
+    if(dnest_thistask == dnest_root)
+      printf("\"kill_action\" function is not defined at task %d.\
+        \nSet to the default function in cdnest.\n", dnest_thistask);
     fptrset->kill_action = dnest_kill_action;
   }
 
@@ -1819,7 +1853,7 @@ void dnest_save_restart()
 
   if(dnest_thistask == dnest_root )
   {
-    printf("# Save restart data to file %s.\n", str);
+    fprintf(fp_dnest_status, "# Save restart data to file %s.\n", str);
 
     //fprintf(fp, "%d %d\n", count_saves, count_mcmc_steps);
     //fprintf(fp, "%d\n", size_levels_combine);
