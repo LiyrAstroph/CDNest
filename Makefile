@@ -78,7 +78,9 @@ $(EXEC): $(OBJS)
 	$(CC) $(OPTIMIZE) $(CFLAGS) $(OBJS) $(LIBS) -o $@
 	
 $(LDN): $(OBJS)
-	$(CC) $(OPTIMIZE) $(CFLAGS) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c $(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c
+	$(CC) $(OPTIMIZE) $(CFLAGS) $(LIBS) -fPIC -shared -o libdnest.so $(SRC)/dnest.c      \
+	$(SRC)/dnestvars.c $(SRC)/dnestpostprocess.c $(SRC)/progress-bar.c $(SRC)/mygetopt.c \
+	$(SRC)/gsl_rng.c  $(SRC)/gsl_errno.c
 	#ar rcs libdnest.a dnest.o dnestvars.o 
 	cp $(SRC)/dnest.h .
 
