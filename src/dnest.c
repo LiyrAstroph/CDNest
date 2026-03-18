@@ -374,6 +374,8 @@ void dnest_run()
           fsync(fileno(fsample_info));
           fflush(fsample);
           fsync(fileno(fsample));
+          fflush(fp_dnest_status);
+          fsync(fileno(fp_dnest_status));
           fprintf(fp_dnest_status,"# Save levels, limits, and sync samples at N= %d.\n", count_saves);
         }
       }
